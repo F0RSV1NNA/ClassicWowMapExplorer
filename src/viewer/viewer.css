@@ -2105,3 +2105,20 @@ body.wow-ui {
 	overflow-wrap: anywhere;
 	user-select: text;
 }
+
+#mesh-authoring .mesh-paint-toolbar { display:flex; gap:6px; position:sticky; top:0; z-index:2; background:#20252b; padding:10px 0; }
+#mesh-authoring .mesh-paint-toolbar button { flex:1; }
+#mesh-authoring .mesh-tool-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0 12px; }
+#mesh-authoring button[aria-pressed="true"] { background:#3b738d; color:white; outline:1px solid #8fc9e3; }
+#mesh-authoring .mesh-primary { background:#315b70; color:white; }
+#mesh-authoring details { border-top:1px solid #ffffff22; margin-top:12px; padding-top:8px; }
+#mesh-authoring details > summary { cursor:pointer; padding:5px 0; }
+#mesh-authoring #mesh-edit-status { margin:8px 0; }
+
+#mesh-authoring #mesh-link-list { width:100%; min-height:110px; }
+#mesh-authoring .mesh-endpoint-a { color:#38bdf8; margin-top:10px; }
+#mesh-authoring .mesh-endpoint-b { color:#ffa52f; margin-top:10px; }
+#mesh-authoring #mesh-link-help { padding:8px 0; }
+
+#mesh-authoring .mesh-link-actions { display:flex; gap:6px; margin:10px 0; }
+#mesh-authoring .mesh-link-actions button { flex:1; }

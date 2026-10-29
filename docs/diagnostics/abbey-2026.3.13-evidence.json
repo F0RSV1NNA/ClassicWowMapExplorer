@@ -1,0 +1,691 @@
+{
+  "pipeline": "explorer-recast-2026.3.13",
+  "sourceBuild": {
+    "product": "wow_classic_beta",
+    "version": "1.60.1.70532",
+    "buildName": "WOW-70532patch1.60.1_Beta"
+  },
+  "source": {
+    "path": "C:\\Users\\Ryan\\Documents\\WoW-Archives\\diagnostics\\0-32-48.input",
+    "bytes": 90745914,
+    "sha256": "4d5160a38300283f711bb04cbf22b2827bd77285331e2185eac1286edf8bd186"
+  },
+  "savedBaseline": {
+    "path": "C:\\Users\\Ryan\\Documents\\WoW-Archives\\diagnostics\\0-32-48-baked\\0000_48_32.mmtile",
+    "bytes": 5909028,
+    "sha256": "8778d493e5429bf6eb3060bdcc46b0e6551945458fa0bea19189fa783611970c"
+  },
+  "checker": {
+    "checkerSha256": "d3a1ee71338344fa509dfca3c0c44db56d719dcf7366040563f2f3a94c233a81",
+    "checks": [
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "mesh-quality"
+        ],
+        "exit": 0,
+        "stdout": "Mesh quality checks passed: low open rim retained, tabletop/bevel rejected, planar fan reduced, boundary samples/flags and real relief retained; unequal shared stair profiles synchronized.\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-rules"
+        ],
+        "exit": 0,
+        "stdout": "Surface rules passed: caps/wall trim blocked; treads, terrain and narrow corridors preserved; interior WMO collision covered without lifting ground onto unrelated trim.\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-heights"
+        ],
+        "exit": 0,
+        "stdout": "Removed ledges excluded; live steps preserved; source fitting follows flat/ramped/stacked floors without floor switching; small-triangle coverage preserved.\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-current\\313-parity-native/0000_48_32.mmtile",
+          "-8940",
+          "-235",
+          "-8840",
+          "-115"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-8940,-235,-8840,-115],\"checkedEdges\":2790,\"gaps\":0,\"missing\":0,\"worst\":0.003636797762482047,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-current\\313-parity-native",
+          "-8913.011",
+          "-136.033",
+          "80.7",
+          "-8886.8",
+          "-179.03",
+          "97.95"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":30,\"start\":[-8913.011,-136.033,80.87563],\"end\":[-8886.8,-179.03,97.782135]}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-current\\313-parity-wasm/0000_48_32.mmtile",
+          "-8940",
+          "-235",
+          "-8840",
+          "-115"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-8940,-235,-8840,-115],\"checkedEdges\":2790,\"gaps\":0,\"missing\":0,\"worst\":0.003636797762482047,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-current\\313-parity-wasm",
+          "-8913.011",
+          "-136.033",
+          "80.7",
+          "-8886.8",
+          "-179.03",
+          "97.95"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":30,\"start\":[-8913.011,-136.033,80.87563],\"end\":[-8886.8,-179.03,97.782135]}\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "packaging": {
+    "packagingExit": 0,
+    "pipeline": "explorer-recast-2026.3.13",
+    "launcherUnchanged": true,
+    "files": {
+      "release\\MapExplorer\\MapExplorer.exe": {
+        "bytes": 123904,
+        "sha256": "f04b88a5a499d100c4a37755225fb24dbd1379153ac5408af2496e2f9cc114fc"
+      },
+      "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe": {
+        "bytes": 74624438,
+        "sha256": "f5f721bb0f37adb377f5fb90938ab2bee53b412e53f9bdae70d1d554fa13d930"
+      },
+      "release\\MapExplorer-portable.zip": {
+        "bytes": 184718602,
+        "sha256": "f931454e2fd0d05ba4f4fb5b5f30d4ecd360839967e8ed2816bd06715e996f3a"
+      },
+      "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll": {
+        "bytes": 975360,
+        "sha256": "d3a1ee71338344fa509dfca3c0c44db56d719dcf7366040563f2f3a94c233a81"
+      },
+      "docs\\diagnostics\\abbey-2026.3.13.png": {
+        "bytes": 272058,
+        "sha256": "fada0f355483f21fe8aeec24960cc7c3e652fbf77d0c173733439552a74fdfa6"
+      }
+    }
+  },
+  "wasmSha256": "70db77fe2c98c900543426584fce3a8e935b5165341f19abfafedfd8d3294280",
+  "outputs": {
+    "native": {
+      "engine": {
+        "pipeline": "explorer-recast-2026.3.13",
+        "milliseconds": 23809.9261,
+        "settings": {
+          "TileSizeCells": 2000,
+          "CellSize": 0.26666665,
+          "CellHeight": 0.26666665,
+          "AgentHeight": 2.1333332,
+          "AgentRadius": 0.5333333,
+          "AgentMaxClimb": 1.0666666,
+          "SwimDepth": 1.2188,
+          "SwimConnectClimb": 2,
+          "SwimSurfaceMargin": 0.3,
+          "SwimShoreBand": 3,
+          "BuriedMargin": 0,
+          "RasterizeLiquid": false,
+          "SubmergedSlack": 0.5,
+          "AgentMaxSlope": 50,
+          "MinRegionArea": 2,
+          "MergeRegionArea": 8,
+          "EdgeMaxLen": 12,
+          "EdgeMaxError": 1.3,
+          "VertsPerPoly": 6,
+          "RegionSplit": 7,
+          "PlainBuild": false,
+          "DetailSampleDist": 2,
+          "DetailSampleMaxError": 0.5,
+          "DetailSpikeSnap": 1,
+          "DetailBladeArea": 0.02,
+          "RetriangulateDetail": true,
+          "DetailSeedSpacing": 0,
+          "ErodedPinholeFill": 0,
+          "PinholeFill": 4,
+          "ContourEdgeMax": 0,
+          "DetailBandMargin": 2,
+          "MinIndoorStripWidth": 0,
+          "IndoorOpenCells": 0,
+          "IndoorFloorDrop": 0.3,
+          "LedgeMinDrop": 0.35,
+          "RailingReach": 5,
+          "OffMeshLinks": [],
+          "ErodeStepBreak": 0,
+          "IndoorIslandArea": 0,
+          "IndoorStepCut": 0,
+          "MinRegionCells": 6,
+          "BlockDoodads": true,
+          "IndoorErodeCells": 0,
+          "DebugForceArea": 0,
+          "DebugSpanTally": false
+        },
+        "metrics": {
+          "polygons": 14698,
+          "tiles": 1,
+          "regionsSplit": 8406,
+          "pinholesFilled": 27,
+          "detailRetriangulated": 11646,
+          "detailSpikes": 116,
+          "detailBlades": 1,
+          "detailClamped": 79,
+          "longDetailEdges": 0,
+          "regionSplitGrid": 0,
+          "regionsUnwound": 0,
+          "tinyRegionCells": 17,
+          "areaIslandCellsRestored": 1,
+          "indoorCells": 169341,
+          "trimCells": 23410,
+          "roadCells": 70903,
+          "railingCells": 0,
+          "asymmetricLinks": 0,
+          "doodadSpansReblocked": 6571,
+          "sourceSurfaceVertices": 226141,
+          "planarDetailVerticesRemoved": 2672,
+          "sourceWmoCapsBlocked": 55608,
+          "solidWallCells": 23410,
+          "raisedWmoCapsBlocked": 8193,
+          "swimPolygons": 552,
+          "submergedPolygons": 781,
+          "hazardPolygons": 0,
+          "waterlineCuts": 5801,
+          "coarserContours": 0,
+          "monotoneTiles": 0,
+          "splitGaveUp": 0,
+          "swimBuildFellBack": 0,
+          "fallbackWhy": "",
+          "stages": {
+            "rasterize": 7083.0945,
+            "build": 16694.492000000002,
+            "detour": 32.3396
+          }
+        }
+      },
+      "zipSha256": "2ab1c1ec59de6324c89f9790efa0e69d9e7bfde44d8916d7bc0643b46b92fdc8",
+      "tileSha256": "9d23352992cc70ff8fa87ba3843b32dda3c4d55da33a4e4c2cb6b6a4fbe3c996",
+      "regression": {
+        "exit": 0,
+        "scope": "captured Abbey source only",
+        "fixtureSha256": "c7e26533f4e731500dcfd60558596ca5cf6b8babd22f86838bbcd5ae98dcff55",
+        "candidateSnapshotSha256": "98555175e71c550fdea8b992c199e7cccf083b4ee378c6598a3b0a3b082dcd01",
+        "points": [
+          {
+            "name": "shared contour floor gap",
+            "x": -8905.072,
+            "y": -203.571,
+            "floor": 81.940186,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.206856
+            ],
+            "candidateHeights": [
+              82.206856
+            ],
+            "passed": true
+          },
+          {
+            "name": "upper stair corner",
+            "x": -8909.551,
+            "y": -202.05,
+            "floor": 96.508835,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              86.40113450876295,
+              96.53103398445879
+            ],
+            "candidateHeights": [
+              96.53103398445879
+            ],
+            "passed": true
+          },
+          {
+            "name": "opposite stair corner",
+            "x": -8874.601,
+            "y": -181.35,
+            "floor": 97.68831,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.21069965750516,
+              97.95825660978511
+            ],
+            "candidateHeights": [
+              82.21070554166316,
+              97.95825660978511
+            ],
+            "passed": true
+          },
+          {
+            "name": "circular floor threshold",
+            "x": -8892.3755,
+            "y": -179.025,
+            "floor": 82.07549,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.25465827056597
+            ],
+            "candidateHeights": [
+              82.32424771641702
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported indoor stair hole",
+            "x": -8902.266,
+            "y": -186,
+            "floor": 81.9397,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              97.94700722210872
+            ],
+            "candidateHeights": [
+              82.31353604066075,
+              97.94700722210872
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported outside stair hole",
+            "x": -8915.025,
+            "y": -138.825,
+            "floor": 81.276,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              81.54296136516268
+            ],
+            "passed": true
+          }
+        ],
+        "negativePoints": [
+          {
+            "name": "central wall cap",
+            "x": -8891.199,
+            "y": -178.66733,
+            "heightBand": [
+              82.6,
+              83.3
+            ],
+            "baselineHeights": [
+              99.07992,
+              82.88026,
+              82.88026,
+              82.88026
+            ],
+            "candidateHeights": [
+              99.07992
+            ],
+            "passed": true
+          },
+          {
+            "name": "window bevel",
+            "x": -8903.466,
+            "y": -212.00067,
+            "heightBand": [
+              82.5,
+              83.3
+            ],
+            "baselineHeights": [
+              99.96266357487941,
+              82.680336,
+              82.680336
+            ],
+            "candidateHeights": [
+              99.96266357487941
+            ],
+            "passed": true
+          },
+          {
+            "name": "stair trim",
+            "x": -8911.553,
+            "y": -198.946,
+            "heightBand": [
+              86.15,
+              87.0
+            ],
+            "baselineHeights": [
+              86.32083571206351
+            ],
+            "candidateHeights": [],
+            "passed": true
+          }
+        ],
+        "flatWalkway": {
+          "samples": 1536,
+          "changes": [],
+          "largestDelta": 0
+        }
+      }
+    },
+    "wasm": {
+      "engine": {
+        "pipeline": "explorer-recast-2026.3.13",
+        "milliseconds": 87379.2738,
+        "settings": {
+          "TileSizeCells": 2000,
+          "CellSize": 0.26666665,
+          "CellHeight": 0.26666665,
+          "AgentHeight": 2.1333332,
+          "AgentRadius": 0.5333333,
+          "AgentMaxClimb": 1.0666666,
+          "SwimDepth": 1.2188,
+          "SwimConnectClimb": 2,
+          "SwimSurfaceMargin": 0.3,
+          "SwimShoreBand": 3,
+          "BuriedMargin": 0,
+          "RasterizeLiquid": false,
+          "SubmergedSlack": 0.5,
+          "AgentMaxSlope": 50,
+          "MinRegionArea": 2,
+          "MergeRegionArea": 8,
+          "EdgeMaxLen": 12,
+          "EdgeMaxError": 1.3,
+          "VertsPerPoly": 6,
+          "RegionSplit": 7,
+          "PlainBuild": false,
+          "DetailSampleDist": 2,
+          "DetailSampleMaxError": 0.5,
+          "DetailSpikeSnap": 1,
+          "DetailBladeArea": 0.02,
+          "RetriangulateDetail": true,
+          "DetailSeedSpacing": 0,
+          "ErodedPinholeFill": 0,
+          "PinholeFill": 4,
+          "ContourEdgeMax": 0,
+          "DetailBandMargin": 2,
+          "MinIndoorStripWidth": 0,
+          "IndoorOpenCells": 0,
+          "IndoorFloorDrop": 0.3,
+          "LedgeMinDrop": 0.35,
+          "RailingReach": 5,
+          "OffMeshLinks": [],
+          "ErodeStepBreak": 0,
+          "IndoorIslandArea": 0,
+          "IndoorStepCut": 0,
+          "MinRegionCells": 6,
+          "BlockDoodads": true,
+          "IndoorErodeCells": 0,
+          "DebugForceArea": 0,
+          "DebugSpanTally": false
+        },
+        "metrics": {
+          "polygons": 14696,
+          "tiles": 1,
+          "regionsSplit": 8406,
+          "pinholesFilled": 27,
+          "detailRetriangulated": 11647,
+          "detailSpikes": 116,
+          "detailBlades": 1,
+          "detailClamped": 79,
+          "longDetailEdges": 0,
+          "regionSplitGrid": 0,
+          "regionsUnwound": 0,
+          "tinyRegionCells": 17,
+          "areaIslandCellsRestored": 1,
+          "indoorCells": 169341,
+          "trimCells": 23410,
+          "roadCells": 70903,
+          "railingCells": 0,
+          "asymmetricLinks": 0,
+          "doodadSpansReblocked": 6571,
+          "sourceSurfaceVertices": 226129,
+          "planarDetailVerticesRemoved": 2672,
+          "sourceWmoCapsBlocked": 55610,
+          "solidWallCells": 23410,
+          "raisedWmoCapsBlocked": 8193,
+          "swimPolygons": 551,
+          "submergedPolygons": 779,
+          "hazardPolygons": 0,
+          "waterlineCuts": 5823,
+          "coarserContours": 0,
+          "monotoneTiles": 0,
+          "splitGaveUp": 0,
+          "swimBuildFellBack": 0,
+          "fallbackWhy": "",
+          "stages": {
+            "rasterize": 45197.8708,
+            "build": 42075.3037,
+            "detour": 106.0993
+          }
+        }
+      },
+      "zipSha256": "3d20d0c9ca349afd0de5cccad4c3c6fa7da3bcef29effe0d4cc72bc20a18a8f4",
+      "tileSha256": "b9183812146988de264afb614fe85e82ff284009b4b9409a947b130bc0eb121b",
+      "regression": {
+        "exit": 0,
+        "scope": "captured Abbey source only",
+        "fixtureSha256": "c7e26533f4e731500dcfd60558596ca5cf6b8babd22f86838bbcd5ae98dcff55",
+        "candidateSnapshotSha256": "77997e02180fcf7bc50b3d3a92df38cf0da796fabaea44ef76ecccba1ea47960",
+        "points": [
+          {
+            "name": "shared contour floor gap",
+            "x": -8905.072,
+            "y": -203.571,
+            "floor": 81.940186,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.206856
+            ],
+            "candidateHeights": [
+              82.206856
+            ],
+            "passed": true
+          },
+          {
+            "name": "upper stair corner",
+            "x": -8909.551,
+            "y": -202.05,
+            "floor": 96.508835,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              86.40113450876295,
+              96.53103398445879
+            ],
+            "candidateHeights": [
+              96.53103398445879
+            ],
+            "passed": true
+          },
+          {
+            "name": "opposite stair corner",
+            "x": -8874.601,
+            "y": -181.35,
+            "floor": 97.68831,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.21069965750516,
+              97.95825660978511
+            ],
+            "candidateHeights": [
+              82.21070554166316,
+              97.95825660978511
+            ],
+            "passed": true
+          },
+          {
+            "name": "circular floor threshold",
+            "x": -8892.3755,
+            "y": -179.025,
+            "floor": 82.07549,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.25465827056597
+            ],
+            "candidateHeights": [
+              82.32424771641702
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported indoor stair hole",
+            "x": -8902.266,
+            "y": -186,
+            "floor": 81.9397,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              97.94700722210872
+            ],
+            "candidateHeights": [
+              82.31353604066075,
+              97.94700722210872
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported outside stair hole",
+            "x": -8915.025,
+            "y": -138.825,
+            "floor": 81.276,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              81.54296136516268
+            ],
+            "passed": true
+          }
+        ],
+        "negativePoints": [
+          {
+            "name": "central wall cap",
+            "x": -8891.199,
+            "y": -178.66733,
+            "heightBand": [
+              82.6,
+              83.3
+            ],
+            "baselineHeights": [
+              99.07992,
+              82.88026,
+              82.88026,
+              82.88026
+            ],
+            "candidateHeights": [
+              99.07992
+            ],
+            "passed": true
+          },
+          {
+            "name": "window bevel",
+            "x": -8903.466,
+            "y": -212.00067,
+            "heightBand": [
+              82.5,
+              83.3
+            ],
+            "baselineHeights": [
+              99.96266357487941,
+              82.680336,
+              82.680336
+            ],
+            "candidateHeights": [
+              99.96266357487941
+            ],
+            "passed": true
+          },
+          {
+            "name": "stair trim",
+            "x": -8911.553,
+            "y": -198.946,
+            "heightBand": [
+              86.15,
+              87.0
+            ],
+            "baselineHeights": [
+              86.32083571206351
+            ],
+            "candidateHeights": [],
+            "passed": true
+          }
+        ],
+        "flatWalkway": {
+          "samples": 1536,
+          "changes": [],
+          "largestDelta": 0
+        }
+      }
+    }
+  },
+  "centralDiskCore": {
+    "samples": 1225,
+    "failures": [],
+    "maxDeviationFromSourcePlusClearance": 0.0003166500000020278,
+    "expected": 81.84431665
+  },
+  "builds": {
+    "browserTypecheckAndPublishExit": 0,
+    "nativePublishExit": 0,
+    "checkerBuildExit": 0
+  },
+  "recordedFailures": {
+    "strictBackendComparison": {
+      "exit": 1,
+      "reason": "Strict ordered vertex-count comparison differs; full native/browser tiles differ by 344 bytes. The captured previous browser tile versus previous native replay also differs by 344 bytes. Targeted coverage and shape checks pass independently on both.",
+      "logSha256": "c1008cf058fb033ee29b22a150a1d596151f3e395e20b79281fde092b6bae109"
+    },
+    "fullTileSeams": {
+      "exit": 1,
+      "baselineAlsoFails": true,
+      "position": [
+        -8533.359,
+        -190.10735,
+        84.1074
+      ],
+      "difference": 0.015881231623893655,
+      "newFailuresComparedWithBaseline": 0,
+      "scope": "Outside Abbey at tile boundary; scoped Abbey seam checks pass."
+    },
+    "broadFloorExperiments": "Unconditional broad-footprint protection changed the upper landing and was rejected. Final exemption is restricted to terrain exposed through a nearby WMO footprint gap.",
+    "wideCentralFloorControl": "Wide baseline sampling includes changing trim/clearance boundaries; 41 samples change. A separate interior flat-floor check passes 1225 source-height samples."
+  },
+  "limits": [
+    "Fixes are verified against the full captured tile and named Abbey locations; no whole-world perfection claim.",
+    "Previously saved tiles are not rewritten by the software update."
+  ],
+  "centralDiskCoreByBackend": {
+    "native": {
+      "samples": 1225,
+      "failures": [],
+      "maxDeviationFromSourcePlusClearance": 0.0003166500000020278,
+      "expected": 81.84431665
+    },
+    "wasm": {
+      "samples": 1225,
+      "failures": [],
+      "maxDeviationFromSourcePlusClearance": 0.0003166500000020278,
+      "expected": 81.84431665
+    }
+  }
+}

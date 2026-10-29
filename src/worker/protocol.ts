@@ -10,6 +10,7 @@ import type { ModelData, ObjectKind, Placement } from '../explorer/objects';
 import type { CharacterModel, FarTile, InstanceMap, LoadedTexture, MapListing, NearTile, TileTexture } from '../explorer/world';
 import type { CharacterOutfit, CharacterRace } from '../explorer/spawns';
 import type { Image } from '../formats/blp';
+import type { MeshInput, MeshTile } from '../mesh/types';
 
 export type SourceInit =
 	| { kind: 'handle'; handle: FileSystemDirectoryHandle }
@@ -19,6 +20,8 @@ export type SourceInit =
 
 /** Methods the storage worker exposes; every call is async across the worker boundary. */
 export interface StorageApi {
+	meshTiles(mapId: number): MeshTile[];
+	meshSource(tile: MeshTile, preview?: boolean): MeshInput;
 	/** Where the page is served from, for files beside it (the worker's own URL is under assets/). */
 	setPageUrl(url: string): void;
 	setSource(source: SourceInit): ProductInfo[];

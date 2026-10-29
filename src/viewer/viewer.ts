@@ -1,7 +1,13 @@
+import { floorPaintFaces } from '../mesh/paint-surface';
+import { paintMaterial } from '../mesh/paint-material';
+import { MeshBVH } from 'three-mesh-bvh';
+import { overlayMaterial, overlayCorners } from '../mesh/overlay-material';
+import type { Stroke, Link } from '../mesh/authoring';
 import * as THREE from 'three';
 import { SunLight } from 'three/addons/lights/SunLight.js';
 import { TILE_SIZE } from '../formats/adt';
 import { KNOWN_MAPS } from '../explorer/maps';
+import { meshWorldPoint, type MeshGeometry, type MeshPoint } from '../mesh/types';
 import type { FarTile, InstanceMap, MapCategory } from '../explorer/world';
 import type { AsyncStorageApi } from '../worker/protocol';
 import type { AreaInfo } from '../explorer/lighting';
@@ -362,6 +368,214 @@ function insideTrigger(t: AreaTrigger, x: number, y: number, z: number): boolean
 }
 
 export class Viewer {
+    private meshEditPointer: ((phase: 'down'|'move'|'up', point: MeshPoint|null)=>void)|null = null;
+    private readonly meshEditMarks = new THREE.Group();
+    private meshEditPickMode: 'ground'|'surface' = 'ground';
+    private meshEditConsumedClick=false;
+    private meshLinkCursor:THREE.Mesh|null=null;
+    private meshEditCursor: THREE.LineLoop | null = null;
+    private readonly meshPaintCache = new Map<string,{positions:number[];colors:number[];brushes:number[];bands:number[]}>();
+    private readonly meshPaintBatches = new Map<string,THREE.Mesh>();
+
+    setMeshEditing(handler: ((phase: 'down'|'move'|'up', point: MeshPoint|null)=>void)|null, pickMode:'ground'|'surface'='ground'): void {
+        this.meshEditPointer=handler;this.meshEditPickMode=pickMode;
+        if(this.meshLinkCursor&&(!handler||pickMode!=='surface'))this.meshLinkCursor.visible=false;
+        if(handler&&document.pointerLockElement===this.canvas)document.exitPointerLock();
+        if(!handler)this.showMeshBrush(null,1,0);
+    }
+    private meshEditPick(e: PointerEvent): MeshPoint|null {
+        if(!this.terrain||!this.objects)return null;
+        const box=this.canvas.getBoundingClientRect();
+        this.raycaster.setFromCamera(new THREE.Vector2((e.clientX-box.left)/box.width*2-1,1-(e.clientY-box.top)/box.height*2),this.camera);
+        this.raycaster.far=600;
+        const visible=(hit:THREE.Intersection)=>{
+            for(let node:THREE.Object3D|null=hit.object;node;node=node.parent)if(!node.visible)return false;
+            return true;
+        };
+        const surface=this.meshEditPickMode==='surface';
+        const object=surface?this.raycaster.intersectObject(this.objects.group,true).find(visible):this.objects.castBuildings(this.raycaster.ray.origin,this.raycaster.ray.direction,600,false);
+        const terrain=this.raycaster.intersectObject(this.terrain.group,true).find(hit=>visible(hit)&&(surface||!!(hit.object as THREE.Mesh).geometry?.getAttribute('skirt')));
+        if(!surface&&object&&object.distance<(terrain?.distance??Infinity)&&'normal' in object&&object.normal&&Math.abs(object.normal.y)<.5)return null;
+        const distance=Math.min(object?.distance??Infinity,terrain?.distance??Infinity);
+        if(!Number.isFinite(distance))return null;
+        const position=this.raycaster.ray.at(distance,new THREE.Vector3());
+        const native=this.wowPosition(position);return native?{...native,z:position.y}:null;
+    }
+    showMeshBrush(point: MeshPoint|null,radius:number,color:number): void {
+        if(!this.meshEditCursor){
+            const vertices=[];for(let i=0;i<64;i++){const a=i/64*Math.PI*2;vertices.push(Math.cos(a),0,Math.sin(a));}
+            this.meshEditCursor=new THREE.LineLoop(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(vertices,3)),new THREE.LineBasicMaterial({color,depthTest:false}));
+            this.meshEditCursor.renderOrder=20;this.scene.add(this.meshEditCursor);
+        }
+        const placement=point?this.continents.find(c=>c.mapId===point.mapId):null;
+        this.meshEditCursor.visible=!!placement&&!!point;
+        if(placement&&point){
+            const vertices:number[]=[],down=new THREE.Vector3(0,-1,0),reach=.4;
+            for(let i=0;i<16;i++){
+                const angle=i/16*Math.PI*2;
+                const v=new THREE.Vector3(...meshWorldPoint(point.x+Math.cos(angle)*radius,point.y+Math.sin(angle)*radius,point.z,placement.offsetX,placement.offsetY));
+                const terrain=this.terrain.heightAt(v.x,v.z),origin=new THREE.Vector3(v.x,point.z+reach,v.z);
+                const hit=this.objects.castBuildings(origin,down,reach*2,false);
+                const candidates=[terrain,hit?origin.y-hit.distance:NaN].filter(h=>Number.isFinite(h)&&Math.abs(h-point.z)<=reach);
+                v.y=(candidates.sort((a,b)=>Math.abs(a-point.z)-Math.abs(b-point.z))[0]??point.z)+.05;
+                vertices.push(v.x,v.y,v.z);
+            }
+            this.meshEditCursor.geometry.dispose();this.meshEditCursor.geometry=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+            this.meshEditCursor.position.set(0,0,0);this.meshEditCursor.scale.setScalar(1);
+            const material=this.meshEditCursor.material as THREE.LineBasicMaterial;material.color.setHex(color);material.depthTest=true;
+        }
+    }
+    showMeshConnectionCursor(point:MeshPoint|null,endpoint:'A'|'B'):void {
+        this.showMeshBrush(null,1,0);
+        if(!this.meshLinkCursor){this.meshLinkCursor=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),new THREE.MeshBasicMaterial({color:0x38bdf8,depthTest:false}));this.meshLinkCursor.renderOrder=22;this.scene.add(this.meshLinkCursor);}
+        const placement=point?this.continents.find(c=>c.mapId===point.mapId):null;
+        this.meshLinkCursor.visible=!!point&&!!placement;
+        if(point&&placement)this.meshLinkCursor.position.set(...meshWorldPoint(point.x,point.y,point.z,placement.offsetX,placement.offsetY));
+        (this.meshLinkCursor.material as THREE.MeshBasicMaterial).color.setHex(endpoint==='A'?0x38bdf8:0xffa52f);
+    }
+    showMeshEdits(mapId:number,strokes:readonly Stroke[],links:readonly Link[],pending?:MeshPoint|null,selectedId?:number|null): void {
+        for(const child of [...this.meshEditMarks.children]){if(child.userData.paintBatch)continue;this.meshEditMarks.remove(child);const line=child as THREE.Line;if(!(child as THREE.Sprite).isSprite)line.geometry.dispose();const material=line.material as THREE.Material&{map?:THREE.Texture};material.map?.dispose();material.dispose();}
+        if(!this.meshEditMarks.parent)this.scene.add(this.meshEditMarks);
+        const placement=this.continents.find(c=>c.mapId===mapId);if(!placement)return;
+        const world=(x:number,y:number,z:number)=>new THREE.Vector3(...meshWorldPoint(x,y,z,placement.offsetX,placement.offsetY));
+        const line=(points:THREE.Vector3[],color:number)=>{const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:true,opacity:.85,depthTest:false}));l.renderOrder=19;this.meshEditMarks.add(l);};
+        // Copy source collision faces, then clip coverage per fragment. Stair treads
+        // stay treads: no sampled grid, triangulated height ramp or floating dabs.
+        const wanted=new Set<string>();
+        for(let start=0;start<strokes.length;start+=32){
+            const part=strokes.slice(start,start+32),batchKey=mapId+':'+start+':'+JSON.stringify(part);wanted.add(batchKey);
+            const existing=this.meshPaintBatches.get(batchKey);if(existing)continue;
+            const positions:number[]=[],colors:number[]=[],brushes:number[]=[],bands:number[]=[];
+            for(const stroke of [...part].reverse()){
+                const cacheKey=mapId+':'+JSON.stringify(stroke);let data=this.meshPaintCache.get(cacheKey);
+                if(!data){
+                    const center=new THREE.Vector3(...meshWorldPoint(stroke.X,stroke.Y,stroke.Z,placement.offsetX,placement.offsetY));
+                    const bounds=new THREE.Box3(center.clone().sub(new THREE.Vector3(stroke.Radius,stroke.HeightBand,stroke.Radius)),center.clone().add(new THREE.Vector3(stroke.Radius,stroke.HeightBand,stroke.Radius)));
+                    const faces:THREE.Triangle[]=[];
+                    const visit=(a:THREE.Vector3,b:THREE.Vector3,c:THREE.Vector3)=>faces.push(new THREE.Triangle(a,b,c));
+            this.objects.paintSurfaces(bounds,visit);
+            this.terrain.group.traverse(object=>{
+                const mesh=object as THREE.Mesh,geometry=mesh.geometry;
+                if(!geometry?.getAttribute('skirt'))return;
+                for(let node:THREE.Object3D|null=mesh;node;node=node.parent)if(!node.visible)return;
+                mesh.updateWorldMatrix(true,false);if(!geometry.boundingBox)geometry.computeBoundingBox();
+                if(!geometry.boundingBox!.clone().applyMatrix4(mesh.matrixWorld).intersectsBox(bounds))return;
+                geometry.boundsTree??=new MeshBVH(geometry,{indirect:true});
+                const local=bounds.clone().applyMatrix4(mesh.matrixWorld.clone().invert());
+                geometry.boundsTree.shapecast({intersectsBounds:box=>box.intersectsBox(local),intersectsTriangle:triangle=>{
+                    const a=triangle.a.clone().applyMatrix4(mesh.matrixWorld),b=triangle.b.clone().applyMatrix4(mesh.matrixWorld),c=triangle.c.clone().applyMatrix4(mesh.matrixWorld);
+                    if(bounds.intersectsTriangle(new THREE.Triangle(a,b,c)))visit(a,b,c);return false;
+                }});
+            });
+                    const values=floorPaintFaces(faces,center,stroke.Radius,stroke.HeightBand),color=new THREE.Color([0xe9b949,0x49c994,0xef633b,0xf2338c,0x55bbee][stroke.Kind]);
+                    data={positions:values,colors:[],brushes:[],bands:[]};
+                    for(let i=0;i<values.length;i+=3){data.colors.push(color.r,color.g,color.b);data.brushes.push(center.x,center.z,stroke.Radius);data.bands.push(center.y,stroke.HeightBand);}
+                    if(values.length)this.meshPaintCache.set(cacheKey,data);
+                }
+                for(const [to,from] of [[positions,data.positions],[colors,data.colors],[brushes,data.brushes],[bands,data.bands]])for(const n of from)to.push(n);
+            }
+            if(positions.length){
+                const geometry=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(positions,3)).setAttribute('color',new THREE.Float32BufferAttribute(colors,3)).setAttribute('paintBrush',new THREE.Float32BufferAttribute(brushes,3)).setAttribute('paintBand',new THREE.Float32BufferAttribute(bands,2));
+                const paint=new THREE.Mesh(geometry,paintMaterial());paint.userData.paintBatch=true;paint.renderOrder=18-start*.000001;
+                this.meshPaintBatches.set(batchKey,paint);this.meshEditMarks.add(paint);
+            }
+        }
+        for(const [key,mesh] of this.meshPaintBatches)if(!wanted.has(key)){this.meshEditMarks.remove(mesh);mesh.geometry.dispose();(mesh.material as THREE.Material).dispose();this.meshPaintBatches.delete(key);}
+        if(this.meshPaintCache.size>12000)this.meshPaintCache.clear();
+        const marker=(point:THREE.Vector3,label:'A'|'B',selected:boolean)=>{
+            const color=label==='A'?0x38bdf8:0xffa52f;
+            const mesh=new THREE.Mesh(new THREE.SphereGeometry(selected ? .3 : .22,12,8),new THREE.MeshBasicMaterial({color,depthTest:false}));mesh.position.copy(point);mesh.renderOrder=21;this.meshEditMarks.add(mesh);
+            const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const context=canvas.getContext('2d')!;
+            context.fillStyle='#'+color.toString(16).padStart(6,'0');context.beginPath();context.arc(32,32,27,0,Math.PI*2);context.fill();context.fillStyle='#10202a';context.font='bold 36px sans-serif';context.textAlign='center';context.textBaseline='middle';context.fillText(label,32,34);
+            const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(canvas),depthTest:false}));sprite.position.copy(point).add(new THREE.Vector3(0,.65,0));sprite.scale.set(.65,.65,1);sprite.renderOrder=22;this.meshEditMarks.add(sprite);
+        };
+        for(const l of links){
+            const a=world(l.Ax,l.Ay,l.Az),b=world(l.Bx,l.By,l.Bz),selected=l.UserId===selectedId,color=selected?0xffffff:0xb4c5d6;
+            line([a,b],color);marker(a,'A',selected);marker(b,'B',selected);
+            const delta=a.clone().sub(b).normalize(),side=new THREE.Vector3(-delta.z,0,delta.x).multiplyScalar(.35);
+            line([b.clone().addScaledVector(delta,.8).add(side),b,b.clone().addScaledVector(delta,.8).sub(side)],color);
+            if(l.Bidirectional)line([a.clone().addScaledVector(delta,-.8).add(side),a,a.clone().addScaledVector(delta,-.8).sub(side)],color);
+        }
+        if(pending)marker(world(pending.x,pending.y,pending.z),'A',true);
+
+    }
+    private meshPreview: THREE.Mesh | null = null;
+    private meshPreviewRequest = 0;
+    private meshTiles = new Map<string, { mesh: THREE.Mesh; flags: boolean[] | null }>();
+    private meshUnreachable: boolean[] | null = null;
+    private meshReachabilityView: 'all' | 'hide' | 'only' = 'all';
+    setMeshReachabilityView(mode: 'all' | 'hide' | 'only'): void {
+        this.meshReachabilityView = mode;
+        if (this.meshPreview) this.filterMesh(this.meshPreview, this.meshUnreachable, mode);
+        for (const tile of this.meshTiles.values()) this.filterMesh(tile.mesh, tile.flags, mode);
+    }
+    private filterMesh(mesh: THREE.Mesh, flags: boolean[] | null, mode: 'all' | 'hide' | 'only'): void {
+        if (!flags || mode === 'all') { mesh.geometry.setIndex(null); return; }
+        const indices: number[] = [];
+        for (let t = 0; t < flags.length; t++) {
+            if (mode === 'only' ? flags[t] : !flags[t]) indices.push(t * 3, t * 3 + 1, t * 3 + 2);
+        }
+        mesh.geometry.setIndex(indices);
+    }
+    meshPosition(): MeshPoint | null {
+        const at = this.wowPosition();
+        return at ? { ...at, z: this.camera.position.y } : null;
+    }
+    clearMeshPreview(): void {
+        this.meshPreviewRequest++;
+        for (const tile of this.meshTiles.values()) {
+            this.scene.remove(tile.mesh); tile.mesh.geometry.dispose();
+            (tile.mesh.material as THREE.Material).dispose();
+        }
+        this.meshTiles.clear();
+        if (!this.meshPreview) return;
+        this.scene.remove(this.meshPreview);
+        this.meshPreview.geometry.dispose();
+        (this.meshPreview.material as THREE.Material).dispose();
+        this.meshPreview = null;
+        this.meshUnreachable = null;
+    }
+    setMeshPreviewWireframe(wireframe: boolean): void {
+        for (const tile of this.meshTiles.values()) (tile.mesh.material as THREE.ShaderMaterial).uniforms.wireOnly.value = wireframe ? 1 : 0;
+        if (this.meshPreview) (this.meshPreview.material as THREE.ShaderMaterial).uniforms.wireOnly.value = wireframe ? 1 : 0;
+    }
+    async showMeshPreview(data: MeshGeometry, wireframe: boolean, tileKey?: string): Promise<void> {
+        const request = tileKey ? this.meshPreviewRequest : ++this.meshPreviewRequest;
+        const placement = await this.placementFor(data.mapId);
+        if (request !== this.meshPreviewRequest) return;
+        if (!placement) throw new Error('This mesh map is not available in the open Explorer product.');
+        if (data.positions.length !== data.triangles * 9 || data.classes.length !== data.triangles)
+            throw new Error('Invalid mesh preview geometry.');
+        if (data.unreachable && data.unreachable.length !== data.triangles) throw new Error('Invalid reachability preview flags.');
+        const positions = new Float32Array(data.positions.length);
+        const colors = new Uint8Array(data.positions.length);
+        const palette: Record<number, number> = data.source === 'navmesh'
+            ? { 12: 0xe9b949, 11: 0x49c994, 10: 0x348bd1, 9: 0x348bd1, 8: 0xef633b, 7: 0x91b73a, 6: 0x367ac4, 5: 0xbd4ca9, 4: 0xf2338c }
+            : { 0: 0x70c7ad, 1: 0x83b8eb, 2: 0xe6ad65 };
+        for (let i = 0; i < data.triangles; i++) {
+            const color = new THREE.Color(data.unreachable?.[i] ? 0xf2338c : palette[data.classes[i]] ?? 0xe4d4ec);
+            for (let k = 0; k < 3; k++) {
+                const v = i * 9 + k * 3;
+                const p = meshWorldPoint(data.positions[v], data.positions[v + 1], data.positions[v + 2], placement.offsetX, placement.offsetY);
+                if (!p.every(Number.isFinite)) throw new Error('Non-finite mesh preview coordinate.');
+                positions.set(p, v); colors.set([Math.round(color.r * 255), Math.round(color.g * 255), Math.round(color.b * 255)], v);
+            }
+        }
+        if (!tileKey) this.clearMeshPreview();
+        else {
+            const old = this.meshTiles.get(tileKey);
+            if (old) { this.scene.remove(old.mesh); old.mesh.geometry.dispose(); (old.mesh.material as THREE.Material).dispose(); }
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+        geometry.setAttribute('meshCorner', new THREE.BufferAttribute(overlayCorners(data.triangles), 2, true));
+        const mesh = new THREE.Mesh(geometry, overlayMaterial(wireframe));
+        this.filterMesh(mesh, data.unreachable ?? null, this.meshReachabilityView);
+        mesh.renderOrder = 6; geometry.computeBoundingSphere(); this.scene.add(mesh);
+        if (tileKey) this.meshTiles.set(tileKey, { mesh, flags: data.unreachable ?? null });
+        else { this.meshPreview = mesh; this.meshUnreachable = data.unreachable ?? null; }
+    }
 	readonly renderer: THREE.WebGLRenderer;
 	private readonly scene = new THREE.Scene();
 	private readonly camera: THREE.PerspectiveCamera;
@@ -525,7 +739,7 @@ export class Viewer {
 		// it, else a logarithmic one. The logarithmic one writes each pixel's depth from its shader,
 		// so nothing hidden can be skipped before it's shaded; the reversed one lets the GPU do that.
 		const reversed = supportsClipControl();
-		this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, reversedDepthBuffer: reversed, logarithmicDepthBuffer: !reversed });
+		this.renderer = new THREE.WebGLRenderer({ canvas, stencil:true, antialias: false, reversedDepthBuffer: reversed, logarithmicDepthBuffer: !reversed });
 		this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 		// Checking a new shader for errors asks the GPU process and waits for the answer, a stall
 		// for each one; while developing, the errors are worth it.
@@ -575,14 +789,21 @@ export class Viewer {
 		this.camera.add(this.torch);
 		this.scene.add(this.camera);
 
+		canvas.addEventListener('webglcontextlost',()=>{perf.log('webgl','Viewer context lost');this.onNotice('Graphics context lost; waiting for recovery.');});
+		canvas.addEventListener('webglcontextrestored',()=>{perf.log('webgl','Viewer context restored');this.onNotice('Graphics context restored.');});
 		window.addEventListener('resize', () => this.resize());
 		window.addEventListener('keydown', (e) => this.onKey(e));
 		window.addEventListener('keyup', (e) => {
 			if (e.code === 'KeyT') this.stopTime();
 		});
 		window.addEventListener('blur', () => this.stopTime());
+		let lastMeshPick=0;
+		canvas.addEventListener('pointerdown',e=>{this.meshEditConsumedClick=false;if(!this.meshEditPointer||e.button!==0)return;this.meshEditConsumedClick=true;e.preventDefault();e.stopImmediatePropagation();this.meshEditPointer('down',this.meshEditPick(e));},true);
+		canvas.addEventListener('pointermove',e=>{if(!this.meshEditPointer||performance.now()-lastMeshPick<50)return;lastMeshPick=performance.now();this.meshEditPointer('move',this.meshEditPick(e));});
+		window.addEventListener('pointerup',()=>this.meshEditPointer?.('up',null));
+		window.addEventListener('blur',()=>this.meshEditPointer?.('up',null));
 		canvas.addEventListener('mousedown', () => (this.pressedWalking = this.walker.active));
-		canvas.addEventListener('click', (e) => this.onClick(e));
+		canvas.addEventListener('click', (e) => {if(this.meshEditConsumedClick){this.meshEditConsumedClick=false;e.preventDefault();e.stopImmediatePropagation();return;}this.onClick(e);});
 		canvas.addEventListener('mousemove', (e) => this.onHover(e));
 		this.resize();
 	}
@@ -605,6 +826,7 @@ export class Viewer {
 
 	/** Clicking a creature or object opens its info (releasing the mouse); elsewhere captures the mouse. */
 	private onClick(e: MouseEvent): void {
+		if(this.meshEditPointer)return;
 		// Walking, a click selects what's under the mouse and never captures it (holding the right
 		// button does); a drag that turned the camera isn't a click.
 		if (this.walker.active) {
@@ -623,6 +845,7 @@ export class Viewer {
 	}
 
 	private onHover(e: MouseEvent): void {
+		if(this.meshEditPointer){this.canvas.style.cursor='crosshair';return;}
 		if (this.controls.locked || performance.now() - this.lastHover < 80) return;
 		this.lastHover = performance.now();
 		this.canvas.style.cursor = this.pickAt(e) ? 'pointer' : '';

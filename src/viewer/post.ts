@@ -1,3 +1,4 @@
+import { createSceneTarget } from './sceneTarget';
 import * as THREE from 'three';
 import { perf } from './perf';
 import type { SunLight } from 'three/addons/lights/SunLight.js';
@@ -312,13 +313,7 @@ export class PostPass {
 
 	constructor(renderer: THREE.WebGLRenderer, storage: AsyncStorageApi) {
 		this.grading = new ColorGrading(storage);
-		this.target = new THREE.WebGLRenderTarget(1, 1, {
-			type: THREE.HalfFloatType,
-			samples: Math.min(4, renderer.capabilities.maxSamples),
-			depthBuffer: true,
-			// Float depth: what a reversed depth buffer needs to be precise from near to far.
-			depthTexture: new THREE.DepthTexture(1, 1, THREE.FloatType),
-		});
+		this.target = createSceneTarget(renderer);
 		this.uniforms.uScene.value = this.target.texture;
 		this.uniforms.uDepth.value = this.target.depthTexture;
 		this.uniforms.uLut.value = this.grading.texture;

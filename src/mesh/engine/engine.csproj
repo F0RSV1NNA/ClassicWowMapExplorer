@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <WasmEnableSIMD>true</WasmEnableSIMD>
+    <!-- Compile CPU-heavy Recast code to WASM rather than interpreting its IL. -->
+    <RunAOTCompilation Condition="'$(Configuration)' == 'Release'">true</RunAOTCompilation>
+    <!-- Dense full-detail tiles can exceed the SDK's 2 GiB worker ceiling. -->
+    <EmccMaximumHeapSize>4294967296</EmccMaximumHeapSize>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DotRecast.Core" Version="2026.3.1" />
+    <PackageReference Include="DotRecast.Recast" Version="2026.3.1" />
+    <PackageReference Include="DotRecast.Detour" Version="2026.3.1" />
+    <EmbeddedResource Include="tilesets.csv" />
+  </ItemGroup>
+</Project>

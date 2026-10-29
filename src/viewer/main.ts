@@ -7,6 +7,7 @@ import type { MapCategory, MapListing } from '../explorer/world';
 import type { HighlightGroup, HighlightSettings } from './highlights';
 import { CLUTTER_RANGE_DEFAULT, CLUTTER_RANGE_MAX, CLUTTER_RANGE_MIN } from './clutter';
 import { Minimap } from './minimap';
+import { setUpMesh } from '../mesh/menu';
 import { perf } from './perf';
 import { DETAIL_RANGE_MAX, DETAIL_RANGE_MIN } from './objects';
 import { MOUSE_SPEED_MAX, MOUSE_SPEED_MIN } from './look';
@@ -206,7 +207,7 @@ async function explore(): Promise<void> {
 	button.disabled = true;
 	for (const id of ['pick', 'pick-direct']) $<HTMLButtonElement>(id).disabled = true;
 	try {
-		await storage.open($<HTMLSelectElement>('product').value);
+		const meshSourceBuild = await storage.open($<HTMLSelectElement>('product').value);
 		const ui = loadUiAssets(storage);
 		const viewer = new Viewer($('view'), storage, showHud, showInfo, $('nameplates'));
 		infoViewer = viewer;
@@ -233,6 +234,7 @@ async function explore(): Promise<void> {
 		setUpWalking(viewer);
 		setUpEmotes(viewer);
 		setUpSound(viewer);
+		setUpMesh(viewer, storage, $<HTMLSelectElement>('product').value, meshSourceBuild);
 		setUpHelp();
 	} catch (e) {
 		perf.log('error', `could not start: ${(e as Error).message}`);

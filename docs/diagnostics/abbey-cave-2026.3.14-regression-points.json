@@ -1,0 +1,134 @@
+{
+  "sourceSha256": "4d5160a38300283f711bb04cbf22b2827bd77285331e2185eac1286edf8bd186",
+  "points": [
+    {
+      "name": "shared contour floor gap",
+      "x": -8905.072,
+      "y": -203.571,
+      "floor": 81.940186,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "upper stair corner",
+      "x": -8909.551,
+      "y": -202.05,
+      "floor": 96.508835,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "opposite stair corner",
+      "x": -8874.601,
+      "y": -181.35,
+      "floor": 97.68831,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "circular floor threshold",
+      "x": -8892.3755,
+      "y": -179.025,
+      "floor": 82.07549,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "reported indoor stair hole",
+      "x": -8902.266,
+      "y": -186,
+      "floor": 81.9397,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "reported outside stair hole",
+      "x": -8915.025,
+      "y": -138.825,
+      "floor": 81.276,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "round table low floor ring",
+      "x": -8918,
+      "y": -210,
+      "floor": 82.114,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "central circular low floor transition",
+      "x": -8897,
+      "y": -180,
+      "floor": 81.577,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "upper wooden landing",
+      "x": -8898,
+      "y": -175,
+      "floor": 115.72,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "cave tessellation seam",
+      "x": -8623,
+      "y": -147,
+      "floor": 86.581,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "cave cross floor continuation",
+      "x": -8625,
+      "y": -145,
+      "floor": 86.438,
+      "maxClearance": 0.55
+    }
+  ],
+  "flatControl": {
+    "bounds": [
+      -8904,
+      -191,
+      -8877,
+      -166
+    ],
+    "heightBand": [
+      97.94,
+      97.96
+    ],
+    "spacing": 0.2,
+    "tolerance": 0.01
+  },
+  "negativePoints": [
+    {
+      "name": "central wall cap",
+      "x": -8891.199,
+      "y": -178.66733,
+      "heightBand": [
+        82.6,
+        83.3
+      ]
+    },
+    {
+      "name": "window bevel",
+      "x": -8903.466,
+      "y": -212.00067,
+      "heightBand": [
+        82.5,
+        83.3
+      ]
+    },
+    {
+      "name": "stair trim",
+      "x": -8911.553,
+      "y": -198.946,
+      "heightBand": [
+        86.15,
+        87.0
+      ]
+    },
+    {
+      "name": "round tabletop remains excluded",
+      "x": -8913,
+      "y": -210,
+      "heightBand": [
+        82.8,
+        83.6
+      ]
+    }
+  ]
+}

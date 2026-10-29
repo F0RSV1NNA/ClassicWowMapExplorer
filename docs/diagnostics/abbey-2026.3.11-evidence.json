@@ -1,0 +1,183 @@
+{
+  "pipeline": "explorer-recast-2026.3.11",
+  "scope": "Cropped saved Abbey collision; full-tile entrance-corner visual report remains unproven.",
+  "buildExit": {
+    "productionWasmTypecheckFrontend": 0,
+    "nativePublish": 0,
+    "archiveValidation": 0
+  },
+  "focusedChecks": {
+    "mesh-quality": 0,
+    "surface-rules": 0,
+    "capturedReplay": 0,
+    "capturedSeams": {
+      "exit": 0,
+      "checkedEdges": 2757,
+      "gapsOver001Yards": 0,
+      "missing": 0,
+      "internalGaps": 0,
+      "worstYards": 0.000909732347011527
+    },
+    "outsideToUpperFloor": {
+      "exit": 0,
+      "complete": true,
+      "polygons": 33
+    },
+    "entranceOverlapScan": {
+      "exit": 0,
+      "belowCollisionSamples": 0,
+      "note": "Checks only collision/mesh overlap; cannot establish absence of missing mesh or reproduce full-tile context."
+    }
+  },
+  "parity": {
+    "exit": 0,
+    "pipeline": "explorer-recast-2026.3.11",
+    "tolerance": 0.002,
+    "strictByteComparisonPreviouslyFailed": true,
+    "nativeSha256": "a3916abc37d9c73690509a39d56a65e5860ddfb89111f4e84045d9dc0f7d1eff",
+    "checkerSha256": "81bf561cf6ca993dcba0885f94901084d1f0592155eff766568f6871dfcdc820",
+    "wasmSha256": "1c44e235630de0a0820a316adfbd17bc3d569d5e291894c5e83cd47143a02c23",
+    "inputSha256": "03619c6ef3cc1acabdf33f5160761c2c8667076bbd07380ddff1ba34ac301b11",
+    "files": {
+      "0000.mmap": {
+        "nativeSha256": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "wasmSha256": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "byteEqual": true
+      },
+      "0000_48_32.mmtile": {
+        "nativeSha256": "55bfb89442fc8388ef4c24c9bb05b00116c9c5f98b462df3bcd9204212d26d9f",
+        "wasmSha256": "14a73a3bf261a94c723fbf9312a22917ebdad9d6352a44e24bbf138fd1ada232",
+        "byteEqual": false
+      },
+      "preview.bin": {
+        "nativeSha256": "01db0285cb3d4f6af8ba4beeeceaeccd5b3d168cac2957f414eaca180b01c3b2",
+        "wasmSha256": "116a10c8be94579a1786c23d3f170f878380029bb3fdced53fdca09bbb5594bb",
+        "byteEqual": false,
+        "maxCoordinateDelta": 0.001953125
+      },
+      "liquid-preview.bin": {
+        "nativeSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "wasmSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "byteEqual": true
+      }
+    },
+    "results": [
+      {
+        "cmd": "release/MapExplorer/mesh-engine/Explorer.Mesh.exe",
+        "args": [
+          ".cache/oct29-mesh-review/311-parity.input",
+          ".cache/oct29-mesh-review/311-native.zip"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": "Recast bake: 41,302 collision triangles; managed heap 5 MB\r\ndelaunayHull: Removing dangling face 26 [15,11,-1]\r\ndelaunayHull: Removing dangling face 33 [15,11,-1]\r\ndelaunayHull: Removing dangling face 26 [24,17,-1]\r\ndelaunayHull: Removing dangling face 26 [24,17,-1]\r\ndelaunayHull: Removing dangling face 26 [24,17,-1]\r\ndelaunayHull: Removing dangling face 9 [6,3,-1]\r\ndelaunayHull: Removing dangling face 3 [2,0,-1]\r\ndelaunayHull: Removing dangling face 7 [6,0,-1]\r\nWriting native tiles; managed heap 97 MB\r\nBuilding liquid volume; managed heap 102 MB\r\nValidating native tiles; managed heap 102 MB\r\nSerializing mesh and preview; managed heap 107 MB\r\nNative x64 bake complete; peak working set 307 MB\r\n"
+      },
+      {
+        "cmd": "node",
+        "args": [
+          "tools/checkMeshWasm.mjs",
+          ".cache/oct29-mesh-review/311-parity.input",
+          ".cache/oct29-mesh-review/311-wasm.zip"
+        ],
+        "exit": 0,
+        "stdout": "explorer-recast-2026.3.11\nActual WASM bake: 1485414 bytes\n",
+        "stderr": "delaunayHull: Removing dangling face 26 [15,11,-1]\ndelaunayHull: Removing dangling face 33 [15,11,-1]\ndelaunayHull: Removing dangling face 26 [24,17,-1]\ndelaunayHull: Removing dangling face 26 [24,17,-1]\ndelaunayHull: Removing dangling face 26 [24,17,-1]\ndelaunayHull: Removing dangling face 9 [6,3,-1]\ndelaunayHull: Removing dangling face 3 [2,0,-1]\ndelaunayHull: Removing dangling face 7 [6,0,-1]\n"
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "compare-tiles",
+          ".cache/oct29-mesh-review/311-parity-native/0000_48_32.mmtile",
+          ".cache/oct29-mesh-review/311-parity-wasm/0000_48_32.mmtile"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"pass\",\"differences\":29,\"maxCoordinateDelta\":0.001953125,\"tolerance\":0.002,\"polygons\":2269,\"triangles\":22324}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache/oct29-mesh-review/311-parity-native/0000_48_32.mmtile"
+        ],
+        "exit": 0,
+        "stdout": "{\"checkedEdges\":2757,\"gaps\":0,\"missing\":0,\"worst\":0.000909732347011527,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":2.5431315151536182E-06}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache/oct29-mesh-review/311-parity-native",
+          "-8913.011",
+          "-136.033",
+          "80.7",
+          "-8886.8",
+          "-179.03",
+          "97.95"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":33,\"start\":[-8913.011,-136.033,80.74586],\"end\":[-8886.8,-179.03,97.782135]}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache/oct29-mesh-review/311-parity-wasm/0000_48_32.mmtile"
+        ],
+        "exit": 0,
+        "stdout": "{\"checkedEdges\":2757,\"gaps\":0,\"missing\":0,\"worst\":0.000909732347011527,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":2.5431315151536182E-06}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache/oct29-mesh-review/311-parity-wasm",
+          "-8913.011",
+          "-136.033",
+          "80.7",
+          "-8886.8",
+          "-179.03",
+          "97.95"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":33,\"start\":[-8913.011,-136.033,80.74586],\"end\":[-8886.8,-179.03,97.782135]}\r\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "package": {
+    "packagingExit": 0,
+    "pipeline": "explorer-recast-2026.3.11",
+    "launcherUnchanged": true,
+    "files": {
+      "release\\MapExplorer\\MapExplorer.exe": {
+        "bytes": 123904,
+        "sha256": "f04b88a5a499d100c4a37755225fb24dbd1379153ac5408af2496e2f9cc114fc"
+      },
+      "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe": {
+        "bytes": 74620342,
+        "sha256": "a3916abc37d9c73690509a39d56a65e5860ddfb89111f4e84045d9dc0f7d1eff"
+      },
+      "release\\MapExplorer-portable.zip": {
+        "bytes": 177655095,
+        "sha256": "107be00e02ab2e7716afc6a741915148c788ea4a19efdc56cd7f0c936ede39ad"
+      },
+      "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll": {
+        "bytes": 947200,
+        "sha256": "81bf561cf6ca993dcba0885f94901084d1f0592155eff766568f6871dfcdc820"
+      },
+      "docs\\diagnostics\\abbey-2026.3.11.png": {
+        "bytes": 309599,
+        "sha256": "7e693748b4e88bfd625487477a4733b285790233391d4a78011d03d15799b3e0"
+      }
+    }
+  }
+}

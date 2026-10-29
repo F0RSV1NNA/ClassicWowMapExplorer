@@ -76,6 +76,8 @@ export interface WmoGroup {
 	 * never drawn (MOPY material 0xFF): ramps over steps, walls closing a cellar's hole in the ground.
 	 */
 	collisionOnly: number[];
+	/** Original MOPY flags, used by mesh authoring independently of render batches. */
+	triangleFlags?: Uint8Array;
 	/** LiquidType ID (or legacy liquid type) of the group's liquid. */
 	liquidType: number;
 	liquid: WmoLiquid | null;
@@ -244,8 +246,10 @@ export function parseWmoGroup(bytes: Uint8Array): WmoGroup {
 				}
 				break;
 			case 'MOPY':
+				group.triangleFlags = new Uint8Array(c.size / 2);
 				// Two bytes per triangle: flags, then material (0xFF: collision only).
 				for (let i = 0; i < c.size / 2; i++) {
+					group.triangleFlags[i] = bytes[c.offset + i * 2];
 					if (bytes[c.offset + i * 2 + 1] === 0xff && bytes[c.offset + i * 2] & MOPY_COLLISION) group.collisionOnly.push(i);
 				}
 				break;

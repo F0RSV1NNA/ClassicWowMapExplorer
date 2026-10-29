@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks><StartupObject>NativeCheck</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/mesh/engine/Core/**/*.cs" />
+    <Compile Include="../../src/mesh/engine/Program.cs" />
+    <Compile Include="../../src/mesh/engine/Reachability.cs" />
+    <Compile Include="../../src/mesh/engine/StreamAnalysis.cs" />
+    <Compile Include="../../src/mesh/engine/MemoryFiles.cs" />
+    <EmbeddedResource Include="../../src/mesh/engine/tilesets.csv" LogicalName="engine.tilesets.csv" />
+    <PackageReference Include="DotRecast.Core" Version="2026.3.1" />
+    <PackageReference Include="DotRecast.Recast" Version="2026.3.1" />
+    <PackageReference Include="DotRecast.Detour" Version="2026.3.1" />
+  </ItemGroup>
+</Project>

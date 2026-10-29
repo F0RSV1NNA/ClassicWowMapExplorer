@@ -3,6 +3,7 @@ import { CascStorage, StorageChangedError } from '../casc/storage';
 import { describeError, MapExplorer } from '../explorer/maps';
 import { setPageUrl } from '../explorer/spawns';
 import { WorldLoader } from '../explorer/world';
+import { MeshSource } from '../mesh/source';
 import type { AsyncStorageApi, Request, Response, SourceInit } from './protocol';
 
 let source: FileSource | null = null;
@@ -24,6 +25,8 @@ function send(message: Response, transfer: Transferable[] = []): void {
 }
 
 const api: AsyncStorageApi = {
+	async meshTiles(mapId) { return new MeshSource(requireExplorer()).tiles(mapId); },
+	async meshSource(tile, preview) { return new MeshSource(requireExplorer()).extract(tile, preview); },
 	async setPageUrl(url) {
 		setPageUrl(url);
 	},

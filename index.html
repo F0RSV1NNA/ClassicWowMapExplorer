@@ -234,6 +234,72 @@
 				<div id="highlight-status" class="muted small" aria-live="polite"></div>
 			</div>
 		</details>
+		<details id="mesh-menu" name="menu">
+			<summary>Mesh Generate</summary>
+			<div class="menu-body panel settings" style="width:340px">
+				<div id="mesh-status" class="muted small" role="status">Navigation mesh baking ready.</div>
+				<div id="mesh-progress-panel" hidden>
+					<progress id="mesh-progress" style="width:100%" aria-label="Mesh baking progress"></progress>
+					<div id="mesh-progress-label" class="muted small" aria-live="polite"></div>
+				</div>
+				<div id="mesh-here" class="muted small"></div>
+				<button id="mesh-copy-here">Copy camera position</button>
+				<p class="muted small">Navigation mesh baking with road/liquid classification and native mmap/mmtile/mliq export.</p>
+				<button id="mesh-collision">Inspect source tile collision</button>
+				<button id="mesh-bake-area">Bake tile under camera</button>
+				<label><input id="mesh-resume-export" type="checkbox">Continue open export (skip completed tiles)</label>
+				<button id="mesh-bake-map">Bake current terrain map to folder</button>
+				<button id="mesh-bake-world">Bake all terrain maps to folder</button>
+				<button id="mesh-cancel" disabled>Cancel bake</button>
+				<button id="mesh-navmesh" disabled>Show last baked tile</button>
+				<button id="mesh-liquid" disabled>Show liquid surfaces</button>
+				<button id="mesh-export" disabled>Download last tile project</button>
+				<button id="mesh-clear">Hide mesh preview</button>
+				<div class="muted small">Collision: terrain green, buildings blue, props amber. Navigation: ground green, swim floor blue. Liquid surfaces: water blue, magma orange, slime green.</div>
+				<div id="mesh-output" class="muted small" style="overflow-wrap:anywhere"></div>
+			</div>
+		</details>
+		<details id="mesh-editor-menu" name="menu">
+			<summary>Mesh Editor</summary>
+			<div class="menu-body panel settings" style="width:340px">
+				<p class="muted small">Paint corrections, save your edits, then apply them to your mesh.</p>
+				<button id="mesh-editor-open">Open mesh folder</button>
+				<label>Map<select id="mesh-editor-map" disabled></select></label>
+				<div id="mesh-authoring"></div>
+				<details><summary>Saved mesh / Analysis tools</summary><button id="mesh-editor-analyze" disabled>Analyse and save reachability flags</button>
+				<button id="mesh-editor-show-all" disabled>Show whole saved map</button>
+				<button id="mesh-editor-show" disabled>Show saved tile under camera</button>
+				<button id="mesh-editor-rebake" disabled>Rebake tile under camera into this export</button>
+				<button id="mesh-editor-capture" disabled>Capture tile source for investigation</button>
+				<div id="mesh-camera-status" class="muted small"></div>
+				<button id="mesh-editor-cancel" disabled>Cancel analysis</button>
+				<progress id="mesh-editor-progress" style="width:100%" aria-label="Mesh analysis activity" hidden></progress>
+				<div id="mesh-editor-status" class="muted small" role="status" style="white-space:pre-line">Open the folder containing your baked .mmap, .mmtile and .mliq files.</div>
+				</details>
+			</div>
+		</details>
+		<details id="mesh-options-menu" name="menu">
+			<summary>Mesh Options</summary>
+			<div class="menu-body panel settings" style="width:340px">
+				<label>Camera position<textarea id="mesh-position" rows="6" readonly spellcheck="false" style="width:100%;box-sizing:border-box;resize:vertical;user-select:text;font-family:monospace" aria-label="Native camera coordinates and mesh tile"></textarea></label>
+				<button id="mesh-copy-position">Copy camera position</button>
+				<button id="mesh-copy-report">Copy mesh problem report</button>
+				<div id="mesh-position-status" class="muted small" role="status">Z is camera height. Point the camera at the problem before copying the report.</div>
+				<div id="mesh-tile-quality" class="muted small" role="status">Open a mesh export to see the current tile's bake diagnostics.</div>
+				<label>Mesh view<select id="mesh-view"><option value="wireframe">Wireframe</option><option value="solid">Filled wireframe</option></select></label>
+				<label>Reachability display<select id="mesh-reachability-view"><option value="all">All polygons (unreachable pink)</option><option value="hide">Hide unreachable</option><option value="only">Only unreachable</option></select></label>
+				<label><input id="mesh-follow-camera" type="checkbox" checked>Stream saved mesh around the camera</label>
+				<label>Saved mesh radius<select id="mesh-preview-radius"><option value="0">Current tile</option><option value="1" selected>Current tile and neighbours</option></select></label>
+				<label>Keep separate areas with at least this many polygons<input id="mesh-min-component" type="number" min="0" max="2147483647" step="1" value="1000"></label>
+				<div class="muted small">Default 1000 preserves substantial separate places. Zero keeps only the largest component.</div>
+				<label>Parallel tile bakes <select id="mesh-bake-workers"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+				<div class="muted small">Dense tiles can grow beyond 2 GB per worker. Up to four bake lanes; start with two. Identical mesh detail. Applies to the next map/world job.</div>
+				<label><input id="mesh-auto-analyze" type="checkbox" checked>Analyse reachability after map bakes and tile updates</label>
+				<label><input id="mesh-rebake-neighbours" type="checkbox" checked>Rebake neighbouring border tiles when updating a tile</label>
+				<label><input id="mesh-allow-partial" type="checkbox">Allow analysis of incomplete tile sets</label>
+				<div class="muted small">Partial analysis is relative to supplied tiles and can mark paths that connect through missing neighbours. Fresh single-tile bakes have no reachability verdict.</div>
+			</div>
+		</details>
 		<details id="goto" name="menu">
 			<summary title="A zone, town, dungeon or any map (/)">Go to</summary>
 			<div class="menu-body panel">

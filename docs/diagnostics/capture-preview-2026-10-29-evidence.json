@@ -1,0 +1,32 @@
+{
+  "packagingExit": 0,
+  "pipeline": "explorer-recast-2026.3.12",
+  "launcherUnchanged": true,
+  "files": {
+    "release\\MapExplorer\\MapExplorer.exe": {
+      "bytes": 123904,
+      "sha256": "f04b88a5a499d100c4a37755225fb24dbd1379153ac5408af2496e2f9cc114fc"
+    },
+    "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe": {
+      "bytes": 74624438,
+      "sha256": "c483f176e4beb4d5f674b78acba11dc06f7d8a9e8b950de3258a8b09e33ff562"
+    },
+    "release\\MapExplorer-portable.zip": {
+      "bytes": 181187714,
+      "sha256": "29d5f492cab2c80698087b042f6c5c2364b82c95a4ec870a9cde6326b35c7e25"
+    },
+    "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll": {
+      "bytes": 966656,
+      "sha256": "bbf156a4d597fa29d088685cb490de28c258de5da503bf653f037283e65af826"
+    },
+    "docs\\diagnostics\\abbey-2026.3.12.png": {
+      "bytes": 294186,
+      "sha256": "1a0fc26fce0ce90d8f39e7403290acefc2594c845816a3d2310598915afd1011"
+    }
+  },
+  "change": "Allow source capture from an unsaved single-tile preview; choose a destination in the user click handler and preserve the matching baked tile as diagnostic evidence.",
+  "typecheckExit": 0,
+  "frontendBuildExit": 0,
+  "meshEngineChanged": false,
+  "menuSourceSha256": "53c851adcdeb0c45aecf5203f8cd3b8df29187118f500bf604d397c0ffe41a02"
+}

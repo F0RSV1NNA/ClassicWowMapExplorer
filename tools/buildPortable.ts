@@ -17,7 +17,7 @@ const run = (command: string, args: string[]) => {
 	execFileSync(command, args, { stdio: 'inherit' });
 };
 
-rmSync('release', { recursive: true, force: true });
+// Keep the existing portable browser profile and saved UI/editor settings.
 mkdirSync(OUT, { recursive: true });
 mkdirSync(WORK, { recursive: true });
 
@@ -26,6 +26,8 @@ mkdirSync(WORK, { recursive: true });
 console.log('> bun run build');
 execFileSync(process.execPath, ['run', 'build'], { stdio: 'inherit' });
 cpSync('dist', join(OUT, 'app'), { recursive: true });
+// Explorer's own self-contained x64 fallback; no installed .NET/Mappster needed.
+execFileSync(process.execPath, ['tools/buildNativeMeshEngine.ts'], { stdio: 'inherit' });
 
 // The icon: each size rendered from the SVG on its own, so small ones stay sharp.
 const pngs = ICON_SIZES.map((size) => {
@@ -47,11 +49,11 @@ Double-click MapExplorer.exe. Map Explorer opens in a window of its own, finds W
 Warcraft by itself (or asks for its folder if it can't), and you fly. Close the window when
 you're done.
 
-Keep MapExplorer.exe next to the "app" folder. The window is Microsoft Edge (or Chrome) showing
+Keep MapExplorer.exe next to the "app" and "mesh-engine" folders. The window is Microsoft Edge (or Chrome) showing
 the app, served from the "app" folder to this computer only; nothing is sent anywhere. Its
 settings are kept in the "data" folder, apart from your own browser.
 `.replace(/\n/g, '\r\n'));
 
 if (existsSync(ZIP)) rmSync(ZIP);
-run('7z', ['a', '-tzip', '-mx=9', ZIP, `./${OUT}`]);
+run('7z', ['a', '-tzip', '-mx=9', '-xr!data', ZIP, `./${OUT}`]);
 console.log(`\nPortable version: ${OUT}/ and ${ZIP}`);

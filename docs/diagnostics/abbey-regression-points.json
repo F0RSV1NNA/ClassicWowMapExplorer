@@ -1,0 +1,47 @@
+{
+  "sourceSha256": "13e6f6083e1eeecc3c88bba7fbc755d263972af6d543fbac6af0c6fa195402cd",
+  "points": [
+    {
+      "name": "shared contour floor gap",
+      "x": -8905.072,
+      "y": -203.571,
+      "floor": 81.940186,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "upper stair corner",
+      "x": -8909.551,
+      "y": -202.05,
+      "floor": 96.508835,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "opposite stair corner",
+      "x": -8874.601,
+      "y": -181.35,
+      "floor": 97.68831,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "circular floor threshold",
+      "x": -8892.3755,
+      "y": -179.025,
+      "floor": 82.07549,
+      "maxClearance": 0.55
+    }
+  ],
+  "flatControl": {
+    "bounds": [
+      -8904,
+      -191,
+      -8877,
+      -166
+    ],
+    "heightBand": [
+      97.94,
+      97.96
+    ],
+    "spacing": 0.2,
+    "tolerance": 0.01
+  }
+}

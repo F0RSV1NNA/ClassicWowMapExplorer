@@ -666,6 +666,29 @@ export class ObjectManager {
 		return meshes;
 	}
 
+	/** Visit actual loaded collision faces for a surface decal, without resampling heights. */
+	paintSurfaces(bounds:THREE.Box3,visit:(a:THREE.Vector3,b:THREE.Vector3,c:THREE.Vector3)=>void):void {
+		const inverse=new THREE.Matrix4(),local=new THREE.Box3(),worldBounds=new THREE.Box3();
+		for(const entry of this.models.values()){
+			// Paint floor/building surfaces, not decorative collision props such as fences.
+			if(entry.kind!=='wmo')continue;
+			const geometry=entry.collider?.geometry??entry.geometry;
+			if(!geometry?.boundsTree)continue;
+			const matrices:THREE.Matrix4[]=[];
+			if(entry.collider)for(const matrix of entry.collider.matrices)matrices.push(matrix);
+			else if(entry.mesh?.visible){entry.mesh.updateWorldMatrix(true,false);for(let i=0;i<entry.mesh.count;i++){const m=new THREE.Matrix4();entry.mesh.getMatrixAt(i,m);matrices.push(entry.mesh.matrixWorld.clone().multiply(m));}}
+			if(!geometry.boundingBox)geometry.computeBoundingBox();
+			for(const matrix of matrices){
+				if(!worldBounds.copy(geometry.boundingBox!).applyMatrix4(matrix).intersectsBox(bounds))continue;
+				local.copy(bounds).applyMatrix4(inverse.copy(matrix).invert());
+				geometry.boundsTree.shapecast({intersectsBounds:box=>box.intersectsBox(local),intersectsTriangle:triangle=>{
+					const a=triangle.a.clone().applyMatrix4(matrix),b=triangle.b.clone().applyMatrix4(matrix),c=triangle.c.clone().applyMatrix4(matrix);
+					if(bounds.intersectsTriangle(new THREE.Triangle(a,b,c)))visit(a,b,c);return false;
+				}});
+			}
+		}
+	}
+
 	/** Models and tiles' placements still to load. */
 	get pending(): number {
 		let n = this.queue.length + this.requests;

@@ -28,7 +28,7 @@
 #define PORT_TRIES 20
 // Answered by a running launcher, so a second one just opens the page instead of another server.
 #define HELLO_PATH "/__mapexplorer"
-#define HELLO_BODY "Map Explorer"
+#define HELLO_BODY "Map Explorer native-mesh-v1"
 // The World of Warcraft install, served to the page here so it opens without asking for the folder.
 #define WOW_PATH "/__wow/"
 
@@ -37,7 +37,6 @@ static wchar_t appDir[MAX_PATH];
 static wchar_t wowDir[MAX_PATH];
 // The port being served, which requests for the game files must be addressed to.
 static int serverPort;
-
 struct MimeType {
 	const char *extension;
 	const char *type;
@@ -251,6 +250,8 @@ static void sendListing(SOCKET s, const char *method, const wchar_t *dir) {
 	free(body);
 }
 
+#include "mesh-bake.h"
+
 // Answers one request; false when the connection should close after it.
 static int answer(SOCKET s, const char *request) {
 	char method[8] = {0};
@@ -270,6 +271,9 @@ static int answer(SOCKET s, const char *request) {
 		sendStatus(s, method, "404 Not Found", "Not found");
 	} else if (strcmp(path, HELLO_PATH) == 0) {
 		sendStatus(s, method, "200 OK", HELLO_BODY);
+	} else if (strcmp(path, "/__mesh-native") == 0) {
+		wchar_t engine[MAX_PATH]; nativeBakerPath(engine, MAX_PATH);
+		sendStatus(s, method, "200 OK", addressedHere(request) && GetFileAttributesW(engine) != INVALID_FILE_ATTRIBUTES ? "{\"available\":true,\"backend\":\"native-x64\",\"version\":1}" : "{\"available\":false}");
 	} else if (strncmp(path, WOW_PATH, strlen(WOW_PATH)) == 0) {
 		const char *relative = path + strlen(WOW_PATH);
 		// Only what the page reads: .build.info and the Data folder.
@@ -308,7 +312,14 @@ static DWORD WINAPI serve(LPVOID param) {
 			length += n;
 			request[length] = 0;
 		}
-		if (!strstr(request, "\r\n\r\n") || !answer(s, request)) break;
+		char *headersEnd = strstr(request, "\r\n\r\n");
+		if (!headersEnd) break;
+		if (strncmp(request, "POST /__mesh-bake HTTP/1.1\r\n", 28) == 0) {
+			const char *body = headersEnd + 4; int received = length - (int)(body - request);
+			headersEnd[2] = 0;
+			nativeBake(s, request, body, received); break;
+		}
+		if (!answer(s, request)) break;
 	}
 	shutdown(s, SD_SEND);
 	closesocket(s);
@@ -510,6 +521,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR arguments, int
 	(void)show;
 	// --no-browser: serve only, for testing (stop it from Task Manager).
 	int noBrowser = wcsstr(arguments, L"--no-browser") != NULL;
+	// Developer serving without game discovery or browser startup; no installed data touched.
+	int appOnly = wcsstr(arguments, L"--app-only") != NULL;
+	if (appOnly) noBrowser = 1;
 
 	// The app folder sits next to the exe.
 	wchar_t exeDir[MAX_PATH];
@@ -531,7 +545,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR arguments, int
 
 	SOCKET listener = INVALID_SOCKET;
 	int port = 0;
-	for (int p = FIRST_PORT; p < FIRST_PORT + PORT_TRIES; p++) {
+	int firstPort = appOnly ? 51980 : FIRST_PORT;
+	for (int p = firstPort; p < firstPort + PORT_TRIES; p++) {
 		if (alreadyRunning(p)) {
 			// Already running: just another window onto it.
 			if (!noBrowser) {
@@ -563,7 +578,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR arguments, int
 		return 1;
 	}
 	serverPort = port;
-	findInstall();
+	if (!appOnly) findInstall();
 	HANDLE server = CreateThread(NULL, 0, acceptLoop, (LPVOID)(ULONG_PTR)listener, 0, NULL);
 	if (noBrowser) {
 		WaitForSingleObject(server, INFINITE);

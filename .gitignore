@@ -4,3 +4,13 @@ release/
 out/
 .cache/
 *.stackdump
+# Legacy local prototype build products; the application does not use these.
+backend/**/bin/
+backend/**/obj/
+src/mesh/engine/bin/
+src/mesh/engine/obj/
+public/mesh-engine/
+tools/mesh-native-check/bin/
+tools/mesh-native-check/obj/
+src/mesh/engine-native/bin/
+src/mesh/engine-native/obj/

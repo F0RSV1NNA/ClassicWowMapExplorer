@@ -48,11 +48,23 @@ macOS is untested.
 
 ## For developers
 
+The **Mesh Generate**, **Mesh Editor** and **Mesh Options** menus provide collision
+inspection, saved reachability flags with pink unreachable polygons, and Mappster's original
+C# extraction/baking engine compiled to WebAssembly. It runs inside Explorer's
+browser workers; no Mappster process or installed .NET runtime is required to run it.
+Building from source requires the .NET 10 SDK and `dotnet workload install wasm-tools`.
+See [mesh authoring](docs/mesh-authoring.md) for controls, output format and remaining work.
+The ordered [Mappster parity plan](docs/mappster-parity-plan.md) tracks the bake-quality port.
+
 - `bun run dev`: start the dev server
 - `bun run build`: type-check and build to `dist`
+- `bun run mesh:build`: compile and bundle the browser mesh engine
+- `bun tools/checkMeshParity.ts`: focused native-versus-WASM output comparison
+- `node tools/checkMeshBrowser.mjs`: check the built worker in headless Edge (after parity check)
 - `bun run spawns`: rebuild the spawn files from a VMaNGOS SQLite database (`-- path/to/mangos.sqlite`)
 - `bun run regions`: rebuild regions, flight paths, boats and zeppelins
 - `bun run portable`: build the Windows portable version into `release/`
 
 Source layout: `src/casc` (storage), `src/formats` (file formats), `src/worker` (parsing),
-`src/explorer` (world data), `src/viewer` (rendering, controls, audio), `tools` (Bun scripts).
+`src/explorer` (world data), `src/viewer` (rendering, controls, audio), `src/mesh`
+(collision extraction, baking and projects), `tools` (Bun scripts).

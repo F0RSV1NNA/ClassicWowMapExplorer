@@ -4,14 +4,16 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
-		"build": "tsc --noEmit && vite build",
+		"dev": "bun run mesh:build && vite",
+		"build": "bun run mesh:build && tsc --noEmit && vite build",
 		"typecheck": "tsc --noEmit",
 		"test": "bun test",
 		"probe": "bun tools/probe.ts",
 		"spawns": "bun tools/buildSpawns.ts",
 		"regions": "bun tools/buildRegions.ts",
-		"portable": "bun tools/buildPortable.ts"
+		"portable": "bun tools/buildPortable.ts",
+		"mesh:build": "bun tools/buildMeshEngine.ts",
+		"mesh:native": "bun tools/buildNativeMeshEngine.ts"
 	},
 	"dependencies": {
 		"fflate": "^0.8.3",

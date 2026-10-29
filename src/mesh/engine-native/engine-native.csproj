@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Explorer.Mesh</AssemblyName>
+    <StartupObject>ExplorerMeshRunner</StartupObject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../engine/Core/**/*.cs" />
+    <Compile Include="../engine/Program.cs" />
+    <Compile Include="../engine/MemoryFiles.cs" />
+    <EmbeddedResource Include="../engine/tilesets.csv" LogicalName="engine.tilesets.csv" />
+    <PackageReference Include="DotRecast.Core" Version="2026.3.1" />
+    <PackageReference Include="DotRecast.Recast" Version="2026.3.1" />
+    <PackageReference Include="DotRecast.Detour" Version="2026.3.1" />
+  </ItemGroup>
+</Project>

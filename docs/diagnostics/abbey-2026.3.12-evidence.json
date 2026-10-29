@@ -1,0 +1,347 @@
+{
+  "pipeline": "explorer-recast-2026.3.12",
+  "scope": "Cropped retained Abbey collision, not a full tile or whole-world acceptance test",
+  "source": {
+    "path": ".cache\\abbey-full-investigation\\abbey-source.json",
+    "bytes": 10390677,
+    "sha256": "13e6f6083e1eeecc3c88bba7fbc755d263972af6d543fbac6af0c6fa195402cd"
+  },
+  "checkerSha256": "bbf156a4d597fa29d088685cb490de28c258de5da503bf653f037283e65af826",
+  "focusedChecks": [
+    {
+      "command": [
+        "dotnet",
+        "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+        "mesh-quality"
+      ],
+      "exit": 0,
+      "stdout": "Mesh quality checks passed: low open rim retained, tabletop/bevel rejected, planar fan reduced, boundary samples/flags and real relief retained; unequal shared stair profiles synchronized.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+        "surface-rules"
+      ],
+      "exit": 0,
+      "stdout": "Surface rules passed: caps/wall trim blocked; treads, terrain and narrow corridors preserved; interior WMO collision covered without lifting ground onto unrelated trim.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+        "surface-heights"
+      ],
+      "exit": 0,
+      "stdout": "Removed ledges excluded; live steps preserved; source fitting follows flat/ramped/stacked floors without floor switching; small-triangle coverage preserved.\n",
+      "stderr": ""
+    }
+  ],
+  "builds": {
+    "browserAndTypecheckExit": 0,
+    "nativePublishExit": 0,
+    "checkerBuildExit": 0
+  },
+  "parity": {
+    "exit": 0,
+    "pipeline": "explorer-recast-2026.3.12",
+    "tolerance": 0.002,
+    "strictByteComparisonPreviouslyFailed": true,
+    "nativeSha256": "c483f176e4beb4d5f674b78acba11dc06f7d8a9e8b950de3258a8b09e33ff562",
+    "checkerSha256": "7f3e45559deff0585e3b799ecf9efb997953b630f80d58148890f7a7f0b6ee00",
+    "wasmSha256": "5f6452531982399cf51a05c36d4231bccace0cc40d0c7c864a07e4fd3b4c9c9c",
+    "inputSha256": "03619c6ef3cc1acabdf33f5160761c2c8667076bbd07380ddff1ba34ac301b11",
+    "files": {
+      "0000.mmap": {
+        "nativeSha256": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "wasmSha256": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "byteEqual": true
+      },
+      "0000_48_32.mmtile": {
+        "nativeSha256": "743609b6fbbe4c2b368054242e115ed7462fadd1d961b23095018cf4f689fe21",
+        "wasmSha256": "9a482fbf230ff246899c32584ca7f2245673634bb4f7bc5e01afa24be51523b2",
+        "byteEqual": false
+      },
+      "preview.bin": {
+        "nativeSha256": "f42a91d0403461169fe36101610925a340136def12395417d85cb054e0dcc565",
+        "wasmSha256": "53aad05db30f59f71b9b7bc2dc7b1f26ad66a7136ad3c126ea82dbd1742511fc",
+        "byteEqual": false,
+        "maxCoordinateDelta": 0.001953125
+      },
+      "liquid-preview.bin": {
+        "nativeSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "wasmSha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "byteEqual": true
+      }
+    },
+    "results": [
+      {
+        "cmd": "release/MapExplorer/mesh-engine/Explorer.Mesh.exe",
+        "args": [
+          ".cache/oct29-mesh-review/312-parity.input",
+          ".cache/oct29-mesh-review/312-native.zip"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": "Recast bake: 41,302 collision triangles; managed heap 5 MB\r\ndelaunayHull: Removing dangling face 26 [15,11,-1]\r\ndelaunayHull: Removing dangling face 33 [15,11,-1]\r\ndelaunayHull: Removing dangling face 26 [24,17,-1]\r\ndelaunayHull: Removing dangling face 26 [24,17,-1]\r\ndelaunayHull: Removing dangling face 26 [24,17,-1]\r\ndelaunayHull: Removing dangling face 9 [6,3,-1]\r\ndelaunayHull: Removing dangling face 3 [2,0,-1]\r\ndelaunayHull: Removing dangling face 7 [6,0,-1]\r\nWriting native tiles; managed heap 101 MB\r\nBuilding liquid volume; managed heap 106 MB\r\nValidating native tiles; managed heap 106 MB\r\nSerializing mesh and preview; managed heap 111 MB\r\nNative x64 bake complete; peak working set 323 MB\r\n"
+      },
+      {
+        "cmd": "node",
+        "args": [
+          "tools/checkMeshWasm.mjs",
+          ".cache/oct29-mesh-review/312-parity.input",
+          ".cache/oct29-mesh-review/312-wasm.zip"
+        ],
+        "exit": 0,
+        "stdout": "explorer-recast-2026.3.12\nActual WASM bake: 1500478 bytes\n",
+        "stderr": "delaunayHull: Removing dangling face 26 [15,11,-1]\ndelaunayHull: Removing dangling face 33 [15,11,-1]\ndelaunayHull: Removing dangling face 26 [24,17,-1]\ndelaunayHull: Removing dangling face 26 [24,17,-1]\ndelaunayHull: Removing dangling face 26 [24,17,-1]\ndelaunayHull: Removing dangling face 9 [6,3,-1]\ndelaunayHull: Removing dangling face 3 [2,0,-1]\ndelaunayHull: Removing dangling face 7 [6,0,-1]\n"
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "compare-tiles",
+          ".cache/oct29-mesh-review/312-parity-native/0000_48_32.mmtile",
+          ".cache/oct29-mesh-review/312-parity-wasm/0000_48_32.mmtile"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"pass\",\"differences\":29,\"maxCoordinateDelta\":0.001953125,\"tolerance\":0.002,\"polygons\":2265,\"triangles\":22612}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache/oct29-mesh-review/312-parity-native/0000_48_32.mmtile"
+        ],
+        "exit": 0,
+        "stdout": "{\"checkedEdges\":2760,\"gaps\":0,\"missing\":0,\"worst\":0.000909732347011527,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":2.5431315151536182E-06}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache/oct29-mesh-review/312-parity-native",
+          "-8913.011",
+          "-136.033",
+          "80.7",
+          "-8886.8",
+          "-179.03",
+          "97.95"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":30,\"start\":[-8913.011,-136.033,80.81674],\"end\":[-8886.8,-179.03,97.782135]}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache/oct29-mesh-review/312-parity-wasm/0000_48_32.mmtile"
+        ],
+        "exit": 0,
+        "stdout": "{\"checkedEdges\":2760,\"gaps\":0,\"missing\":0,\"worst\":0.000909732347011527,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":2.5431315151536182E-06}\r\n",
+        "stderr": ""
+      },
+      {
+        "cmd": "dotnet",
+        "args": [
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache/oct29-mesh-review/312-parity-wasm",
+          "-8913.011",
+          "-136.033",
+          "80.7",
+          "-8886.8",
+          "-179.03",
+          "97.95"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":30,\"start\":[-8913.011,-136.033,80.81674],\"end\":[-8886.8,-179.03,97.782135]}\r\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "regressions": {
+    "native": {
+      "exit": 0,
+      "scope": "captured Abbey source only",
+      "fixtureSha256": "a5014332745cb9c66363e23a23e9b90c55ff5fbbc3f5a9fe06833315e5cd567e",
+      "candidateSnapshotSha256": "6283b06b046099b2d433e5cd6356116f883340b930cdc293746c47ad0fdf5430",
+      "points": [
+        {
+          "name": "shared contour floor gap",
+          "x": -8905.072,
+          "y": -203.571,
+          "floor": 81.940186,
+          "maxClearance": 0.55,
+          "baselineHeights": [],
+          "candidateHeights": [
+            82.206856
+          ],
+          "passed": true
+        },
+        {
+          "name": "upper stair corner",
+          "x": -8909.551,
+          "y": -202.05,
+          "floor": 96.508835,
+          "maxClearance": 0.55,
+          "baselineHeights": [
+            86.33851999999999,
+            96.0947200595808
+          ],
+          "candidateHeights": [
+            86.40113450876295,
+            96.53103398445879
+          ],
+          "passed": true
+        },
+        {
+          "name": "opposite stair corner",
+          "x": -8874.601,
+          "y": -181.35,
+          "floor": 97.68831,
+          "maxClearance": 0.55,
+          "baselineHeights": [
+            82.21070554166316,
+            97.05088925132326
+          ],
+          "candidateHeights": [
+            82.21069965750516,
+            97.95825660978511
+          ],
+          "passed": true
+        },
+        {
+          "name": "circular floor threshold",
+          "x": -8892.3755,
+          "y": -179.025,
+          "floor": 82.07549,
+          "maxClearance": 0.55,
+          "baselineHeights": [],
+          "candidateHeights": [
+            82.25465827056597
+          ],
+          "passed": true
+        }
+      ],
+      "flatWalkway": {
+        "samples": 1537,
+        "changes": [],
+        "largestDelta": 0.007675568562959256
+      }
+    },
+    "wasm": {
+      "exit": 0,
+      "scope": "captured Abbey source only",
+      "fixtureSha256": "a5014332745cb9c66363e23a23e9b90c55ff5fbbc3f5a9fe06833315e5cd567e",
+      "candidateSnapshotSha256": "0ca69ffaeba519168c3b1585021509ed98841507eb6e8e2ac2af116625dd6abb",
+      "points": [
+        {
+          "name": "shared contour floor gap",
+          "x": -8905.072,
+          "y": -203.571,
+          "floor": 81.940186,
+          "maxClearance": 0.55,
+          "baselineHeights": [],
+          "candidateHeights": [
+            82.206856
+          ],
+          "passed": true
+        },
+        {
+          "name": "upper stair corner",
+          "x": -8909.551,
+          "y": -202.05,
+          "floor": 96.508835,
+          "maxClearance": 0.55,
+          "baselineHeights": [
+            86.33851999999999,
+            96.0947200595808
+          ],
+          "candidateHeights": [
+            86.40113450876295,
+            96.53103398445879
+          ],
+          "passed": true
+        },
+        {
+          "name": "opposite stair corner",
+          "x": -8874.601,
+          "y": -181.35,
+          "floor": 97.68831,
+          "maxClearance": 0.55,
+          "baselineHeights": [
+            82.21070554166316,
+            97.05088925132326
+          ],
+          "candidateHeights": [
+            82.21069965750516,
+            97.95825660978511
+          ],
+          "passed": true
+        },
+        {
+          "name": "circular floor threshold",
+          "x": -8892.3755,
+          "y": -179.025,
+          "floor": 82.07549,
+          "maxClearance": 0.55,
+          "baselineHeights": [],
+          "candidateHeights": [
+            82.25465827056597
+          ],
+          "passed": true
+        }
+      ],
+      "flatWalkway": {
+        "samples": 1537,
+        "changes": [],
+        "largestDelta": 0.007675568562959256
+      }
+    }
+  },
+  "package": {
+    "packagingExit": 0,
+    "pipeline": "explorer-recast-2026.3.12",
+    "launcherUnchanged": true,
+    "files": {
+      "release\\MapExplorer\\MapExplorer.exe": {
+        "bytes": 123904,
+        "sha256": "f04b88a5a499d100c4a37755225fb24dbd1379153ac5408af2496e2f9cc114fc"
+      },
+      "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe": {
+        "bytes": 74624438,
+        "sha256": "c483f176e4beb4d5f674b78acba11dc06f7d8a9e8b950de3258a8b09e33ff562"
+      },
+      "release\\MapExplorer-portable.zip": {
+        "bytes": 181187268,
+        "sha256": "695a182b6270c02b01afdf8f809679dd88b0fcbcac2ea104c0925433d9ef0def"
+      },
+      "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll": {
+        "bytes": 966656,
+        "sha256": "bbf156a4d597fa29d088685cb490de28c258de5da503bf653f037283e65af826"
+      },
+      "docs\\diagnostics\\abbey-2026.3.12.png": {
+        "bytes": 294186,
+        "sha256": "1a0fc26fce0ce90d8f39e7403290acefc2594c845816a3d2310598915afd1011"
+      }
+    }
+  },
+  "rejectedExperiments": [
+    "Allowing all low footings changed 82 sampled upper-landing points by more than .05 yard; rejected.",
+    "Unrestricted WMO edge fallback could raise a landing onto adjacent trim; replaced with direct-floor precedence plus verified ramp continuation."
+  ],
+  "remainingLimits": [
+    "The screenshots were located from saved geometry without new camera reports; exact screenshot-to-point identity is not asserted.",
+    "Raw coverage candidates include intended obstacle exclusions, roof tops and capture boundaries; they are not all defects.",
+    "The portable update does not rewrite saved mesh. Reopen and rebake tile 32,48 for full-tile visual acceptance."
+  ]
+}

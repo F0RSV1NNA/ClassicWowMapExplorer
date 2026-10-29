@@ -53,6 +53,7 @@ export class Db2 {
 	private readonly recordsStart: number[] = [];
 	private readonly stringTables: { start: number; size: number; before: number }[] = [];
 	readonly skippedSections: number;
+	readonly layoutHash: string;
 
 	constructor(private readonly bytes: Uint8Array) {
 		this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -66,7 +67,8 @@ export class Db2 {
 		const fieldCount = u32();
 		this.recordSize = u32();
 		u32(); // string table size
-		u32(); u32(); // table hash, layout hash
+		u32(); // table hash
+		this.layoutHash = u32().toString(16).toUpperCase().padStart(8, '0');
 		u32(); u32(); // min id, max id
 		u32(); // locale
 		const flags = u16();
