@@ -147,6 +147,8 @@ const PICK_DISTANCE = 400;
 const TORCH_COLOR = 0xffa650;
 /** Where the light is carried, in camera space (x right, y up, z back): as if from a torch held on the right. */
 const TORCH_POSITION = new THREE.Vector3(0.35, 0, -1.13);
+/** The longest the reads that wait for the first full-detail view (see Viewer.firstView) wait (ms). */
+const FIRST_VIEW_WAIT = 4000;
 /** Yards; the light fades to nothing at this distance. */
 const TORCH_RANGE = 45;
 /** Candela-like units: about full daylight brightness at 10 yards. */
@@ -190,6 +192,8 @@ export interface HudInfo {
 	voyage: string;
 	/** Whether walls, floors and the ground stop the camera (G toggles). */
 	collision: string;
+	/** What's still loading around the camera, or null when nothing is. */
+	loading: string | null;
 }
 
 /** What can be switched from the keyboard or the menus. */
@@ -264,6 +268,28 @@ export const FIXED_SPEED_DEFAULT = 64;
 
 /** A setting, or the time of day or the sound, changed by its key; or walking started or stopped. */
 export type ViewChange = keyof ViewSettings | 'time' | 'sound' | 'flight' | 'voyage' | 'walking';
+
+/**
+ * A point and a direction in one map's own frame, the same in every game version though each
+ * lays the dungeons out elsewhere: x and z in the map's tiles, y in yards, yaw and pitch in radians.
+ */
+export interface MapSpot {
+	mapId: number;
+	x: number;
+	y: number;
+	z: number;
+	yaw: number;
+	pitch: number;
+}
+
+/**
+ * What's in view, to show again exactly after a switch of game version: the camera, and on
+ * foot, the character (yaw: which way it faces) with the camera's turn and zoom around it.
+ */
+export interface ViewSpot {
+	camera: MapSpot;
+	walker: (MapSpot & { orbit: number; zoom: number }) | null;
+}
 
 /** Where the camera is for the minimap: a map's tile grid, in fractional local tiles. */
 export interface MinimapView {
@@ -729,6 +755,9 @@ export class Viewer {
 		private readonly onSelect: (info: SpawnInfo) => void = () => {},
 		plateContainer: HTMLElement | null = null,
 	) {
+		let show = () => {};
+		this.firstView = new Promise((resolve) => (show = resolve));
+		this.showFirstView = show;
 		this.highlights = plateContainer ? new Highlights(plateContainer, storage.loadLockKinds()) : null;
 		this.regionOverlay = plateContainer ? new RegionOverlay(plateContainer, (x, z) => this.terrain?.surfaceAt(x, z) ?? -Infinity) : null;
 		this.restedAreas = plateContainer ? new RestedAreas(plateContainer) : null;
@@ -879,6 +908,8 @@ export class Viewer {
 	setHighlights(settings: HighlightSettings): void {
 		this.highlights?.set(settings);
 		setWalkableShown(settings.on && settings.walkable);
+		if (this.objects) this.objects.invisibleWalls = settings.on && settings.walls;
+		if (this.terrain) this.terrain.invisibleWalls = settings.on && settings.walls;
 		this.regionOverlay?.setMode(settings.on ? settings.tint || null : null);
 		this.regionOverlay?.setLevel(settings.level);
 		if (this.restedAreas) this.restedAreas.shown = settings.on && settings.rested;
@@ -887,8 +918,33 @@ export class Viewer {
 	/** Called when a key changes a setting, the time or the sound, for the page to show and remember. */
 	onChange: (change: ViewChange) => void = () => {};
 
+	/**
+	 * Settles once the ground around the camera has first been shown in full detail, or after
+	 * FIRST_VIEW_WAIT. Reads that can wait (music, footsteps, liquid frames, the character's races,
+	 * the places) wait for it: the storage worker has one thread, and each of them took it for a
+	 * third to half a second, while the ground in view waited behind them.
+	 */
+	readonly firstView: Promise<void>;
+	private readonly showFirstView: () => void;
+
+	/** Called with each view written to the URL hash, for a page this one is shown inside. */
+	onHash: (hash: string) => void = () => {};
+
 	/** Called with a line for the page to show, when something asked for can't be done. */
 	onNotice: (text: string) => void = () => {};
+
+	/** Whether the mouse is captured for looking around while flying. */
+	get mouseCaptured(): boolean {
+		return !this.walker.active && this.controls.locked;
+	}
+
+	/**
+	 * Captures the mouse for looking around while flying, as a click on the view does. The
+	 * browser allows it only shortly after a click or key press, and leaves it uncaptured otherwise.
+	 */
+	captureMouse(): void {
+		if (!this.walker.active) this.controls.lock();
+	}
 
 	/** Whether the camera follows a character on foot rather than flying. */
 	get walking(): boolean {
@@ -914,6 +970,58 @@ export class Viewer {
 		this.controls.enabled = false;
 		// Dropped from where the camera was, falling to the ground.
 		this.walker.dropFrom(cam, this.controls.yaw);
+		this.walker.start();
+		void this.dressCharacter();
+		this.onChange('walking');
+		return null;
+	}
+
+	/** A world position and direction in its map's own frame (see MapSpot); null off every map. */
+	private mapSpot(p: THREE.Vector3, yaw: number, pitch: number): MapSpot | null {
+		const at = this.terrain.locate(p.x, p.z);
+		if (!at) return null;
+		const c = at.continent;
+		return { mapId: c.mapId, x: p.x / TILE_SIZE - c.offsetX, y: p.y, z: p.z / TILE_SIZE - c.offsetY, yaw, pitch };
+	}
+
+	/** Where a MapSpot is in this world, its map laid out first if it wasn't; null if this game version hasn't the map. */
+	private async fromMapSpot(spot: MapSpot): Promise<THREE.Vector3 | null> {
+		if (![spot.x, spot.y, spot.z, spot.yaw, spot.pitch].every(Number.isFinite)) return null;
+		const c = await this.placementFor(spot.mapId);
+		return c ? new THREE.Vector3((spot.x + c.offsetX) * TILE_SIZE, spot.y, (spot.z + c.offsetY) * TILE_SIZE) : null;
+	}
+
+	/**
+	 * Exactly what's in view (the URL hash rounds it, and gives the height above the ground,
+	 * which another version can have elsewhere), for showSpot and walkAt; null off every map.
+	 */
+	viewSpot(): ViewSpot | null {
+		const camera = this.mapSpot(this.camera.position, this.controls.yaw, this.controls.pitch);
+		if (!camera) return null;
+		const feet = this.walker.active ? this.mapSpot(this.walker.position, this.walker.facing, this.walker.pitch) : null;
+		return { camera, walker: feet && { ...feet, ...this.walker.aim } };
+	}
+
+	/** Puts the free camera where a viewSpot's camera was; false if this game version hasn't its map. */
+	async showSpot(spot: MapSpot): Promise<boolean> {
+		const position = await this.fromMapSpot(spot);
+		if (!position) return false;
+		this.controls.set(position, spot.yaw, spot.pitch);
+		return true;
+	}
+
+	/**
+	 * Puts the character back on foot where a viewSpot had it, the camera turned and zoomed as it
+	 * was. Returns why it can't, or null.
+	 */
+	async walkAt(spot: NonNullable<ViewSpot['walker']>): Promise<string | null> {
+		const feet = await this.fromMapSpot(spot);
+		if (!feet) return 'That map isn’t in this game version: flying instead';
+		this.controls.endRide(false);
+		this.controls.enabled = false;
+		// Stands on what's under the feet once it has loaded, as on the floor it was on.
+		this.walker.place(feet, spot.yaw, spot.pitch);
+		this.walker.aim = spot;
 		this.walker.start();
 		void this.dressCharacter();
 		this.onChange('walking');
@@ -1233,18 +1341,20 @@ export class Viewer {
 			console.warn('Lighting unavailable, using defaults:', e);
 		}
 		// The liquids' animation frames; until they're read, liquids are drawn without them.
-		for (const [name, book] of Object.entries(flipbooks)) {
-			this.storage.loadTextures(book.ids, this.usesCompressedTextures).then(
-				(frames) => book.setFrames(frames.every((f) => f.texture) ? frames.map((f) => createTexture(f.texture!, anisotropy, true)) : []),
-				(e) => console.warn(`${name} textures unavailable:`, e),
-			);
-		}
+		void this.firstView.then(() => {
+			for (const [name, book] of Object.entries(flipbooks)) {
+				this.storage.loadTextures(book.ids, this.usesCompressedTextures).then(
+					(frames) => book.setFrames(frames.every((f) => f.texture) ? frames.map((f) => createTexture(f.texture!, anisotropy, true)) : []),
+					(e) => console.warn(`${name} textures unavailable:`, e),
+				);
+			}
+		});
 		this.storage.loadLiquidLooks().then((looks) => {
 			this.liquidLooks = looks;
 			setLiquidLooks(looks);
 		}, (e) => console.warn('Liquid types unavailable:', e));
 		// Music starts once its tables are read; the world needn't wait for it.
-		this.storage.loadMusic().then(
+		void this.firstView.then(() => this.storage.loadMusic()).then(
 			(data) => {
 				this.music = new MusicPlayer(this.storage, data);
 				this.underwaterAudio = new UnderwaterAudio(this.music);
@@ -1255,6 +1365,8 @@ export class Viewer {
 			},
 			(e) => console.warn('Music unavailable:', e),
 		);
+		// Not waited for long if the ground takes its time (a slow disk, a map with none).
+		setTimeout(this.showFirstView, FIRST_VIEW_WAIT);
 
 		// ?time=HH:MM starts at that time of day.
 		const time = /^(\d{1,2}):(\d{2})$/.exec(new URLSearchParams(location.search).get('time') ?? '');
@@ -1342,6 +1454,7 @@ export class Viewer {
 		if (!force && now - this.pendingHashSince < 1000) return;
 		this.lastHash = hash;
 		history.replaceState(null, '', hash);
+		this.onHash(hash);
 	}
 
 	/**
@@ -1595,7 +1708,8 @@ export class Viewer {
 		else if (e.code === 'KeyO') this.overview();
 		else if (e.code === 'KeyR') this.controls.flyTo(this.startPosition(), 0, -0.3, 2.5);
 		// Walking, the number keys perform emotes instead (see the Emotes menu).
-		else if (e.code.startsWith('Digit') && !this.walker.active) this.goToContinent(Number(e.code.slice(5)) - 1);
+		// With Ctrl they switch game version (see the Game version menu).
+		else if (e.code.startsWith('Digit') && !this.walker.active && !e.ctrlKey && !e.metaKey && !e.altKey) this.goToContinent(Number(e.code.slice(5)) - 1);
 		else if (e.code === 'Backquote' && !e.ctrlKey && !e.metaKey && !e.altKey) {
 			const problem = this.setWalking(!this.walker.active);
 			if (problem) this.onNotice(problem);
@@ -1952,15 +2066,28 @@ export class Viewer {
 		this.camera.updateProjectionMatrix();
 	}
 
+	/** The animation frame asked for, while running. */
+	private frameRequest: number | null = null;
+
+	/** Starts drawing, a frame at a time; again after pause, from where it was. */
 	start(): void {
+		if (this.frameRequest !== null) return;
 		let last = performance.now();
 		const frame = (now: number) => {
 			const dt = Math.min(0.1, (now - last) / 1000);
 			last = now;
 			this.tick(dt, now);
-			requestAnimationFrame(frame);
+			this.frameRequest = requestAnimationFrame(frame);
 		};
-		requestAnimationFrame(frame);
+		this.frameRequest = requestAnimationFrame(frame);
+	}
+
+	/** Stops drawing, the mouse let go: kept loaded out of sight for quick switching. */
+	pause(): void {
+		if (this.frameRequest !== null) cancelAnimationFrame(this.frameRequest);
+		this.frameRequest = null;
+		this.endShot();
+		if (document.pointerLockElement) document.exitPointerLock();
 	}
 
 	private tick(dt: number, now: number): void {
@@ -2013,6 +2140,7 @@ export class Viewer {
 		if (now - this.lastLodUpdate > 200) {
 			this.lastLodUpdate = now;
 			perf.time('lod.update', () => this.terrain.update(pos));
+			if (this.terrain.nearShown) this.showFirstView();
 		}
 		// Before the objects, so the transports' new places are drawn this frame.
 		this.transports?.update(Date.now(), pos);
@@ -2481,6 +2609,17 @@ export class Viewer {
 		return { zone: area.name, subzone: subzone !== area.name ? subzone : null };
 	}
 
+	/** What's still loading around the camera, for the page to show: null once nothing is. */
+	private loadingText(): string | null {
+		const parts: string[] = [];
+		if (!this.terrain.nearShown) parts.push('ground');
+		const objects = this.objects.pending;
+		if (objects) parts.push(`${objects} object${objects === 1 ? '' : 's'}`);
+		const [done, total] = this.terrain.farTextureProgress;
+		if (done < total) parts.push(`distant land ${Math.floor((done / total) * 100)}%`);
+		return parts.length ? `Loading ${parts.join(' · ')}` : null;
+	}
+
 	private hudInfo(): HudInfo {
 		const pos = this.camera.position;
 		const at = this.terrain.locate(pos.x, pos.z);
@@ -2508,6 +2647,7 @@ export class Viewer {
 			near: `${stats.nearTiles} detailed${stats.nearLoading ? `, ${stats.nearLoading} loading` : ''} · ${stats.layerTextures} layer textures`,
 			objects: (() => { const o = this.objects.stats(); return `${o.drawn.toLocaleString()} of ${o.instances.toLocaleString()} drawn · ${o.models} models${o.loading ? `, ${o.loading} loading` : ''}`; })(),
 			textures: texLoaded < texTotal ? `${texLoaded} / ${texTotal}` : `${texTotal}`,
+			loading: this.loadingText(),
 			time: (() => { const t = this.timeOfDay(); return `${String(Math.floor(t / 120)).padStart(2, '0')}:${String(Math.floor(t / 2) % 60).padStart(2, '0')}`; })(),
 			...this.zoneNames(),
 			side: this.side === 'alliance' ? 'Alliance' : 'Horde',

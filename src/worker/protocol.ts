@@ -1,7 +1,7 @@
 import type { ProductInfo } from '../casc/config';
 import type { StorageStats } from '../casc/storage';
 import type { AreaInfo, LightingData } from '../explorer/lighting';
-import type { MapSummary, TileDetails } from '../explorer/maps';
+import type { MapSummary } from '../explorer/maps';
 import type { FootstepSounds, LiquidLooks, LockKind } from '../explorer/clientDb';
 import type { MusicData, WmoArea } from '../explorer/music';
 import type { Place } from '../explorer/places';
@@ -13,7 +13,6 @@ import type { Image } from '../formats/blp';
 import type { MeshInput, MeshTile } from '../mesh/types';
 
 export type SourceInit =
-	| { kind: 'handle'; handle: FileSystemDirectoryHandle }
 	| { kind: 'files'; files: { path: string; file: File }[] }
 	/** The install the portable launcher or dev server found, served at this URL (ending in '/'). */
 	| { kind: 'http'; base: string };
@@ -27,7 +26,6 @@ export interface StorageApi {
 	setSource(source: SourceInit): ProductInfo[];
 	open(product: string): StorageStats;
 	loadMap(wdtFdid: number): MapSummary;
-	loadTile(wdtFdid: number, x: number, y: number): TileDetails;
 	minimapThumbnails(wdtFdid: number, coords: [number, number][], size: number): { x: number; y: number; image: Image | null }[];
 	loadFarTiles(wdtFdid: number, wdlFdid: number): FarTile[];
 	loadInstance(mapId: number): InstanceMap | null;
@@ -52,6 +50,7 @@ export interface StorageApi {
 	loadFont(fdid: number): Uint8Array;
 	loadInterfaceImages(paths: string[]): (Image | null)[];
 	loadImages(fdids: number[]): (Image | null)[];
+	textureOpacity(fdids: number[]): number[];
 	loadWorldMaps(mapIds: number[]): WorldMapInfo[];
 }
 

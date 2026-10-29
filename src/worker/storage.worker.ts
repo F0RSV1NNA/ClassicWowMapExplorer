@@ -1,4 +1,4 @@
-import { FileListSource, DirectoryHandleSource, HttpSource, type FileSource } from '../casc/source';
+import { FileListSource, HttpSource, type FileSource } from '../casc/source';
 import { CascStorage, StorageChangedError } from '../casc/storage';
 import { describeError, MapExplorer } from '../explorer/maps';
 import { setPageUrl } from '../explorer/spawns';
@@ -31,7 +31,7 @@ const api: AsyncStorageApi = {
 		setPageUrl(url);
 	},
 	async setSource(init: SourceInit) {
-		source = init.kind === 'handle' ? new DirectoryHandleSource(init.handle) : init.kind === 'http' ? new HttpSource(init.base) : new FileListSource(init.files);
+		source = init.kind === 'http' ? new HttpSource(init.base) : new FileListSource(init.files);
 		explorer = null;
 		world = null;
 		return CascStorage.listProducts(source);
@@ -46,9 +46,6 @@ const api: AsyncStorageApi = {
 	},
 	async loadMap(wdtFdid) {
 		return requireExplorer().loadMap(wdtFdid);
-	},
-	async loadTile(wdtFdid, x, y) {
-		return requireExplorer().loadTile(wdtFdid, x, y);
 	},
 	async minimapThumbnails(wdtFdid, coords, size) {
 		return requireExplorer().minimapThumbnails(wdtFdid, coords, size);
@@ -118,6 +115,9 @@ const api: AsyncStorageApi = {
 	},
 	async loadImages(fdids) {
 		return requireWorld().loadImages(fdids);
+	},
+	async textureOpacity(fdids) {
+		return requireWorld().textureOpacity(fdids);
 	},
 	async loadWorldMaps(mapIds) {
 		return requireWorld().loadWorldMaps(mapIds);

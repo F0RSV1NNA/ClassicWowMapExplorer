@@ -1,6 +1,7 @@
 import { parseAdtRoot, TILE_CELLS, TILE_SIZE, tileGrids } from '../formats/adt';
 import { parseAdtTex } from '../formats/adtTex';
-import { blpTexture, decodeBlp, type Image, type TextureData } from '../formats/blp';
+import { blpTexture, decodeBlp, mipmapped, type Image, type TextureData } from '../formats/blp';
+import type { Db2 } from '../formats/db2';
 import type { LiquidKind } from '../formats/mh2o';
 import { parseWdl, WDL_CELLS } from '../formats/wdl';
 import { DB2_FILES, footstepSounds, liquidKinds, liquidLooks, loadTable, lockKinds, type FootstepSounds, type LiquidLooks, type LockKind } from './clientDb';
@@ -22,6 +23,8 @@ import { buildTerrainMesh, type TerrainGeometry } from './terrainMesh';
 const MPHD_BIG_ALPHA = 0x4 | 0x80;
 /** MCNK flag: 4-bit alpha maps are already 64x64 and need no fix-up. */
 const MCNK_DO_NOT_FIX_ALPHA = 0x8000;
+/** MCNK flag: the chunk can't be walked onto. */
+const MCNK_IMPASSABLE = 0x2;
 
 /** A map entered through an area trigger (a dungeon, mostly): what to lay out in the world. */
 export interface InstanceMap {
@@ -57,6 +60,7 @@ export interface MapListing {
 }
 
 /** Map.db2 fields. */
+const MAP_DIRECTORY = 0;
 const MAP_NAME = 1;
 const MAP_INSTANCE_TYPE = 8;
 const MAP_WDT = 21;
@@ -88,6 +92,8 @@ export interface NearTile {
 	sea: Uint8Array;
 	/** AreaTable ID per chunk (y * 16 + x). */
 	areaIds: Uint32Array;
+	/** 1 per chunk (y * 16 + x) the map marks as impassable: ground that can't be walked onto, whatever its slope. */
+	impassable: Uint8Array;
 	/** What grows on the ground (grass, flowers, pebbles), or null for none. */
 	clutter: ClutterSource | null;
 	/** What each cell sounds like underfoot: 128x128 footstep sound groups (TerrainType), or null if unknown. */
@@ -117,13 +123,24 @@ export class WorldLoader {
 
 	private mapIds: Promise<Map<number, number>> | null = null;
 
+	/**
+	 * A map's WDT file (0 if none): from Map.db2, or where that hasn't the field (Classic), by its
+	 * path, world/maps/<directory>/<directory>.wdt, the directory being the map's first field.
+	 */
+	private mapWdt(table: Db2, mapId: number): number {
+		const listed = table.getInt(mapId, MAP_WDT);
+		if (listed !== null) return listed;
+		const directory = table.getString(mapId, MAP_DIRECTORY)?.toLowerCase();
+		return directory ? this.storage.lookupPath(`world/maps/${directory}/${directory}.wdt`) ?? 0 : 0;
+	}
+
 	/** The Map.db2 ID of a map's WDT, or null for a WDT no map uses. */
 	private async mapIdOf(wdtFdid: number): Promise<number | null> {
 		const known = KNOWN_MAPS.find((m) => m.wdt === wdtFdid);
 		if (known) return known.mapId;
 		this.mapIds ??= loadTable(this.storage, DB2_FILES.Map).then((table) => {
 			const byWdt = new Map<number, number>();
-			for (const id of table.ids()) byWdt.set(table.getInt(id, MAP_WDT) ?? 0, id);
+			for (const id of table.ids()) byWdt.set(this.mapWdt(table, id), id);
 			return byWdt;
 		});
 		return (await this.mapIds).get(wdtFdid) ?? null;
@@ -135,7 +152,7 @@ export class WorldLoader {
 	 */
 	async loadInstance(mapId: number): Promise<InstanceMap | null> {
 		const table = await loadTable(this.storage, DB2_FILES.Map);
-		const wdtFdid = table.getInt(mapId, MAP_WDT) ?? 0;
+		const wdtFdid = this.mapWdt(table, mapId);
 		if (!wdtFdid || this.storage.status(wdtFdid) !== 'ok') return null;
 		const wdt = await this.maps.wdt(wdtFdid);
 		const name = table.getString(mapId, MAP_NAME) ?? `Map ${mapId}`;
@@ -164,7 +181,7 @@ export class WorldLoader {
 		const table = await loadTable(this.storage, DB2_FILES.Map);
 		const out: MapListing[] = [];
 		for (const id of table.ids()) {
-			const wdt = table.getInt(id, MAP_WDT) ?? 0;
+			const wdt = this.mapWdt(table, id);
 			if (!wdt || this.storage.status(wdt) !== 'ok') continue;
 			const known = KNOWN_MAPS.find((m) => m.mapId === id);
 			out.push({
@@ -188,14 +205,30 @@ export class WorldLoader {
 		}));
 	}
 
-	/** Baked map textures, starting at the largest mip no bigger than maxSize. */
+	/**
+	 * Baked map textures, starting at the largest mip no bigger than maxSize. Versions without
+	 * them (Classic) get the tile's minimap picture, which shows the same ground the same way up.
+	 */
 	async loadTileTextures(wdtFdid: number, coords: [number, number][], maxSize: number, compressed: boolean): Promise<TileTexture[]> {
 		const wdt = await this.maps.wdt(wdtFdid);
-		return Promise.all(coords.map(async ([x, y]) => ({
-			x,
-			y,
-			texture: await this.readTexture(wdt.tiles[y * 64 + x]?.files.mapTexture ?? 0, maxSize, compressed),
-		})));
+		return Promise.all(coords.map(async ([x, y]) => {
+			const files = wdt.tiles[y * 64 + x]?.files;
+			return { x, y, texture: files?.mapTexture ? await this.readTexture(files.mapTexture, maxSize, compressed) : await this.minimapTexture(files?.minimap ?? 0, maxSize, compressed) };
+		}));
+	}
+
+	/**
+	 * A minimap picture as a map texture: Classic's are stored without mips, so the chain is made
+	 * here, from the size map textures come in down, as they have. Null if it can't be read.
+	 */
+	private async minimapTexture(fdid: number, maxSize: number, compressed: boolean): Promise<TextureData | null> {
+		if (fdid === 0 || this.storage.status(fdid) !== 'ok') return null;
+		try {
+			const image = decodeBlp(await this.storage.readFile(fdid));
+			return mipmapped(image, Math.min(maxSize, image.width), compressed);
+		} catch {
+			return null;
+		}
 	}
 
 	async loadNearTile(wdtFdid: number, x: number, y: number, compressed: boolean): Promise<NearTile> {
@@ -217,13 +250,15 @@ export class WorldLoader {
 		}
 		const areaIds = new Uint32Array(256);
 		for (const c of root.chunks) areaIds[c.indexY * 16 + c.indexX] = c.areaId;
+		const impassable = new Uint8Array(256);
+		for (const c of root.chunks) if (c.flags & MCNK_IMPASSABLE) impassable[c.indexY * 16 + c.indexX] = 1;
 
 		if (texBytes) {
 			const tex = parseAdtTex(texBytes, (wdt.flags & MPHD_BIG_ALPHA) !== 0, (i) => !(root.chunks[i]?.flags & MCNK_DO_NOT_FIX_ALPHA));
 			const terrain = buildSplatTerrain(root, tex);
 			const clutter = groundEffects?.source(root, tex, terrain.heights, tileGrids(root).inner, terrain.holes) ?? null;
 			const ground = groundEffects?.groundSounds(root, tex) ?? null;
-			return { x, y, terrain, fallback: null, heights: terrain.heights, holes: terrain.holes, liquids, sea, areaIds, clutter, ground, flow };
+			return { x, y, terrain, fallback: null, heights: terrain.heights, holes: terrain.holes, liquids, sea, areaIds, impassable, clutter, ground, flow };
 		}
 		const grids = tileGrids(root);
 		return {
@@ -239,6 +274,7 @@ export class WorldLoader {
 			liquids,
 			sea,
 			areaIds,
+			impassable,
 			clutter: null,
 			ground: null,
 			flow,
@@ -416,6 +452,23 @@ export class WorldLoader {
 			} catch (e) {
 				console.warn(`Image ${fdid} unreadable:`, e);
 				return null;
+			}
+		}));
+	}
+
+	/**
+	 * How opaque each texture gets anywhere, 0 to 255 (255 for one that can't be read): 0 is a
+	 * texture nothing shows of, as invisible walls are drawn with. From a small copy of it.
+	 */
+	async textureOpacity(fdids: number[]): Promise<number[]> {
+		return Promise.all(fdids.map(async (fdid) => {
+			try {
+				const { rgba } = decodeBlp(await this.storage.readFile(fdid), 128);
+				let most = 0;
+				for (let i = 3; i < rgba.length; i += 4) most = Math.max(most, rgba[i]);
+				return most;
+			} catch {
+				return 255;
 			}
 		}));
 	}

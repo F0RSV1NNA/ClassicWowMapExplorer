@@ -20,6 +20,7 @@ const run = (command: string, args: string[]) => {
 // Keep the existing portable browser profile and saved UI/editor settings.
 mkdirSync(OUT, { recursive: true });
 mkdirSync(WORK, { recursive: true });
+cpSync('LICENSE', join(OUT, 'LICENSE'));
 
 // The app itself: type-checked and built to dist, then copied in as "app".
 // Run with the same bun that is running this script.

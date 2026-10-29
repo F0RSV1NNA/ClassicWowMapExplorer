@@ -13,32 +13,36 @@
 <body>
 	<canvas id="view"></canvas>
 
-	<!-- "finding" until the page knows whether World of Warcraft was found for it. -->
+	<!-- The start screen: choosing the folder and game version, then the loading bar, in one look
+	     from the first click to the world. "finding" until the page knows whether World of Warcraft
+	     was found for it. -->
 	<div id="start" class="finding">
 		<div class="card">
-			<h1>Map Explorer</h1>
-			<p class="muted">Fly over Azeroth, drawn from the game files on your computer.</p>
-			<div id="drop">
-				<button id="pick" class="primary big">Choose your World of Warcraft folder</button>
-				<div class="muted small">or drag it here · usually <code>C:\Program Files (x86)\World of Warcraft</code></div>
+			<header>
+				<img class="logo" src="/icon.svg" alt="" width="32" height="32">
+				<div>
+					<h1>Map Explorer</h1>
+					<p class="tagline">Fly over Azeroth, drawn from the game files on your computer.</p>
+				</div>
+			</header>
+			<!-- The loading bar takes the folder row's place, over it, so the card keeps its size. -->
+			<div class="step">
+				<div id="drop">
+					<button id="pick" class="primary">Choose your World of Warcraft folder</button>
+					<div class="hint">or drop the folder on this page · usually <code>C:\Program Files (x86)\World of Warcraft</code></div>
+				</div>
+				<div id="loading" hidden aria-live="polite">
+					<div id="loading-text"></div>
+					<div class="loading-bar"><div id="loading-fill"></div></div>
+				</div>
 			</div>
 			<input id="pick-input" type="file" webkitdirectory hidden>
-			<div id="loading" hidden aria-live="polite">
-				<div class="loading-bar"><div id="loading-fill"></div></div>
-				<div id="loading-text"></div>
-			</div>
 			<div id="product-step" hidden>
 				<label>Game version <select id="product"></select></label>
 				<button id="explore" class="primary">Explore</button>
 			</div>
-			<p id="status" class="muted"></p>
-			<details class="small muted">
-				<summary>Help and more options</summary>
-				<p>Choose the folder that contains <code>_classic_</code> or <code>_classic_beta_</code>. The browser calls it an
-				upload, but nothing leaves your computer; the files are only read here.</p>
-				<p><button id="pick-direct">Open with direct access</button> Opens faster, but Chrome and Edge refuse folders under Program Files.</p>
-				<p><a href="inspector.html">Storage inspector</a>: browse the game's files and formats.</p>
-			</details>
+			<p id="status"></p>
+			<p class="note">The browser calls it an upload, but nothing leaves your computer: the files are only read here.</p>
 		</div>
 	</div>
 
@@ -54,6 +58,7 @@
 					<button id="time-now" title="Back to local time (N)">Now</button>
 				</div>
 				<label>Weather <select data-setting="weather"><option value="auto">The zone's own</option><option value="dry">The zone's own, no rain or snow</option><option value="off">Always clear</option><option value="rain">Rain</option><option value="snow">Snow</option><option value="sandstorm">Sandstorm</option></select></label>
+				<label title="The zone, coordinates, time, altitude and music, at the top left"><input type="checkbox" id="area-on"> Area info</label>
 				<label><input type="checkbox" data-setting="minimap"> Show minimap</label>
 				<label><input type="checkbox" data-setting="torch"> Torch <kbd>L</kbd></label>
 				<label><input type="checkbox" data-setting="creatures"> NPCs and monsters</label>
@@ -219,6 +224,8 @@
 				</div>
 				<label><input type="checkbox" id="highlight-walkable"> Walkable slopes</label>
 				<div id="walkable-key" class="muted small"><span data-slope="flat">Walkable</span> <span data-slope="near">Near the limit</span> <span data-slope="steep">Too steep</span></div>
+				<label title="Collision in buildings, doodads and objects that has nothing drawn on it, and ground the map marks as impassable"><input type="checkbox" id="highlight-walls"> Invisible walls</label>
+				<div id="walls-key" class="muted small"><span>Unseen collision and impassable ground</span></div>
 				<label title="Ground tinted by region; graveyards, territory and levels are for the side chosen under Name colours (F)">Ground <select id="highlight-tint">
 					<option value="">No tint</option>
 					<option value="graveyards">Graveyards</option>
@@ -300,6 +307,16 @@
 				<div class="muted small">Partial analysis is relative to supplied tiles and can mark paths that connect through missing neighbours. Fresh single-tile bakes have no reachability verdict.</div>
 			</div>
 		</details>
+		<details id="version" name="menu" hidden>
+			<summary title="Which of the installed games is shown">Game version</summary>
+			<div class="menu-body panel">
+				<p class="muted small">Opens another version where you are. Ctrl and its number choose it too; drag the handles to change the order.</p>
+				<div id="version-list"></div>
+				<label class="quick-switch" title="Keeps the versions you switch away from loaded, out of sight, so switching back to them is at once and never reloads the page (nor asks for the folder again). Each version kept holds a whole world: more memory."><input type="checkbox" id="quick-switch"> Quick switching</label>
+				<label class="quick-keep" title="The one shown longest ago is let go first">Keep <select id="quick-keep"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select> other versions loaded</label>
+				<p class="muted small">Switching back to a version kept loaded is at once. Each one kept uses about as much memory as the one shown.</p>
+			</div>
+		</details>
 		<details id="goto" name="menu">
 			<summary title="A zone, town, dungeon or any map (/)">Go to</summary>
 			<div class="menu-body panel">
@@ -310,12 +327,17 @@
 		<button id="help-hint" class="plain"><kbd>?</kbd> Controls</button>
 	</nav>
 
+	<!-- Top middle, under the menus: what's still loading, while anything is. -->
+	<div id="loading-status" role="status" aria-live="polite" hidden></div>
+
 	<!-- Top left, under the menus: where the camera is. -->
 	<div id="top-left" hidden>
-		<div id="hud">
-			<div id="hud-location"></div>
-			<button id="hud-coords" class="plain muted" title="Copy a link to this view"></button>
-			<dl id="hud-view"></dl>
+		<div id="hud" hidden>
+			<div id="hud-area" hidden>
+				<div id="hud-location"></div>
+				<button id="hud-coords" class="plain muted" title="Copy a link to this view"></button>
+				<dl id="hud-view"></dl>
+			</div>
 			<dl id="hud-stats" hidden></dl>
 		</div>
 	</div>
@@ -447,6 +469,7 @@
 					<h3>Screen</h3>
 					<div>Click creatures and objects for their details</div>
 					<div><kbd>P</kbd> screenshot, everything in view in full detail</div>
+					<div><kbd>Ctrl</kbd> + <kbd>1</kbd> to <kbd>9</kbd>, then <kbd>0</kbd>: switch game version, in the Game version menu's order</div>
 					<div><kbd>U</kbd> hide the interface · <kbd>K</kbd> performance stats · <kbd>F9</kbd> save a debug log</div>
 					<div><kbd>?</kbd> or <kbd>F1</kbd> this list</div>
 				</section>
@@ -455,6 +478,6 @@
 		</div>
 	</div>
 
-	<script type="module" src="/src/viewer/main.ts"></script>
+	<script type="module" src="/src/viewer/entry.ts"></script>
 </body>
 </html>

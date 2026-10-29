@@ -78,153 +78,248 @@ button:disabled {
 }
 
 /*
- * The start screen, before the game's own pictures can be read: the look of its login screen
- * in plain CSS. A warm dark backdrop, a dialog in a grey metal frame, a gold title and red
- * buttons; viewer.css's .wow-ui rules take over once the install is open.
+ * The start screen: a small launcher panel with the folder button, which the loading bar then
+ * takes the place of, in one look from the first click until the world shows. It has its own
+ * colours and font, and the .wow-ui rules leave it alone, so nothing changes under the bar when
+ * the game's interface art is read.
  */
 #start {
-	--gold: #ffd100;
+	--accent: #d9a441;
+	--accent-bright: #ecb850;
+	--text: #e6e8ec;
+	--muted: #8f96a3;
+	--line: #2a2e35;
+	--bad: #e58080;
 	position: fixed;
 	inset: 0;
+	/* Over the menus and the rest, which are shown under it as it fades. */
+	z-index: 10;
 	display: grid;
 	place-items: center;
-	padding: 16px;
-	background:
-		radial-gradient(ellipse 70% 55% at 50% 42%, rgba(120, 78, 30, 0.35), transparent 70%),
-		radial-gradient(ellipse at center, #1d150d 0%, #0b0806 60%, #030202 100%);
+	/* A little above the middle, where a dialog sits. */
+	padding: 16px 16px 10vh;
+	font: 13px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	color: var(--text);
+	background: radial-gradient(ellipse 60% 45% at 50% 0%, rgba(217, 164, 65, 0.1), transparent 70%), #0d0f12;
+	transition: opacity 0.6s ease;
+}
+
+/* Fading out over the world's first frames. */
+#start.leaving {
+	opacity: 0;
+	pointer-events: none;
 }
 
 .card {
-	width: min(520px, 100%);
-	background: linear-gradient(180deg, rgba(24, 20, 16, 0.96), rgba(10, 9, 8, 0.96));
-	border: 1px solid #000;
-	border-radius: 5px;
-	box-shadow:
-		0 0 0 2px #6f6f6f, 0 0 0 3px #1c1c1c, 0 0 0 4px #8a8a8a, 0 0 0 5px #000,
-		inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 12px 48px rgba(0, 0, 0, 0.8);
-	padding: 26px 30px 22px;
-	text-align: center;
+	width: min(468px, 100%);
+	padding: 20px 24px 16px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: #15181d;
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+	transition: border-color 0.15s;
+}
+
+/* A folder held over the page: the whole panel is the target. */
+.card:has(#drop.dragging) {
+	border-color: var(--accent);
+}
+
+.card header {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.card .logo {
+	flex: none;
+	width: 32px;
+	height: 32px;
+	margin-top: 1px;
 }
 
 .card h1 {
-	margin: 0 0 8px;
-	font: 400 32px/1.1 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
-	letter-spacing: 0.03em;
-	color: var(--gold);
-	text-shadow: 0 2px 0 #000, 0 0 14px rgba(255, 160, 0, 0.3);
+	margin: 0;
+	font-size: 17px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0.01em;
 }
 
-.card details {
-	text-align: left;
+.card .tagline {
+	margin: 1px 0 0;
+	color: var(--muted);
+}
+
+/* The folder row and the loading bar share one cell: the row sets its size, the bar sits over it while loading. */
+.step {
+	display: grid;
+}
+
+.step > * {
+	grid-area: 1 / 1;
+}
+
+#start.loading #drop {
+	visibility: hidden;
 }
 
 #drop {
 	display: grid;
-	justify-items: center;
+	justify-items: start;
 	gap: 8px;
-	margin: 18px 0 14px;
-	padding: 22px 16px;
-	border: 1px dashed rgba(255, 209, 0, 0.3);
-	border-radius: 4px;
-	background: rgba(0, 0, 0, 0.3);
 }
 
-#drop.dragging {
-	border-color: var(--gold);
-	background: rgba(255, 209, 0, 0.08);
+#drop .hint {
+	font-size: 12px;
+	color: var(--muted);
 }
 
-/* The game's red panel buttons, drawn: dark red with a lit top edge and gold lettering. */
-#start button {
-	color: var(--gold);
-	background: linear-gradient(180deg, #b3170f 0%, #7d0b07 48%, #5a0503 52%, #6d0805 100%);
-	border: 1px solid #1a0000;
+/* The folder path on its own line, whole. */
+#start code {
+	display: block;
+	width: fit-content;
+	margin-top: 3px;
+	padding: 1px 6px;
 	border-radius: 3px;
-	box-shadow: inset 0 1px 0 rgba(255, 190, 150, 0.35), 0 0 0 1px #4d4d4d, 0 2px 4px rgba(0, 0, 0, 0.6);
-	text-shadow: 1px 1px 0 #000;
-	font-weight: 400;
+	font-size: 11.5px;
+	color: var(--text);
+	background: #1f232a;
+}
+
+#start button {
+	font: inherit;
+	font-weight: 500;
+	color: var(--text);
+	background: #22262d;
+	border: 1px solid #343941;
+	border-radius: 6px;
+	padding: 7px 14px;
+	cursor: pointer;
+	transition: background-color 0.15s, border-color 0.15s;
 }
 
 #start button:hover:not(:disabled) {
-	color: #fff;
-	filter: brightness(1.2);
+	background: #2a2f37;
+	border-color: #434a54;
 }
 
-#start button:active:not(:disabled) {
-	background: linear-gradient(180deg, #5a0503, #7d0b07);
-	box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6), 0 0 0 1px #4d4d4d;
+#start button:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+#start button.primary {
+	color: #1b1407;
+	font-weight: 600;
+	background: var(--accent);
+	border-color: var(--accent);
+}
+
+#start button.primary:hover:not(:disabled) {
+	background: var(--accent-bright);
+	border-color: var(--accent-bright);
 }
 
 #start select {
-	background: #0b0908;
-	border-color: #6f6f6f;
-	color: var(--gold);
+	font: inherit;
+	color: var(--text);
+	background: #1b1f25;
+	border: 1px solid #343941;
+	border-radius: 6px;
+	padding: 6px 8px;
 }
 
-#start a {
-	color: var(--gold);
+#start select:focus-visible, #start button:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
 }
 
 #loading {
-	margin: 18px 0 14px;
 	display: grid;
-	gap: 8px;
-}
-
-.loading-bar {
-	height: 10px;
-	border-radius: 5px;
-	background: #262a31;
-	overflow: hidden;
-}
-
-/* Stripes keep moving through long steps, so it never looks stuck. */
-#loading-fill {
-	width: 0%;
-	height: 100%;
-	border-radius: 5px;
-	background: repeating-linear-gradient(-45deg, var(--accent) 0 10px, #e7b95e 10px 20px);
-	background-size: 28px 28px;
-	animation: loading-stripes 0.8s linear infinite;
-	transition: width 0.4s ease-out;
-}
-
-@keyframes loading-stripes {
-	to { background-position: 28px 0; }
+	align-self: center;
+	gap: 10px;
 }
 
 #loading-text {
-	font-weight: 600;
+	font-weight: 500;
 }
 
-button.big {
-	font-size: 16px;
-	padding: 10px 20px;
+.loading-bar {
+	height: 4px;
+	border-radius: 2px;
+	background: #22262d;
+	overflow: hidden;
+}
+
+#loading-fill {
+	position: relative;
+	width: 0%;
+	height: 100%;
+	border-radius: 2px;
+	background: var(--accent);
+	transition: width 0.4s ease-out;
+}
+
+/* A glint keeps passing along the fill, so long steps never look stuck. */
+#loading-fill::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent) -60% 0 / 40% 100% no-repeat;
+	animation: loading-glint 1.6s ease-in-out infinite;
+}
+
+@keyframes loading-glint {
+	to { background-position: 160% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#loading-fill::after {
+		animation: none;
+	}
 }
 
 #product-step {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
 	align-items: center;
+	gap: 8px;
+	margin-top: 14px;
 }
 
-#product-step[hidden] {
+#product-step label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--muted);
+}
+
+#status {
+	margin: 12px 0 0;
+	color: var(--muted);
+}
+
+#status.bad {
+	color: var(--bad);
+}
+
+#status:empty {
 	display: none;
 }
 
+.card .note {
+	margin: 16px 0 0;
+	padding-top: 10px;
+	border-top: 1px solid var(--line);
+	font-size: 11.5px;
+	color: var(--muted);
+}
+
 /* Nothing to choose until it's known whether the game was found on its own. */
-#start.finding #drop,
-#start.finding details {
+#start.finding :is(.step, .note) {
 	visibility: hidden;
-}
-
-.card details {
-	margin-top: 12px;
-}
-
-.card summary {
-	cursor: pointer;
 }
 
 /* Along the top: the menus, each dropping its panel below its name, one open at a time. */
@@ -293,10 +388,6 @@ body:has(#menu details[open]) #hud {
 }
 
 #hud {
-	visibility: hidden;
-}
-
-#hud {
 	background: var(--panel);
 	border-radius: 6px;
 	padding: 8px 12px;
@@ -326,6 +417,13 @@ body:has(#menu details[open]) #hud {
 	padding-top: 4px;
 	margin-top: 6px !important;
 	border-top: 1px solid var(--line);
+}
+
+/* With the area info off, the stats stand alone. */
+#hud-area[hidden] + #hud-stats {
+	padding-top: 0;
+	margin-top: 0 !important;
+	border-top: none;
 }
 
 /* A button that looks like text. */
@@ -644,6 +742,208 @@ kbd {
 	border-color: var(--accent);
 }
 
+/*
+ * The Game version menu: a row per installed version, a handle at the left to move it and the
+ * rest choosing it; the open one marked and lit. After evaera's design in #8.
+ */
+/*
+ * As wide as the longest row, between these: a name too long even then is cut short with an
+ * ellipsis, never the shortcut beside it. The notes don't widen it, only wrap to it.
+ */
+#version .menu-body {
+	width: max-content;
+	min-width: 300px;
+	max-width: min(460px, calc(100vw - 32px));
+}
+
+#version .menu-body > p {
+	width: 0;
+	min-width: 100%;
+}
+
+.quick-keep {
+	display: block;
+	margin-top: 6px;
+}
+
+#version-list {
+	display: grid;
+	gap: 2px;
+	max-height: min(60vh, 560px);
+	overflow: hidden auto;
+}
+
+.version-row {
+	display: flex;
+	align-items: stretch;
+	gap: 4px;
+	border-block: 2px solid transparent;
+}
+
+.version-row.drop-before {
+	border-top-color: var(--accent);
+}
+
+.version-row.drop-after {
+	border-bottom-color: var(--accent);
+}
+
+.version-row.dragging {
+	opacity: 0.5;
+}
+
+:is(.wow-ui, body) #version-list :is(.version-handle, .version-choice) {
+	border-image: none;
+	box-shadow: none;
+}
+
+:is(.wow-ui, body) #version-list .version-handle {
+	flex: 0 0 26px;
+	padding: 4px;
+	cursor: grab;
+	color: #aaa;
+	background: transparent;
+	border: 0;
+}
+
+:is(.wow-ui, body) #version-list .version-handle {
+	touch-action: none;
+}
+
+/* While a row is dragged by its handle, wherever the pointer is. */
+:is(.wow-ui, body) #version-list .version-handle:active,
+body.reordering,
+body.reordering * {
+	cursor: grabbing !important;
+}
+
+:is(.wow-ui, body) #version-list .version-choice {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	text-align: left;
+	background: #17130f;
+	border: 1px solid #544631;
+}
+
+:is(.wow-ui, body) #version-list .version-choice:hover {
+	background: #30271b;
+}
+
+:is(.wow-ui, body) #version-list .version-choice.active {
+	color: #ffe19b;
+	background: #3c2d13;
+	border-color: #d6ac49;
+}
+
+.version-mark {
+	width: 12px;
+	color: #ffd100;
+}
+
+.version-name {
+	flex: 1;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* The build on a line of its own, so names don't wrap or get cut off. */
+.version-name small {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin-top: 2px;
+	font-size: 10px;
+	color: #b8afa1;
+}
+
+#version-list kbd {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.quick-switch {
+	display: block;
+	margin-top: 8px;
+}
+
+/*
+ * Quick switching: the page holding the viewers (see switchHost.ts). Each viewer frame stays laid
+ * out at full size, out of sight, so showing it again doesn't resize or rebuild its renderer.
+ */
+.viewer-frame {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	visibility: hidden;
+}
+
+.viewer-frame.shown {
+	visibility: visible;
+	z-index: 1;
+}
+
+#switch-status {
+	position: fixed;
+	z-index: 2;
+	left: 50%;
+	bottom: 24px;
+	transform: translateX(-50%);
+	max-width: 90%;
+	padding: 10px 16px;
+	color: #e8e0cc;
+	background: #15191f;
+	border: 1px solid var(--accent);
+	border-radius: 5px;
+}
+
+#switch-status button {
+	margin-left: 12px;
+}
+
+/* What's still loading, at the top in the middle, under the menus; gone once all has. */
+#loading-status {
+	position: fixed;
+	z-index: 5;
+	top: 40px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 12px;
+	font-size: 12px;
+	color: var(--text);
+	background: var(--panel);
+	border-radius: 12px;
+	pointer-events: none;
+}
+
+#loading-status[hidden] {
+	display: none;
+}
+
+#loading-status::before {
+	content: '';
+	width: 10px;
+	height: 10px;
+	border: 2px solid var(--accent);
+	border-right-color: transparent;
+	border-radius: 50%;
+	animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+	to { transform: rotate(360deg); }
+}
+
 /* Go to: the last menu, at the right, its panel a search box with the matches under it. */
 #goto {
 	margin-left: auto;
@@ -820,7 +1120,7 @@ kbd {
 }
 
 /* Alt+Z or U: only the world. */
-.ui-hidden :is(#menu, #top-left, #help, #side, #zone-banner, #crosshair, #nameplates) {
+.ui-hidden :is(#menu, #top-left, #help, #side, #zone-banner, #crosshair, #nameplates, #loading-status) {
 	display: none !important;
 }
 
@@ -951,7 +1251,8 @@ kbd {
 
 #highlight.off #highlight-groups,
 #highlight.off #highlight-query,
-#highlight.off #walkable-key {
+#highlight.off #walkable-key,
+#highlight.off #walls-key {
 	opacity: 0.5;
 }
 
@@ -971,11 +1272,19 @@ kbd {
 	gap: 10px;
 }
 
-#highlight.walkable #walkable-key {
+/* And the invisible walls' (see invisibleWalls.ts). */
+#walls-key {
+	display: none;
+	--slope: #b44dff;
+}
+
+#highlight.walkable #walkable-key,
+#highlight.walls #walls-key {
 	display: flex;
 }
 
-#walkable-key span::before {
+#walkable-key span::before,
+#walls-key span::before {
 	content: '';
 	display: inline-block;
 	width: 8px;
@@ -1136,19 +1445,19 @@ body.wow-ui {
 }
 
 /* Dialog box backdrop: 32-unit edges over the dark tiled fill, inset 11. */
-.wow-ui :is(.help-card, .card) {
+.wow-ui .help-card {
 	border: 11px solid transparent;
 	border-radius: 14px;
 	border-image: var(--wow-dialog-border) 32 / 32px / 0 round;
 	background: var(--wow-dialog-background) repeat, rgba(0, 0, 0, 0.6);
 }
 
-.wow-ui :is(h1, h2, h3, #hud-location) {
+.wow-ui :is(h2, h3, #hud-location) {
 	color: var(--accent);
 	font-weight: 400;
 }
 
-.wow-ui .card h1, .wow-ui .help-card h2 {
+.wow-ui .help-card h2 {
 	text-align: center;
 	text-shadow: 1px 1px 0 #000;
 }
@@ -1181,8 +1490,8 @@ body.wow-ui {
 	border-color: #5c5c5c;
 }
 
-/* UIPanelButtonTemplate: the red button, gold text, its pressed picture while held. */
-.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close) {
+/* UIPanelButtonTemplate: the red button, gold text, its pressed picture while held. The start screen keeps its own. */
+.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close, #start *) {
 	border-style: solid;
 	border-width: 0 10px;
 	border-radius: 0;
@@ -1194,17 +1503,17 @@ body.wow-ui {
 	min-height: 22px;
 }
 
-.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close):hover:not(:disabled) {
+.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close, #start *):hover:not(:disabled) {
 	color: #fff;
 	filter: brightness(1.25);
 }
 
-.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close):active:not(:disabled) {
+.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close, #start *):active:not(:disabled) {
 	border-image-source: var(--wow-button-down);
 	padding: 4px 1px 2px 3px;
 }
 
-.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close):disabled {
+.wow-ui button:not(.plain, #minimap-in, #minimap-out, #info-close, #start *):disabled {
 	color: #808080;
 	filter: grayscale(0.8);
 }
@@ -1432,78 +1741,6 @@ body.wow-ui {
 
 .wow-ui #minimap-wrap .zoom button:active {
 	background-image: var(--zoom-down);
-}
-
-/* The real pictures replace the drawn frame and buttons of the start screen. */
-.wow-ui .card, .wow-ui #start button {
-	box-shadow: none;
-}
-
-/*
- * While the world loads, the start screen becomes the game's loading screen: a continent's
- * picture filling the window and the glue loading bar low in the middle. The bar's frame
- * (512×64) leaves an opening at 34–477 × 20–44 for the fill; the padding, as a share of the
- * width, puts the fill there at any size.
- */
-.wow-ui #start:has(#loading:not([hidden])) {
-	place-items: end center;
-	padding-bottom: 7vh;
-	/* From the top, so a short window crops the feet rather than the logo. */
-	background: #000 var(--wow-loading-screen) center top / cover no-repeat;
-}
-
-.wow-ui #start:has(#loading:not([hidden])) .card {
-	width: min(640px, 92vw);
-	padding: 0;
-	border: none;
-	border-image: none;
-	background: none;
-}
-
-.wow-ui #start:has(#loading:not([hidden])) :is(h1, .card > p.muted:not(#status), details) {
-	display: none;
-}
-
-.wow-ui #loading {
-	margin: 0;
-}
-
-.wow-ui .loading-bar {
-	position: relative;
-	height: auto;
-	aspect-ratio: 512 / 64;
-	padding: calc(100% * 20 / 512) calc(100% * 35 / 512) calc(100% * 20 / 512) calc(100% * 34 / 512);
-	border-radius: 0;
-	/* Black behind the fill, which is partly see-through, filling only the frame's opening. */
-	background: #000 content-box;
-	overflow: visible;
-}
-
-.wow-ui .loading-bar::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	background: var(--wow-loading-border) 0 0 / 100% 100% no-repeat;
-	pointer-events: none;
-}
-
-/* The game's fill, with a glint that keeps passing along it so long steps never look stuck. */
-.wow-ui #loading-fill {
-	border-radius: 0;
-	background:
-		linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent) -60% 0 / 40% 100% no-repeat,
-		var(--wow-loading-fill) 0 0 / 100% 100%;
-	animation: loading-glint 1.6s linear infinite;
-}
-
-@keyframes loading-glint {
-	to { background-position: 160% 0, 0 0; }
-}
-
-.wow-ui #loading-text {
-	font-weight: 400;
-	color: #fff;
-	text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 0 8px #000;
 }
 
 /* The ground tint's key, and the level its creature colours are for (only with that tint). */

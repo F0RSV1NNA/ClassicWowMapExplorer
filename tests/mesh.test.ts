@@ -18,6 +18,9 @@ test('saved polygon reachability is a flag independent of surface area', () => {
 
 test('LiquidType uses the field from the actual layout, including non-inline IDs and array fields', () => {
 	expect(soundBankField('4397CEE6')).toBe(3);
+	expect(soundBankField(0x4397CEE6)).toBe(3);
+	expect(soundBankField(0xD1ECEEC9)).toBe(3);
+	expect(soundBankField(0x3313BBF3)).toBe(13);
 	expect(soundBankField('D1ECEEC9')).toBe(3);
 	expect(soundBankField('3313BBF3')).toBe(13);
 	expect(() => soundBankField('DEADBEEF')).toThrow('no bundled SoundBank');

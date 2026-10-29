@@ -1,6 +1,7 @@
-import { droppedFolderToSource, filesToSource, hasDirectoryPicker, pickDirectory } from '../app/folderPicker';
+import { droppedFolderToSource, filesToSource } from './folderPicker';
 import { createStorageClient } from '../worker/client';
 import type { SourceInit } from '../worker/protocol';
+import type { ProductInfo } from '../casc/config';
 import type { Place } from '../explorer/places';
 import type { SpawnInfo } from '../explorer/spawns';
 import type { MapCategory, MapListing } from '../explorer/world';
@@ -22,11 +23,23 @@ import { CHARACTER_OUTFITS, type CharacterOutfit, type CharacterRace } from '../
 
 import { setVolume, volumeSetting, type VolumeChannel } from './volume';
 import { WorldMap } from './worldMap';
+import { setHeard } from './audioOut';
+import { readEnabled as soundSaved } from './music';
+import { keptVersions, productName, sessionHost, setKeptVersions, setQuickSwitching, quickSwitching, type SwitchState, type ViewerSession } from './session';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const status = $('status');
 
 const storage = createStorageClient((message) => showProgress(message), () => ($('game-updated').hidden = false));
+
+/** The page holding the viewers, when this is one of them (quick switching; see switchHost.ts). */
+const host = sessionHost();
+/** What the host made this viewer for: a version to open, and what to show. */
+const requested = host?.request(window);
+// Opened out of sight for a switch: silent until shown.
+if (requested) setHeard(false);
+/** The folder in use, for a viewer opening another version of it. */
+let source: SourceInit | null = null;
 $('game-updated-reload').addEventListener('click', () => location.reload());
 
 /** A message under the buttons; errors also end the loading bar, so the buttons come back. */
@@ -58,12 +71,13 @@ const LOADING_STEPS: [RegExp, number, string][] = [
 /** Where the bar creeps to while the folder is read, and how long that takes (s). */
 const FOLDER_CREEP = [0.42, 20] as const;
 
-/** Shows the loading bar at a step, in place of the folder buttons. */
+/** Shows the loading bar at a step, over the folder button (kept in the layout, so the card doesn't change size). */
 function showProgress(message: string): void {
 	perf.log('load', message);
+	if (requested) host!.progress(window, message);
 	const step = LOADING_STEPS.find(([pattern]) => pattern.test(message));
 	const appearing = $('loading').hidden;
-	$('drop').hidden = true;
+	$('start').classList.add('loading');
 	$('loading').hidden = false;
 	// A bar that was hidden has no width to animate from until it's laid out once.
 	if (appearing) void $('loading-fill').offsetWidth;
@@ -80,18 +94,125 @@ function showProgress(message: string): void {
 
 function hideProgress(): void {
 	$('loading').hidden = true;
-	$('drop').hidden = false;
+	$('start').classList.remove('loading');
 	$('loading-fill').style.width = '0%';
+}
+
+/** Fades the start screen out over the world's first frames, then takes it out of the page. */
+function dismissStart(): void {
+	const start = $('start');
+	start.classList.add('leaving');
+	const gone = () => (start.hidden = true);
+	start.addEventListener('transitionend', gone, { once: true });
+	// Reduced motion, or a tab in the background that doesn't run transitions: gone all the same.
+	setTimeout(gone, 1000);
+}
+
+const PRODUCT_KEY = 'mapExplorer.product';
+/** Every game version in the folder, for the Game version menu. */
+let installed: ProductInfo[] = [];
+/** Set once a game version has been opened: the viewer starts once per page, so another one takes a reload. */
+let exploring = false;
+
+/** The Game version menu lists these first, in this order (and so they get Ctrl+1, 2, 3); the rest after. */
+const PRODUCT_ORDER = ['wow_classic_beta', 'wow_classic_era', 'wow'];
+
+/** Ctrl and the number for the nth version in the menu: 1 to 9, then 0; none past the tenth. */
+function versionKey(index: number): string {
+	return index < 10 ? String((index + 1) % 10) : '';
+}
+
+/** The game version chosen in the Game version menu on an earlier visit, if any. */
+function savedProduct(): string | null {
+	try {
+		return localStorage.getItem(PRODUCT_KEY);
+	} catch {
+		// Storage blocked: the automatic choice.
+		return null;
+	}
+}
+
+/** What a reload carries over (see SwitchState): taken by the page it reloads into. */
+const SWITCH_KEY = 'mapExplorer.switch';
+
+/** Movement keys, carried on held down into the next viewer when switching in place. */
+const MOVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'KeyC', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight']);
+const heldKeys = new Set<string>();
+window.addEventListener('keydown', (e) => {
+	if (MOVE_KEYS.has(e.code) && !isTyping(e)) heldKeys.add(e.code);
+}, true);
+window.addEventListener('keyup', (e) => heldKeys.delete(e.code), true);
+window.addEventListener('blur', () => heldKeys.clear());
+
+/** Exactly what's in view now, the time of day if moved, the movement keys held and whether the mouse is captured. */
+function currentState(): SwitchState {
+	const viewer = infoViewer;
+	return { view: viewer?.viewSpot() ?? null, time: viewer && !viewer.timeIsLocal ? viewer.timeMinutes : null, keys: [...heldKeys], captured: viewer?.mouseCaptured ?? false };
+}
+
+/**
+ * Remembers a game version and opens it, showing what's in view now: with quick switching, in
+ * another viewer of this page; otherwise by reloading the page into it.
+ */
+function switchProduct(product: string, fromMenu = false): void {
+	try {
+		localStorage.setItem(PRODUCT_KEY, product);
+	} catch {
+		// Not remembered: a reload comes back to the version it was.
+	}
+	// Closed here, so this viewer, kept for quick switching, doesn't come back with it open; the
+	// next one opens it again if the version was chosen in it (see SwitchState.menu).
+	$<HTMLDetailsElement>('version').open = false;
+	const state = { ...currentState(), menu: fromMenu };
+	if (host && source && infoViewer) host.switchProduct(window, product, source, state);
+	else reloadWith(state);
+}
+
+/** Reloads the whole page (holding viewers or not), to show what's in view now again. */
+function reloadWith(state: SwitchState): void {
+	try {
+		sessionStorage.setItem(SWITCH_KEY, JSON.stringify(state));
+	} catch {
+		// Not remembered: it starts where the address says.
+	}
+	// The hash too, now: it's written only once the view has been still a while, and the reload
+	// takes the address as it is when asked, before the page is gone.
+	infoViewer?.shareLink();
+	(window.top ?? window).location.reload();
+}
+
+/** Held down when the viewer before was left: pressed again here, as the keyboard won't say so. */
+function pressKeys(keys: string[]): void {
+	for (const code of keys) if (MOVE_KEYS.has(code)) window.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true }));
+}
+
+/** What switchProduct carried over, taken once, so a later reload of the page starts as usual. */
+function takeSwitch(): Partial<SwitchState> {
+	try {
+		const state = JSON.parse(sessionStorage.getItem(SWITCH_KEY) ?? '{}') ?? {};
+		sessionStorage.removeItem(SWITCH_KEY);
+		return state;
+	} catch {
+		// Storage blocked or unreadable: nothing carried over.
+		return {};
+	}
 }
 
 async function useSource(init: SourceInit): Promise<void> {
 	showProgress('Reading .build.info');
 	try {
+		source = init;
 		const products = (await storage.setSource(init)).filter((p) => p.product.startsWith('wow'));
+		// Once each: a version can be listed with several builds, and opening it picks the one that can be read.
+		installed = products.filter((p, i) => products.findIndex((q) => q.product === p.product) === i);
+		const rank = (product: string) => (PRODUCT_ORDER.includes(product) ? PRODUCT_ORDER.indexOf(product) : PRODUCT_ORDER.length);
+		installed.sort((a, b) => rank(a.product) - rank(b.product));
 		const select = $<HTMLSelectElement>('product');
-		select.replaceChildren(...products.map((p) => new Option(`${p.product} ${p.version}`, p.product)));
-		// Prefer a classic build: the continent file IDs are the classic ones.
-		const preferred = products.find((p) => p.product === 'wow_classic_beta') ?? products.find((p) => p.product.startsWith('wow_classic'));
+		select.replaceChildren(...products.map((p) => new Option(`${productName(p.product)} ${p.version}`, p.product)));
+		if (requested && !products.some((p) => p.product === requested.product)) throw new Error(`${productName(requested.product)} isn't in this folder`);
+		const saved = requested?.product ?? savedProduct();
+		// The version chosen before, if it's still installed. Otherwise prefer a classic build: the continent file IDs are the classic ones.
+		const preferred = products.find((p) => p.product === saved) ?? products.find((p) => p.product === 'wow_classic_beta') ?? products.find((p) => p.product.startsWith('wow_classic'));
 		if (preferred) {
 			// Nothing to choose: straight in.
 			select.value = preferred.product;
@@ -104,6 +225,7 @@ async function useSource(init: SourceInit): Promise<void> {
 	} catch (e) {
 		console.error('Reading the game folder failed', e);
 		setStatus(folderProblem(init, e), true);
+		if (requested) host!.failed(window, `${productName(requested.product)} couldn't open: ${e instanceof Error ? e.message : String(e)}.`);
 	}
 }
 
@@ -111,13 +233,12 @@ async function useSource(init: SourceInit): Promise<void> {
 function folderProblem(init: SourceInit, error: unknown): string {
 	const reason = error instanceof Error ? error.message : String(error);
 	if (init.kind === 'http') return `World of Warcraft was found but couldn't be read (${reason}). Choose its folder instead.`;
-	if (init.kind === 'handle') return `That folder couldn't be read (${reason}). Choose the folder that contains _classic_ or _classic_beta_ (not that folder itself).`;
 	const hasBuildInfo = init.files.some(({ path }) => path === '.build.info');
 	const dataFiles = init.files.filter(({ path }) => /^data\/data\//i.test(path)).length;
 	const counts = `Got ${init.files.length} files: ${hasBuildInfo ? '.build.info found' : '.build.info missing'}, ${dataFiles} in Data/data.`;
 	if (!hasBuildInfo && dataFiles) {
 		// The browser's folder dialog leaves out hidden files (.build.info) on macOS and Linux.
-		return `${counts} The browser's folder dialog left out .build.info, a hidden file. Drag the folder onto this page instead, or use "Open with direct access" under Help (Chrome or Edge).`;
+		return `${counts} The browser's folder dialog left out .build.info, a hidden file. Drag the folder onto this page instead.`;
 	}
 	return `${counts} That doesn't look like the World of Warcraft folder: choose the one that contains _classic_ or _classic_beta_ (not that folder itself). Reason: ${reason}`;
 }
@@ -140,7 +261,9 @@ async function findWow(): Promise<void> {
 	$('start').classList.remove('finding');
 	if (found) await useSource({ kind: 'http', base });
 }
-void findWow();
+// A viewer made for a switch opens the folder the one before had.
+if (requested) void useSource(requested.source);
+else void findWow();
 
 // Dropping the folder on the page works like choosing it.
 const drop = $('drop');
@@ -189,23 +312,170 @@ $<HTMLInputElement>('pick-input').addEventListener('change', async (event) => {
 	await useSource(source);
 });
 
-if (!hasDirectoryPicker) $('pick-direct').hidden = true;
-$('pick-direct').addEventListener('click', async () => {
-	try {
-		const init = await pickDirectory();
-		if (init) await useSource(init);
-	} catch (e) {
-		setStatus((e as Error).message, true);
-	}
+$('explore').addEventListener('click', () => {
+	// After a version that couldn't start, another one starts from a fresh page.
+	if (exploring) switchProduct($<HTMLSelectElement>('product').value);
+	else void explore();
 });
 
-$('explore').addEventListener('click', () => void explore());
+const ORDER_KEY = 'mapExplorer.gameOrder';
+
+/** The installed versions in the menu's order: as the user arranged them, the rest after as installed. */
+function versionOrder(): ProductInfo[] {
+	const saved = readSaved<{ order: string[] }>(ORDER_KEY).order;
+	const order = Array.isArray(saved) ? saved : [];
+	const rank = (p: ProductInfo) => (order.includes(p.product) ? order.indexOf(p.product) : order.length + installed.indexOf(p));
+	return [...installed].sort((a, b) => rank(a) - rank(b));
+}
+
+/**
+ * The Game version menu: every version in the folder, the open one marked; choosing another
+ * switches to it. Ctrl and a number choose one too, in the menu's order, which the handles at
+ * the left rearrange (dragged, or the arrow keys on one). The rows follow evaera's design in #8.
+ */
+function setUpVersions(): void {
+	const current = $<HTMLSelectElement>('product').value;
+	const list = $('version-list');
+	$('version').hidden = installed.length < 2;
+	const move = (product: string, target: string, after: boolean) => {
+		const order = versionOrder().map((p) => p.product).filter((id) => id !== product);
+		order.splice(order.indexOf(target) + Number(after), 0, product);
+		save(ORDER_KEY, { order });
+		render();
+		list.querySelector<HTMLElement>(`[data-product="${CSS.escape(product)}"] .version-handle`)?.focus();
+	};
+	const clearMarks = () => {
+		for (const row of list.children) row.classList.remove('drop-before', 'drop-after');
+	};
+	/** Where a row dropped at a height goes: before the first row reaching below it, or after the last. */
+	const dropAt = (y: number) => {
+		const rows = [...list.children] as HTMLElement[];
+		const i = rows.findIndex((row) => y < row.getBoundingClientRect().top + row.offsetHeight / 2);
+		return i < 0 ? { row: rows.at(-1), after: true } : { row: rows[i], after: false };
+	};
+	/**
+	 * Dragging a row by its handle: followed with the pointer itself rather than the browser's drag
+	 * and drop, which Firefox left unfinished from these buttons (the drop never came) and which
+	 * showed a no-drop cursor between rows. Let go, the row goes to the gap marked.
+	 */
+	const dragFrom = (handle: HTMLElement, row: HTMLElement, product: string, down: PointerEvent) => {
+		down.preventDefault();
+		// Kept for the arrow keys, as a click would.
+		handle.focus();
+		handle.setPointerCapture(down.pointerId);
+		let target: ReturnType<typeof dropAt> | null = null;
+		const follow = (e: PointerEvent) => {
+			// Not for a press that stays put: that's a click, to use the arrow keys.
+			if (!target && Math.abs(e.clientY - down.clientY) < 4) return;
+			row.classList.add('dragging');
+			document.body.classList.add('reordering');
+			clearMarks();
+			target = dropAt(e.clientY);
+			target.row?.classList.add(target.after ? 'drop-after' : 'drop-before');
+		};
+		const end = (e: PointerEvent) => {
+			handle.removeEventListener('pointermove', follow);
+			handle.removeEventListener('pointerup', end);
+			handle.removeEventListener('pointercancel', end);
+			row.classList.remove('dragging');
+			document.body.classList.remove('reordering');
+			clearMarks();
+			const to = target?.row?.dataset.product;
+			if (e.type === 'pointerup' && target && to && to !== product) move(product, to, target.after);
+		};
+		handle.addEventListener('pointermove', follow);
+		handle.addEventListener('pointerup', end);
+		handle.addEventListener('pointercancel', end);
+	};
+	const render = () => {
+		const order = versionOrder();
+		list.replaceChildren(...order.map((p, i) => {
+			const row = document.createElement('div');
+			row.className = 'version-row';
+			row.dataset.product = p.product;
+			const handle = document.createElement('button');
+			handle.className = 'version-handle';
+			handle.textContent = '☰';
+			handle.title = 'Drag, or the arrow keys, to move it: the order sets the Ctrl+number keys';
+			handle.setAttribute('aria-label', `Move ${productName(p.product)}`);
+			handle.addEventListener('keydown', (e) => {
+				if (e.code !== 'ArrowUp' && e.code !== 'ArrowDown') return;
+				e.preventDefault();
+				e.stopPropagation();
+				const target = order[i + (e.code === 'ArrowUp' ? -1 : 1)];
+				if (target) move(p.product, target.product, e.code === 'ArrowDown');
+			});
+			handle.addEventListener('pointerdown', (e) => {
+				if (e.button === 0) dragFrom(handle, row, p.product, e);
+			});
+			const button = document.createElement('button');
+			button.className = 'version-choice';
+			const open = p.product === current;
+			button.classList.toggle('active', open);
+			const mark = document.createElement('span');
+			mark.className = 'version-mark';
+			mark.textContent = open ? '✓' : '';
+			const name = document.createElement('span');
+			name.className = 'version-name';
+			name.textContent = productName(p.product);
+			const build = document.createElement('small');
+			build.textContent = p.version;
+			name.append(build);
+			button.append(mark, name);
+			const key = versionKey(i);
+			if (key) {
+				const kbd = document.createElement('kbd');
+				kbd.textContent = `Ctrl+${key}`;
+				button.append(kbd);
+				button.setAttribute('aria-keyshortcuts', `Control+${key}`);
+			}
+			if (open) {
+				button.setAttribute('aria-current', 'true');
+				button.title = `${p.product}: the version open now`;
+			} else {
+				button.title = p.product;
+				button.addEventListener('click', () => switchProduct(p.product, true));
+			}
+			row.append(handle, button);
+			return row;
+		}));
+	};
+	render();
+	// Turned on or off, the page is made again as it then is (holding viewers or one), where it was.
+	const quick = $<HTMLInputElement>('quick-switch');
+	const keep = $<HTMLSelectElement>('quick-keep');
+	quick.checked = quickSwitching();
+	keep.value = String(keptVersions());
+	keep.disabled = !quick.checked;
+	quick.addEventListener('change', () => {
+		setQuickSwitching(quick.checked);
+		reloadWith(currentState());
+	});
+	// Taken up by the page holding the viewers as it is (see switchHost.ts).
+	keep.addEventListener('change', () => setKeptVersions(Number(keep.value)));
+	// Moved in another viewer of the same page (see Quick switching).
+	window.addEventListener('storage', (e) => {
+		if (e.key === ORDER_KEY) render();
+	});
+	if (installed.length < 2) return;
+	window.addEventListener('keydown', (e) => {
+		if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || e.repeat || isTyping(e)) return;
+		const digit = /^Digit(\d)$/.exec(e.code)?.[1];
+		if (digit === undefined) return;
+		const chosen = versionOrder()[(Number(digit) + 9) % 10];
+		if (!chosen) return;
+		// Not the browser's own Ctrl+number, which goes to another tab.
+		e.preventDefault();
+		if (chosen.product !== current) switchProduct(chosen.product);
+	});
+}
 
 /** Opens the chosen game version and starts the viewer. */
 async function explore(): Promise<void> {
+	exploring = true;
 	const button = $<HTMLButtonElement>('explore');
 	button.disabled = true;
-	for (const id of ['pick', 'pick-direct']) $<HTMLButtonElement>(id).disabled = true;
+	$<HTMLButtonElement>('pick').disabled = true;
 	try {
 		const meshSourceBuild = await storage.open($<HTMLSelectElement>('product').value);
 		const ui = loadUiAssets(storage);
@@ -214,14 +484,21 @@ async function explore(): Promise<void> {
 		// For poking at the scene from the console (and test scripts) while developing.
 		if (import.meta.env.DEV) (globalThis as unknown as { mapExplorerViewer: Viewer }).mapExplorerViewer = viewer;
 		viewer.onShotStatus = showShotStatus;
+		viewer.onHash = (hash) => host?.hash(window, hash);
 		// Shadows and the torch are part of what three builds each shader for, and load() builds
 		// those the world will need; set only afterwards, every one was built again while flying.
 		const { stats: _, ...saved } = readSaved<SavedView>(VIEW_KEY);
 		viewer.settings = saved;
 		await viewer.load((text) => showProgress(text));
+		// Switched from another game version: the camera where it was there, before the first frame.
+		const carried = requested?.state ?? takeSwitch();
+		const placed = carried.view ? await viewer.showSpot(carried.view.camera) : true;
+		// Opened in place to show that, it's no use elsewhere: the viewer before stays.
+		if (!placed && requested) throw new Error('that map isn’t in this version');
+		if (typeof carried.time === 'number' && Number.isFinite(carried.time)) viewer.timeMinutes = carried.time;
 		const { minimapArrow } = await ui;
 		showProgress('Starting');
-		$('start').hidden = true;
+		dismissStart();
 		$('menu').hidden = $('top-left').hidden = $('side').hidden = false;
 		setUpView(viewer);
 		viewer.start();
@@ -230,21 +507,89 @@ async function explore(): Promise<void> {
 		setUpMinimap(viewer, minimapArrow);
 		void setUpGoTo(viewer);
 		setUpHighlights(viewer);
+		setUpVersions();
+		// Chosen in the menu before: still open, for comparing the next.
+		if (carried.menu) $<HTMLDetailsElement>('version').open = true;
 		setUpTravel(viewer, minimapArrow);
 		setUpWalking(viewer);
 		setUpEmotes(viewer);
 		setUpSound(viewer);
 		setUpMesh(viewer, storage, $<HTMLSelectElement>('product').value, meshSourceBuild);
 		setUpHelp();
+		// And on foot, the character where it stood, once its look is set.
+		if (carried.view?.walker) void viewer.walkAt(carried.view.walker).then((problem) => problem && notify(problem));
+		if (host) {
+			// Opened out of sight for a switch: shown once the ground in view has loaded.
+			if (requested) await viewer.firstView;
+			host.ready(window, viewerSession(viewer));
+		}
 	} catch (e) {
 		perf.log('error', `could not start: ${(e as Error).message}`);
 		setStatus(`Could not start: ${(e as Error).message}`, true);
+		if (requested) {
+			host!.failed(window, `${productName(requested.product)} couldn't open: ${(e as Error).message}.`);
+			return;
+		}
 		button.disabled = false;
-		for (const id of ['pick', 'pick-direct']) $<HTMLButtonElement>(id).disabled = false;
+		$<HTMLButtonElement>('pick').disabled = false;
+		// A way out of a version that doesn't start, which would otherwise be opened again every time.
+		if (installed.length > 1) $('product-step').hidden = false;
+		try {
+			localStorage.removeItem(PRODUCT_KEY);
+		} catch {
+			// Storage blocked: nothing was remembered either.
+		}
 	}
 }
 
+/** This viewer as the page holding the viewers drives it (quick switching; see switchHost.ts). */
+function viewerSession(viewer: Viewer): ViewerSession {
+	return {
+		product: $<HTMLSelectElement>('product').value,
+		state: currentState,
+		async show(state) {
+			$<HTMLDetailsElement>('version').open = !!state.menu;
+			// Kept out of sight: the menus may have changed meanwhile in the viewer shown.
+			for (const reread of rereads) reread();
+			if (typeof state.time === 'number' && Number.isFinite(state.time)) viewer.timeMinutes = state.time;
+			else viewer.resetTime();
+			if (!state.view) return;
+			if (viewer.walking && !state.view.walker) viewer.setWalking(false);
+			if (!(await viewer.showSpot(state.view.camera))) throw new Error('that map isn’t in this version');
+			if (state.view.walker) {
+				const problem = await viewer.walkAt(state.view.walker);
+				if (problem) notify(problem);
+			}
+		},
+		pause() {
+			// The next viewer can capture the mouse only once this one has let go of it.
+			const released = viewer.mouseCaptured
+				? new Promise<void>((resolve) => {
+					document.addEventListener('pointerlockchange', () => resolve(), { once: true });
+					setTimeout(resolve, 250);
+				})
+				: Promise.resolve();
+			viewer.pause();
+			setHeard(false);
+			return released;
+		},
+		activate(keys, captured) {
+			setHeard(true);
+			viewer.start();
+			pressKeys(keys);
+			// Allowed by the key press that asked for the switch, if that was only moments ago.
+			if (captured) viewer.captureMouse();
+		},
+	};
+}
+
 // --- Remembered settings ---
+
+/**
+ * Re-read what the menus remember, for a viewer kept out of sight (quick switching) while the
+ * one shown changed it.
+ */
+const rereads: (() => void)[] = [];
 
 function readSaved<T>(key: string): Partial<T> {
 	try {
@@ -302,8 +647,10 @@ document.addEventListener('change', (e) => {
 	if (!isTyping(e) || e.target instanceof HTMLSelectElement) (e.target as HTMLElement).blur();
 });
 document.addEventListener('click', (e) => {
-	// Space flies up; it mustn't fold a panel or press a button again.
-	(e.target as Element).closest<HTMLElement>('summary, button')?.blur();
+	// Space flies up; it mustn't fold a panel or press a button again. A version's handle keeps
+	// the focus, for the arrow keys that move it.
+	const control = (e.target as Element).closest<HTMLElement>('summary, button');
+	if (!control?.classList.contains('version-handle')) control?.blur();
 });
 $('view').addEventListener('pointerdown', () => {
 	(document.activeElement as HTMLElement | null)?.blur();
@@ -322,7 +669,7 @@ function closeMenu(): void {
 // --- The View, Graphics and Camera menus and the HUD ---
 
 const VIEW_KEY = 'mapExplorer.view';
-type SavedView = Partial<ViewSettings> & { stats: boolean };
+type SavedView = Partial<ViewSettings> & { stats: boolean; area: boolean };
 
 /** Called with each HUD update, for the parts of the page that follow the viewer. */
 const hudFollowers: (() => void)[] = [];
@@ -330,11 +677,12 @@ const hudFollowers: (() => void)[] = [];
 /** The View, Graphics and Camera menus: every setting the keys toggle, the time of day and the HUD's stats; remembered between visits. */
 function setUpView(viewer: Viewer): void {
 	const menu = $('menu');
-	const { stats = false, ...settings } = readSaved<SavedView>(VIEW_KEY);
+	const { stats = false, area = false, ...settings } = readSaved<SavedView>(VIEW_KEY);
 	viewer.settings = settings;
 	const statsBox = $<HTMLInputElement>('stats-on');
+	const areaBox = $<HTMLInputElement>('area-on');
 	const controls = [...menu.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-setting]')];
-	const remember = () => save(VIEW_KEY, { ...viewer.settings, stats: statsBox.checked });
+	const remember = () => save(VIEW_KEY, { ...viewer.settings, stats: statsBox.checked, area: areaBox.checked });
 	const sync = () => {
 		const s = viewer.settings;
 		for (const c of controls) {
@@ -343,11 +691,24 @@ function setUpView(viewer: Viewer): void {
 			else c.value = String(value);
 		}
 	};
+	// The HUD's panel shows only while the area info or the stats are on.
+	const syncHud = () => ($('hud').hidden = !statsBox.checked && !areaBox.checked);
 	const setStats = (on: boolean) => {
 		statsBox.checked = on;
 		$('hud-stats').hidden = !on;
+		syncHud();
+	};
+	const setArea = (on: boolean) => {
+		areaBox.checked = on;
+		$('hud-area').hidden = !on;
+		syncHud();
 	};
 	setStats(stats);
+	setArea(area);
+	areaBox.addEventListener('change', () => {
+		setArea(areaBox.checked);
+		remember();
+	});
 	sync();
 	for (const c of controls) {
 		c.addEventListener('change', () => {
@@ -487,6 +848,23 @@ function setUpView(viewer: Viewer): void {
 		});
 	}
 	syncResolution();
+
+	// Changed meanwhile by another viewer of the page: only what differs, as each change can
+	// rebuild shaders.
+	rereads.push(() => {
+		const { stats: savedStats = false, ...saved } = readSaved<SavedView>(VIEW_KEY);
+		const current = viewer.settings as unknown as Record<string, unknown>;
+		const changed = Object.fromEntries(Object.entries(saved).filter(([key, value]) => JSON.stringify(current[key]) !== JSON.stringify(value)));
+		if (Object.keys(changed).length) viewer.settings = changed;
+		setStats(savedStats);
+		sync();
+		syncResolution();
+		syncTime();
+		syncSpeed();
+		syncClutterRange();
+		syncDetailRange();
+		syncMouseSpeed();
+	});
 
 	viewer.onChange = (change) => {
 		const s = viewer.settings;
@@ -802,7 +1180,8 @@ function setUpWalking(viewer: Viewer): void {
 		show();
 		void viewer.setLook(look);
 	};
-	viewer.characterRaces().then((list) => {
+	// Not needed for the first view (see Viewer.firstView).
+	viewer.firstView.then(() => viewer.characterRaces()).then((list) => {
 		races = list;
 		picker.setRaces(list);
 		race.replaceChildren(...list.map((r) => new Option(r.name, String(r.race))));
@@ -1017,7 +1396,7 @@ async function setUpGoTo(viewer: Viewer): Promise<void> {
 			console.warn('Map list unavailable:', e);
 			return [];
 		}),
-		storage.loadPlaces().catch((e): Place[] => {
+		viewer.firstView.then(() => storage.loadPlaces()).catch((e): Place[] => {
 			console.warn('Zones and towns unavailable:', e);
 			return [];
 		}),
@@ -1146,20 +1525,25 @@ function setUpHighlights(viewer: Viewer): void {
 	const on = $<HTMLInputElement>('highlight-on');
 	const query = $<HTMLInputElement>('highlight-query');
 	const walkable = $<HTMLInputElement>('highlight-walkable');
+	const walls = $<HTMLInputElement>('highlight-walls');
 	const tint = $<HTMLSelectElement>('highlight-tint');
 	const level = $<HTMLInputElement>('tint-level');
 	const levelOut = $('tint-level-out');
 	const rested = $<HTMLInputElement>('highlight-rested');
 	const boxes = [...panel.querySelectorAll<HTMLInputElement>('#highlight-groups input')];
-	const saved = readSaved<HighlightSettings>(HIGHLIGHT_KEY);
-	on.checked = saved.on ?? false;
-	query.value = saved.query ?? '';
-	walkable.checked = saved.walkable ?? false;
-	// Saved before the tints came in: the graveyards had a box of their own.
-	tint.value = saved.tint ?? ((saved as { graveyards?: boolean }).graveyards ? 'graveyards' : '');
-	level.value = String(saved.level ?? 20);
-	rested.checked = saved.rested ?? false;
-	for (const box of boxes) box.checked = saved.groups?.includes(box.value as HighlightGroup) ?? false;
+	const load = () => {
+		const saved = readSaved<HighlightSettings>(HIGHLIGHT_KEY);
+		on.checked = saved.on ?? false;
+		query.value = saved.query ?? '';
+		walkable.checked = saved.walkable ?? false;
+		walls.checked = saved.walls ?? false;
+		// Saved before the tints came in: the graveyards had a box of their own.
+		tint.value = saved.tint ?? ((saved as { graveyards?: boolean }).graveyards ? 'graveyards' : '');
+		level.value = String(saved.level ?? 20);
+		rested.checked = saved.rested ?? false;
+		for (const box of boxes) box.checked = saved.groups?.includes(box.value as HighlightGroup) ?? false;
+	};
+	load();
 
 	const apply = () => {
 		const settings: HighlightSettings = {
@@ -1167,6 +1551,7 @@ function setUpHighlights(viewer: Viewer): void {
 			groups: boxes.filter((b) => b.checked).map((b) => b.value as HighlightGroup),
 			query: query.value,
 			walkable: walkable.checked,
+			walls: walls.checked,
 			tint: tint.value as TintMode | '',
 			level: Number(level.value),
 			rested: rested.checked,
@@ -1175,11 +1560,12 @@ function setUpHighlights(viewer: Viewer): void {
 		panel.dataset.tint = settings.tint;
 		panel.classList.toggle('off', !settings.on);
 		panel.classList.toggle('walkable', settings.walkable);
+		panel.classList.toggle('walls', settings.walls);
 		viewer.setHighlights(settings);
 		save(HIGHLIGHT_KEY, settings);
 		showTintKey(viewer);
 	};
-	for (const box of [on, walkable, rested, tint, ...boxes]) {
+	for (const box of [on, walkable, walls, rested, tint, ...boxes]) {
 		box.addEventListener('change', () => {
 			// Choosing a kind turns highlighting on.
 			if (box !== on && (box instanceof HTMLSelectElement ? box.value : box.checked)) on.checked = true;
@@ -1201,6 +1587,10 @@ function setUpHighlights(viewer: Viewer): void {
 		notify(`Highlights ${onOff(on.checked)}`);
 	});
 	apply();
+	rereads.push(() => {
+		load();
+		apply();
+	});
 }
 
 // --- Sound ---
@@ -1225,6 +1615,10 @@ function setUpSound(viewer: Viewer): void {
 			shown.value = `${slider.value}%`;
 		});
 	}
+	rereads.push(() => {
+		if (viewer.soundOn !== null && viewer.soundOn !== soundSaved()) viewer.soundOn = soundSaved();
+		syncSound(viewer);
+	});
 	$('sound-on').addEventListener('change', (e) => {
 		viewer.soundOn = (e.target as HTMLInputElement).checked;
 	});
@@ -1412,6 +1806,9 @@ function showHud(info: HudInfo): void {
 		...(info.voyage ? [['Aboard', info.voyage] as [string, string]] : []),
 	]);
 	$('flight-status').textContent = info.flight || info.voyage;
+	const loading = $('loading-status');
+	loading.hidden = !info.loading;
+	if (info.loading) loading.textContent = info.loading;
 	if (!$('hud-stats').hidden) {
 		fillList('hud-stats', [
 			['Speed', `${info.speed.toFixed(0)} yd/s`],
