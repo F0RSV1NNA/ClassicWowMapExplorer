@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using DotRecast.Core;
 using DotRecast.Core.Numerics;
 using DotRecast.Detour;
@@ -671,6 +671,7 @@ public static class NavBake
         public int PlanarDetailVerticesRemoved;
         public int SourceWmoCapsBlocked, SolidWallCells;
         public int RaisedWmoCapsBlocked;
+        public int CoveredWmoSpansRestored;
         /// Compact cells judged to be under a roof, which erode less.
         public int IndoorCells;
         /// Cells erosion removed.
@@ -1058,6 +1059,8 @@ public static class NavBake
                 // so that allowance cannot resurrect rejected fences or trim.
                 RcRasterizations.RasterizeTriangles(ctx, verts, tris, areas, r.InputTris, solid, realClimb);
                 if (rasterized == 0) continue;
+                SolidObserver?.Invoke("rasterized",solid);
+                r.CoveredWmoSpansRestored += RestoreCoveredWmoSpans(ctx,solid,verts,tris,areas,r.InputTris,realClimb,surfaceFit);
 
                 // A tree is not a roof.
                 //
@@ -1119,6 +1122,7 @@ public static class NavBake
                     surfaceFit.BlockCap(solid,ci,sp);sp.area=AreaNull;
                     nonWalkableWmo.Add(key);rejectedWmoCaps.Add(key);r.RaisedWmoCapsBlocked++;
                 }
+                SolidObserver?.Invoke("source exclusions",solid);
                 FilterKeepingSwimFloor(ctx, cfg, realClimb, s.SwimSurfaceMargin, solid, ceiling, r, nonWalkableWmo);
                 // Flat WMO floor near an exterior drop is not a trim cap.
                 // Whole source patches already classify raised flat shelves;
@@ -1553,7 +1557,8 @@ public static class NavBake
         r.TinyRegionCells += DropTinyRegions(chf, s.MinRegionCells);
         if (Environment.GetEnvironmentVariable("CHECK_REGIONS") == "1") CheckRegions(chf, "before contours");
         var cset = NavContours.BuildContours(ctx, chf, cfg.MaxSimplificationError, cfg.MaxEdgeLen,
-                                            RcBuildContoursFlags.RC_CONTOUR_TESS_WALL_EDGES);
+                                            RcBuildContoursFlags.RC_CONTOUR_TESS_WALL_EDGES,
+                                            surfaceFit==null?null:(x,z,id)=>surfaceFit.HasShallowWmoSupport(chf.bmin.Z+(z+.5f)*chf.cs,chf.bmin.X+(x+.5f)*chf.cs,chf.bmin.Y+chf.spans[id].y*chf.ch,chf.ch*1.15f));
         r.ContourVertsAdded += DensifyContours(cset, contourMax, cfg.Cs, chf);
         ContoursObserver?.Invoke(cset);
 
@@ -2583,6 +2588,7 @@ public static class NavBake
     /// instead of leaving it to be guessed at.
     [ThreadStatic] public static (float X0, float Y0, float X1, float Y1)? ProbeWindow;
     [ThreadStatic] public static Action<string,RcCompactHeightfield>? StageObserver;
+    [ThreadStatic] internal static Action<string,RcHeightfield>? SolidObserver;
     [ThreadStatic] internal static Action<RcContourSet>? ContoursObserver;
     [ThreadStatic] public static List<string>? ProbeLog;
 
@@ -4760,11 +4766,50 @@ public static class NavBake
 
         r.DoodadSpansReblocked += FilterLowObstaclesKeepingBlockedProps(ctx, realClimb, solid, DoodadRoofSpans, nonWalkableWmo);
         r.SwimFloorKept += Restore();
+        SolidObserver?.Invoke("low obstacles",solid);
         RcFilters.FilterLedgeSpans(ctx, cfg.WalkableHeight, realClimb, solid);
         r.SwimFloorKept += Restore();
+        SolidObserver?.Invoke("ledges",solid);
         RcFilters.FilterWalkableLowHeightSpans(ctx, cfg.WalkableHeight, solid);
         r.SwimFloorKept += Restore();
+        SolidObserver?.Invoke("headroom",solid);
         r.SwimFloorSpans += swim.Count;
+    }
+
+    // A rejected support below a deck can contaminate a merged span's area:
+    // Recast's climb-bounded max(area) merge does not retain the marker's
+    // original top. Re-rasterize rejected WMO geometry alone to recover that
+    // evidence. Only an independently supported, higher WMO surface may win;
+    // a cap at the actual top remains blocked, including coplanar overlaps.
+    static int RestoreCoveredWmoSpans(RcContext ctx,RcHeightfield solid,float[] verts,int[] tris,int[] areas,int count,int climb,SourceSurfaceFit source)
+    {
+        var blockedTris=new List<int>();
+        for(int t=0;t<count;t++)if(areas[t]==AreaWmoSolid){blockedTris.Add(tris[t*3]);blockedTris.Add(tris[t*3+1]);blockedTris.Add(tris[t*3+2]);}
+        if(blockedTris.Count==0)return 0;
+        var blocked=new RcHeightfield(solid.width,solid.height,solid.bmin,solid.bmax,solid.cs,solid.ch,solid.borderSize);
+        RcRasterizations.RasterizeTriangles(ctx,verts,blockedTris.ToArray(),Enumerable.Repeat(AreaWmoSolid,blockedTris.Count/3).ToArray(),blockedTris.Count/3,blocked,climb);
+        return RestoreCoveredWmoSpans(solid,blocked,source);
+    }
+    internal static int RestoreCoveredWmoSpans(RcHeightfield solid,RcHeightfield blocked,SourceSurfaceFit source)
+    {
+        int restored=0;
+        for(int ci=0;ci<solid.spans.Length;ci++)for(var span=solid.spans[ci];span!=null;span=span.next){
+            if(span.area!=AreaWmoSolid)continue;
+            bool buried=false,exposed=false;
+            for(var cap=blocked.spans[ci];cap!=null;cap=cap.next){
+                if(cap.smax<span.smin||cap.smin>span.smax)continue;
+                buried=true;
+                // Keep a full voxel of separation: co-quantized/touching
+                // obstacle tops are not proof of burial below the floor.
+                if(cap.smax>=span.smax-1){exposed=true;break;}
+            }
+            if(!buried||exposed)continue;
+            float x=solid.bmin.Z+(ci/solid.width+.5f)*solid.cs,y=solid.bmin.X+(ci%solid.width+.5f)*solid.cs;
+            float top=solid.bmin.Y+span.smax*solid.ch;
+            if(!source.HasWmoCellSupport(x,y,top,solid.cs,solid.ch))continue;
+            span.area=SurfaceClearance.WmoTop;restored++;
+        }
+        return restored;
     }
 
     internal static int FilterLowObstaclesKeepingBlockedProps(RcContext ctx, int climb,

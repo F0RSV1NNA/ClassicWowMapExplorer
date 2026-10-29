@@ -1221,3 +1221,38 @@ The existing portable folder and ZIP contain 3.13. Reopen and rebake map 0,
 column 32, row 48 for visual acceptance. The owner's capture and saved mesh were
 read only and have not been rewritten. These are full-tile checks of the
 reported Abbey defects, not a claim of whole-world perfection.
+
+## Follow-up 2026.3.14 — floor rings, wooden landing and cave
+
+The full captured map 0 tile (32,48) reproduces the round table's over-cut floor ring, the central room's reduced floor edge, the upper wooden landing at camera Z117.362, and the nearby cave gaps. Collision/serialized-mesh cutaways are in `diagnostics/abbey-cave-2026.3.14.png`; exact executable, WASM, checker, capture and package hashes with command exit statuses are in `diagnostics/abbey-cave-2026.3.14-evidence.json`.
+
+The source cap filter now verifies an exposed standing footprint across adjacent floor triangles. Individually narrow coplanar patches are not sufficient evidence of furniture or trim, particularly on the gently varying cave floor. Low floor borders can use continuing support at the same elevation. Furniture removal requires lower-floor evidence along most of the component's real perimeter; two nearby lower stair samples no longer delete a whole landing.
+
+Preserving the wooden landing alone left an isolated island. Its short transition turns around a railing, with clear upper/lower floor approaches approximately 90 degrees apart. The final transition rule permits that verified turn, instead of demanding opposite compass rays. It still requires both elevations and collision-clear approaches. Same-side lower-floor probes do not establish a turning transition.
+
+Both packaged engines pass 11 captured coverage points, four trim/tabletop exclusion points, 1,536 unchanged upstairs floor samples, Abbey/cave seam checks and routes through the cave and from outside to the wooden landing. The native tile has 14,806 coarse polygons, compared with 14,698 in the prior native build. No global cell-size or detail-density increase was introduced.
+
+This is bounded verification, not perfect whole-world coverage. The broad cave diagnostic audit improves from 2,254 missing samples to 638 among 29,164 eligible samples; five raised samples remain. These boundary/ledge diagnostic findings are not a passed all-floor gate. Exact source connectivity, sampled source paths and graded-floor experiments did not reduce those residual findings and were removed. The previously documented full-tile 0.015881-yard seam discrepancy outside the Abbey/cave also remains; scoped seam checks pass. The owner must reopen the portable app and rebake tile (32,48) for visual acceptance before a world bake.
+
+## Follow-up 2026.3.15 — cave floor omissions
+
+Five additional cave camera locations now reproduce from the full captured tile: (-8655.045,-124.708), (-8641.078,-131.283), (-8592.298,-146.533), (-8587.675,-165.839) and (-8541.596,-171.485). Actual collision/baseline/shipped-native cutaways are in `diagnostics/cave-2026.3.15.png`. The Abbey comparison is `diagnostics/abbey-control-2026.3.15.png`. Hashes, exact exits and retained failures are in `diagnostics/cave-2026.3.15-evidence.json`.
+
+The footprint test incorrectly expanded a whole body at every perimeter probe, effectively doubling required wall clearance. Body clearance is now checked once at the standing center. Floor support follows short, directly supported samples bounded by the configured slope, allowing real cave-floor creases without inventing support across an abrupt drop. Several inset standing positions are tested before rejecting a whole long face; one centroid beside a wall does not prove the entire triangle is an obstacle. Physical wall clearance remains per compact cell.
+
+The south bend also lost valid compact-floor coverage during contour simplification. The repair refines only shallow, selected WMO floor boundaries that omit retained floor-cell centers, preserving raw outline/hole winding and portal flags. Full stair/ramp slopes and flat landings retain the established contour policy. The broader first variant changed 46 upstairs samples; a later arbitrary-slope variant changed 12. Both were rejected. The final revision leaves all 1,536 approved upstairs control samples unchanged in both packaged engines.
+
+Native and WASM pass all 16 named coverage points, four tabletop/trim exclusions, the five new local cave routes, existing Abbey/cave routes and scoped seam checks. Native coarse polygons increase from 14,806 to 15,446 as previously missing floor is retained; tile bytes increase from 5,912,752 to 6,050,776. Cell size and global detail sampling settings are unchanged.
+
+The broad raw-surface diagnostic examines 120,873 samples with identical current-source eligibility against both meshes: missing samples decrease from 15,975 to 5,013. Buried samples change from 73 to 130 and raised samples from 32 to 73. This is not a passed whole-cave coverage gate: it includes narrow ledges, boundaries and overlapping source layers without complete standing-footprint/headroom eligibility. Those remaining diagnostic samples are retained honestly for investigation. The existing 0.015881-yard tile-border seam discrepancy remains outside the reported cave/Abbey scopes. Adjacent-tile absence cannot be repaired by rebaking only this tile. Reopen the portable application and rebake map 0, tile (32,48) for visual acceptance.
+
+
+## Follow-up 2026.3.16 - bridge deck pinching
+
+The bridge at camera (-8980.903,-296.641,74.594), map 0 tile (32,48), reproduces from the same complete EMR2 capture. Its source deck is continuous. Rejected support faces underneath it contaminate the higher deck's area during successive Recast span merges. At (-8980.933,-296.6673), a merged span extending from Z67.73333 to Z71.73333 incorrectly carries area 60. Clearing that marker removes the deck, then outdoor erosion widens the omission into the visible side bites.
+
+Rejected WMO faces are now rasterized separately to retain their own top evidence. A merged span is restored only when every overlapping rejected top is buried by more than one voxel and an eligible WMO triangle clipped to the same cell confirms the surface top. Exposed/coplanar caps remain blocked. Clipping the whole source cell matters: a sloped plank's high corner can quantize above its center sample. No global radius, slope, cell size or detail setting changed.
+
+Both packaged engines pass 46 bridge deck coverage points, 16 prior Abbey/cave points, six obstacle exclusions, 1,536 exactly unchanged upstairs samples, bridge traversal and existing routes. Scoped bridge, Abbey and cave seam checks pass. Native coarse polygons are 15,481 and tile size is 6,056,324 bytes (3.15: 15,446 and 6,050,776). The complete tile restores 527 buried-marker spans. Synthetic checks retain exposed/co-quantized caps, require direct support, and cover sloped high-corner support.
+
+`diagnostics/bridge-2026.3.16.png` compares actual source collision, the previous saved tile and the new native tile. Abbey and cave control comparisons are also retained. `diagnostics/bridge-2026.3.16-evidence.json` records executable/WASM/checker/capture hashes and exact command exits. The pre-existing 0.015881-yard far tile-border seam failure remains recorded; the full-tile seam gate is not declared passed. The portable folder and ZIP contain 3.16. Reopen the application and rebake tile (32,48) for visual acceptance.

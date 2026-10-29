@@ -1,4 +1,4 @@
-using System.Numerics;
+﻿using System.Numerics;
 using DotRecast.Detour;
 using DotRecast.Recast;
 
@@ -202,6 +202,51 @@ internal sealed partial class SourceSurfaceFit
     {
         if(!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
         return faces.Any(f=>f.Walkable&&f.Kind==Extractor.Soup.KindWmo&&MathF.Abs(height-HeightAt(f,x,y))<=tolerance);
+    }
+    // Match the clipped raster cell's top, rather than its centre. On a
+    // sloped deck the high cell corner can quantize one voxel above the
+    // centre sample, even though the span is entirely valid footing.
+    internal bool HasWmoCellSupport(float x,float y,float top,float size,float cellHeight)
+    {
+        float half=size*.5f;
+        for(int bx=Bin(x-half);bx<=Bin(x+half);bx++)for(int by=Bin(y-half);by<=Bin(y+half);by++){
+            if(!bins.TryGetValue((bx,by),out var faces))continue;
+            foreach(var f in faces){
+                if(!f.Walkable||f.Kind!=Extractor.Soup.KindWmo)continue;
+                var poly=new List<Vector3>{f.A,f.B,f.C};
+                foreach(var (axis,limit,sign) in new[]{(0,x-half,1f),(0,x+half,-1f),(1,y-half,1f),(1,y+half,-1f)}){
+                    var clipped=new List<Vector3>();
+                    for(int i=0;i<poly.Count;i++){
+                        var a=poly[i];var b=poly[(i+1)%poly.Count];
+                        float da=((axis==0?a.X:a.Y)-limit)*sign,db=((axis==0?b.X:b.Y)-limit)*sign;
+                        if(da>=0)clipped.Add(a);if((da>=0)!=(db>=0))clipped.Add(a+(b-a)*(da/(da-db)));
+                    }poly=clipped;
+                }
+                if(poly.Count<3)continue;
+                float h=poly.Max(p=>p.Z);
+                if(h>=top-cellHeight-.002f&&h<=top+.002f)return true;
+            }
+        }
+        return false;
+    }
+
+    internal bool HasShallowWmoSupport(float x,float y,float height,float tolerance)
+    {
+        if(!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
+        // Use the same floor authority as final fitting. The nearest raster
+        // top can be a lower stair ramp underneath a directly supported flat
+        // landing; it must not refine the landing's boundary.
+        float selected=Sample(new(x,y,height)).Height-clearance;bool sloped=false;
+        foreach(var f in faces){
+            if(!f.Walkable||f.Kind!=Extractor.Soup.KindWmo||Blocked(f,x,y))continue;
+            float h=HeightAt(f,x,y);if(!float.IsFinite(h)||MathF.Abs(height-h)>tolerance||MathF.Abs(h-selected)>.01f)continue;
+            var normal=Vector3.Normalize(Vector3.Cross(f.B-f.A,f.C-f.A));
+            if(normal.Z>=.995f)return false;
+            // Keep the established outlines of full stair/ramp slopes. This
+            // coverage refinement is for shallow floor relief, not stair profiles.
+            sloped|=normal.Z>=.98f;
+        }
+        return sloped;
     }
     internal bool HasLowerFloor(float x,float y,float height,float minDrop,float maxDrop)
     {

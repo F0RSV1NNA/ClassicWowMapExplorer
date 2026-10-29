@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
@@ -9,7 +9,7 @@ using MapExtract;
 public partial class MeshEngine
 {
     public static void Main() { }
-    [JSExport] public static string Version() => "explorer-recast-2026.3.14";
+    [JSExport] public static string Version() => "explorer-recast-2026.3.16";
 
     [JSExport]
     public static byte[] Bake(byte[] input)
@@ -263,6 +263,7 @@ public partial class MeshEngine
         w.WriteNumber("sourceWmoCapsBlocked",r.SourceWmoCapsBlocked);
         w.WriteNumber("solidWallCells",r.SolidWallCells);
         w.WriteNumber("raisedWmoCapsBlocked", r.RaisedWmoCapsBlocked);
+        w.WriteNumber("coveredWmoSpansRestored", r.CoveredWmoSpansRestored);
         w.WriteNumber("swimPolygons", r.SwimPolys); w.WriteNumber("submergedPolygons", r.SubmergedPolys);
         w.WriteNumber("hazardPolygons", r.UnderHazardPolys); w.WriteNumber("waterlineCuts", r.WaterlineCuts);
         w.WriteNumber("coarserContours", r.CoarserContours); w.WriteNumber("monotoneTiles", r.MonotoneTiles);

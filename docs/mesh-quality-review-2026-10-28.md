@@ -57,3 +57,22 @@ Reproduced and fixed asymmetric shared contour portals, stair vertices choosing 
 ## Follow-up 2026.3.13
 
 Full current input and matching saved mesh supplied by the owner now reproduce both remaining stair holes and trim cases. Fixes distinguish two-sided clear floor transitions from wall/railing trim, preserve connected ground/road label islands and singleton contours, and reject terrain-through-WMO-gap evidence against a fully supported indoor floor. Both packaged engines pass the six coverage points, three trim exclusions, unchanged upstairs control and central disk core control. See mesh-authoring.md and diagnostics/abbey-2026.3.13-evidence.json for actual hashes, exit results, rejected experiments, strict-backend mismatch and the unchanged tile-edge seam failure outside the Abbey. Portable build updated; fresh single-tile visual acceptance remains necessary.
+
+## Follow-up 2026.3.14
+
+Restored supported low floor borders and cave tessellation patches, required furniture evidence around most of the actual component boundary, and preserved a collision-clear turning transition into the wooden upper landing. Both packaged backends pass the named geometry checks and complete outside-to-landing/cave routes. See `mesh-authoring.md` and `diagnostics/abbey-cave-2026.3.14-evidence.json` for exact hashes, exits, remaining broad audit findings, rejected experiments and visual acceptance limits.
+
+## Follow-up 2026.3.15
+
+Reproduced all five new cave locations. Fixed doubled standing-radius validation, whole-face rejection based only on a centroid, and coplanar-only support checks across natural floor creases. Added selective shallow WMO contour coverage preservation for the remaining south-bend omission. Both packaged backends pass five local cave routes and 16 source coverage points, while preserving all 1,536 approved upstairs control samples and four obstacle exclusions. See `mesh-authoring.md`, `diagnostics/cave-2026.3.15.png` and `diagnostics/cave-2026.3.15-evidence.json` for hashes, exits, rejected variants and remaining broad diagnostic findings.
+
+
+## Follow-up 2026.3.16 - bridge deck pinching
+
+The bridge at camera (-8980.903,-296.641,74.594), map 0 tile (32,48), reproduces from the same complete EMR2 capture. Its source deck is continuous. Rejected support faces underneath it contaminate the higher deck's area during successive Recast span merges. At (-8980.933,-296.6673), a merged span extending from Z67.73333 to Z71.73333 incorrectly carries area 60. Clearing that marker removes the deck, then outdoor erosion widens the omission into the visible side bites.
+
+Rejected WMO faces are now rasterized separately to retain their own top evidence. A merged span is restored only when every overlapping rejected top is buried by more than one voxel and an eligible WMO triangle clipped to the same cell confirms the surface top. Exposed/coplanar caps remain blocked. Clipping the whole source cell matters: a sloped plank's high corner can quantize above its center sample. No global radius, slope, cell size or detail setting changed.
+
+Both packaged engines pass 46 bridge deck coverage points, 16 prior Abbey/cave points, six obstacle exclusions, 1,536 exactly unchanged upstairs samples, bridge traversal and existing routes. Scoped bridge, Abbey and cave seam checks pass. Native coarse polygons are 15,481 and tile size is 6,056,324 bytes (3.15: 15,446 and 6,050,776). The complete tile restores 527 buried-marker spans. Synthetic checks retain exposed/co-quantized caps, require direct support, and cover sloped high-corner support.
+
+`diagnostics/bridge-2026.3.16.png` compares actual source collision, the previous saved tile and the new native tile. Abbey and cave control comparisons are also retained. `diagnostics/bridge-2026.3.16-evidence.json` records executable/WASM/checker/capture hashes and exact command exits. The pre-existing 0.015881-yard far tile-border seam failure remains recorded; the full-tile seam gate is not declared passed. The portable folder and ZIP contain 3.16. Reopen the application and rebake tile (32,48) for visual acceptance.

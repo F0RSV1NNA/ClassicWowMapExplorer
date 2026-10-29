@@ -1,0 +1,2905 @@
+{
+  "pipeline": "explorer-recast-2026.3.16",
+  "capture": {
+    "path": "C:\\Users\\Ryan\\Documents\\WoW-Archives\\diagnostics\\0-32-48.input",
+    "bytes": 90745914,
+    "sha256": "4d5160a38300283f711bb04cbf22b2827bd77285331e2185eac1286edf8bd186"
+  },
+  "reportedCamera": [
+    -8980.903,
+    -296.641,
+    74.594
+  ],
+  "sourceDeckHeight": 71.676,
+  "rootCause": {
+    "description": "Rejected WMO support below the bridge contaminates the area of a higher merged deck span. Max-area propagation retains the rejected marker after successive merges; outdoor erosion enlarges the resulting missing spans. Centre-only source confirmation also misses valid high corners of gently sloped deck cells.",
+    "reproducedColumn": {
+      "x": -8980.933,
+      "y": -296.6673,
+      "bottom": 67.73333,
+      "top": 71.73333,
+      "mergedAreaBefore": 60,
+      "areaAfter": 11
+    },
+    "rejectedSourceSupportTriangles": [
+      1067072,
+      1067073
+    ],
+    "repair": "Re-rasterize rejected WMO geometry separately, require burial by more than one voxel below the merged top, and confirm a directly eligible source triangle clipped to the same cell. Exposed and co-quantized caps stay blocked; doodad policy, radius, slope and detail settings are unchanged."
+  },
+  "sourceProvenance": {
+    "source": "Mappster",
+    "copiedAt": "2026-10-20",
+    "dotRecast": "2026.3.1",
+    "files": {
+      "Nav/NavBake.cs": "c0daec3a30665f6f6b40e04a4e232c2e77c551c39bee41dbe17cc7218f8dc5d8",
+      "Nav/NavContours.cs": "eb88d4ba9f782bec18050e7e1b60b90d331c1a121122f01e423c87310f260615",
+      "Nav/LiquidMap.cs": "46ee64945a322effded6f152456c79e1fb5ab7d016a7c7b1f42c26ff6c768f6b",
+      "Nav/NavWriter.cs": "45fe854d53b123b7c96227bafdd1e5131e3cc8061deb9e918ba1d02046f11167",
+      "Nav/RoadMask.cs": "7b2d98f4a806698a40d06b9fe70068e23959e42ddb5c1b80f329223e3da3a292",
+      "Nav/MapEdits.cs": "d076985779a508699f5be2ce43b17a8337d6e91271631ea1142e60b7ad043191",
+      "Nav/OffMeshLinks.cs": "7cc126c8e62b794664945ce9c6bd24994cf51e0cc4c76716699c0abf9ed0e55a",
+      "Extractor/Tex0.cs": "09a60b5f552ec41b8997cdd7c23079b4754eae37d34008e7f7e02c147dea0cb9",
+      "Extractor/Names.cs": "a99d735fdfd5fa91daed187fe04264423bb513a156c0d7663de3f6c2b4976db0",
+      "Extractor/Wdt.cs": "ccf1914e301fac50887050f9c0bac4a98f0f593bbd4257daf781c07db4570aed",
+      "Extractor/Obj0.cs": "883ace14a4af33d667a41c97e6686916b771eeb4c9907904422bd0562a5e5675",
+      "Extractor/Extractor.cs": "b140ac8561347ae96bd37e587e9f8d17d1bc8d2f93b35e556af331b81e9d3855",
+      "Extractor/Adt.cs": "d28d9337031a1f6a9c29dbec272776d0fbe3f6cbb3cc912f095811b5970477f1",
+      "Extractor/Terrain.cs": "f9108f71bf29e7188f95f4aab0a30ba90c694f17408f651cb39366bf69a82e74",
+      "Extractor/Liquid.cs": "9baf8cc87c5edf996a87815098549fcbbd52fae8503f34bb98339b41159d83c8",
+      "Extractor/M2.cs": "7083f96f5af391e9cefd3dda8e27030da24d6afef6b60c6db27db28721508a87",
+      "Extractor/Wmo.cs": "5310b0c955922832dc7f68b55ca0218281e6879e41025b56ea9309ec941655ab",
+      "tilesets.csv": "f40ab6013e87b0debead0f09e3588b08ae6a93560ec0ff66ccdd65ec8641373e",
+      "Nav/NavPrune.cs": "e913c5a83cb179ee2fb52e3d38a03c222685e967c0f926a458bdb5324567488d",
+      "Nav/SourceSurfaceFit.cs": "69fe1c286591ce26c3e9b4f6b637a16cb9d5943d7a16b630304668e766b377d0",
+      "Nav/SurfaceClearance.cs": "c2c63f95e076bb5ec3c07e98b15e8399a8cd1e126335531913be35d13457ad84",
+      "Nav/WmoCapPatches.cs": "0e747dcdca4ee2ab775cd4d122704be0bd8d5e7ce49aea9dbb23b74a76f4d971",
+      "Nav/SourceSurfaceContinuity.cs": "5213219f627e871f5f6b9e075684d30f989142ae351234fc5b9c7059ede4d899",
+      "Nav/SourceBodyClearance.cs": "57b964cd2739007cd9134ee7582fd243ae88ef9af91793c543b88c6cc1cfdd92",
+      "Nav/PlanarDetailReducer.cs": "219b834d0f715f0850078b859482c15763ede3102bf18a5e690de3b359ef9e94",
+      "Nav/IndoorSupportGraph.cs": "5cc2d8344474526e80908434553593d00d46fe8576af3ceb5caff069fceb5d7c",
+      "Nav/SourceDetailEdges.cs": "6b3de32292cdf054845c80b17a65f9b54f267824140f150b2b60b092445b6a17"
+    },
+    "notes": [
+      "Core files originate from Mappster. Reviewed Explorer extensions are listed in explorerPatches; upstreamFiles preserves their original hashes. MemoryFiles.cs supplies the CASC read methods from files already loaded by Explorer.",
+      "tilesets.csv is the same texture-name snapshot used by Mappster."
+    ],
+    "upstreamFiles": {
+      "Nav/NavContours.cs": "13081b8f5ea7310cf22276ea3d92bc676cbfc00e80034598b854e5d2b7844ff2",
+      "Nav/NavBake.cs": "66efed306838f622b6f2a49698da6040e9686d2e8d763833c553ac7fa775f1e0",
+      "Extractor/Extractor.cs": "f6f85cbb526647c228d933e104ad0f1050df8cf092d8a910080933cdff954967",
+      "Extractor/M2.cs": "c695f3ad8a0f0edba54c501839f6bc72c62abc83e747a1be658693d817ca54e7",
+      "Extractor/Names.cs": "565bb5638e1629d896b8739b20df7b4173f19fef2dc6dadf835ded2d0980758e",
+      "Nav/MapEdits.cs": "758b644e45ffda07a02c17159e31eb310afa721624d3b498a4d6d984120030df",
+      "Nav/OffMeshLinks.cs": "bdde898c93481e0b68bb272f1bfef3c9e986c3c5767fef7239b8e0e5249fad18",
+      "Nav/RoadMask.cs": "34f80a3385c74855e653759e4d5b4fce80379e5ff8f272ec8e414b04cec0fd9e",
+      "Nav/NavPrune.cs": "cf4e24a8dce696a1e1beffcf664687634c159e127a0b574c02d267dd24239d7d"
+    },
+    "explorerPatches": {
+      "Nav/NavContours.cs": "Preserve nonzero contour winding, simplify closed portal loops geometrically with original flags, and associate holes with their enclosing same-area outline. Removed compact spans cannot raise walkable contour corners. Audit: unclosed boundary walks and failed hole bridges throw instead of producing partial contours. Do not traverse a removed intermediate compact cell when gathering diagonal corner heights. Review 2026.3.7: unemitted region-zero spans cannot lift a contour corner or transmit diagonal corner/border evidence. 2026.3.12: union raw shared-portal breakpoints selected by either contour after winding recovery; prevent asymmetric simplification from opening triangular floor cracks. 2026.3.13: trace valid one-cell regions with four boundary bits instead of skipping their outlines. 2026.3.15: selectively refine exterior WMO contours that lose retained shallow-floor cell centers, using correct outline/hole winding and existing flag construction; synchronize portal breakpoints afterward.",
+      "Nav/NavBake.cs": "Use half-cell detail height tolerance to retain shallow terrain ridges, add a bounded-region vertex-budget recovery rung, and report native custom-attempt failures when progress diagnostics are enabled. Preserve source-blocked prop spans through low-obstacle promotion; report reblocked spans. Give the temporary blocked-prop marker precedence over walkable areas during solid-span merging, preventing obstacle heights from becoming ground. Preserve all positive-footprint detail triangles; exclude removed surfaces from detail height corrections; fit final Detour geometry to source collision and generate previews from the exported representation. Audit: independent per-vertex floor limits, complete detail boundary/area validation and reconstructed Detour edge flags, corrected contour border sampling, and explicit conversion errors. Preserve configured indoor floor clearance by default instead of shortest connector restoration; optional bridge joins commit only after both paths are accepted. Require raised-floor evidence before removing narrow indoor strips; preserve small landings and stair continuations. Keep tiny post-split regions that remain connected to other walkable floor; delete only isolated tiny regions. Apply height-bounded authoring independently of automatic road detection; export action links without walking permission and count off-mesh polygons in loadback validation. Pass recorded decorative roof provenance into cap classification so tree canopies do not gate outdoor shelf handling. Separate short sloped WMO bevel provenance from structural treads before cap rejection. Correction: merge raster area labels only at equal voxel tops, carry dry nonwalkable WMO provenance through waterline cuts, and prevent low-obstacle filtering from promoting those surfaces. Doodad roof provenance remains separate. Separate solid body-height indoor wall clearance from missing-link/stair-edge erosion. Protect physical wall removals from pinhole restoration and retain swim-floor behavior. Report source cap and solid-wall counters. Revision 2026.3.3: one-cell indoor boundary erosion, no default morphology/strip deletion or erosion across legal linked steps. Report exact source-detail/fallback counts and serialize actual refined mesh counts. Revision 2026.3.4 restores zero indoor general-boundary erosion while retaining separate physical wall clearance. Remove exact collision-detail reconstruction and its counters; preserve Recast topology and continuous legal steps. Revision 2026.3.5: only source-rejected trim receives the permanent WMO blocker marker. Ordinary steep risers use null area and standard climb-bounded raster merging. Preserve null-area dry collision pieces across waterline cuts. Blocker markers outrank walkable WMO provenance; low risers may join terrain without resurrecting explicit caps/props. Review 2026.3.7: protect explicit clearance from pinhole restoration; missing links are open boundaries; constrain voxel trim rejection to labelled bevels; retain collision-verified detail under roofs; use exact rejected-cap/prop margins; double-precision zero-area culling. Review: separate down-facing WMO underside provenance (temporary area 2) from ordinary risers; real footing outranks this marker and standalone undersides cannot be promoted. 2026.3.8: reject locally exposed flat wall footings before low-obstacle promotion, preserving shared broad interior floor patches and protecting the exclusions from later restoration. Revision 2026.3.9: reduce redundant planar Detour detail after source fitting/continuity; report removed detail vertices. 2026.3.10: whole-patch guesses no longer reject horizontal floors; source patch rejection is limited to exposed exterior bevels. Default indoor links respect two-voxel treads; run connected raised-surface policy after physical clearance. 2026.3.12: offline contour and final serialized-detail coverage observers, inactive in normal builds. 2026.3.13: restore filtered ground/road area-label islands only when physically linked to a retained walking region, preserving area labels and isolated-surface filtering. 2026.3.15: bind contour coverage protection to directly supported shallow WMO floor relief, preserving established stair/ramp profiles. 2026.3.16: independently rasterize rejected WMO caps to distinguish buried support markers from exposed obstacle tops after merged-span area propagation; retain a full-voxel separation and require source-cell top support. Add opt-in solid-stage diagnostics.",
+      "Nav/SourceSurfaceFit.cs": "Bounded collision fitting, source cap exclusion, residual collision envelope and verified buried-ramp repair. Revision 2026.3.4 removes the 2026.3.3 collision-patch reconstruction: legal steps must retain the continuous Recast walking envelope. Preserve original terrain clearance and existing boundary samples; weld shared fitted heights after the envelope instead of independently replacing each polygon. Review 2026.3.7: solid geometry and support eligibility are separate for headroom, including rejected caps, props and underside faces; directly supported terrain wins within voxel error; optional stage snapshots are read-only. Review: fit coarse vertices first, then guide detail by its owning polygon storey; retain verified terrain relief and local detail, with coarse-surface fallback instead of lower-storey terrain. 2026.3.8: exact source-backed local footing classification requires a standing-height wall and uncovered lower floor on the same side; real ramps and bounded ramp-to-landing approaches are excluded. Ramp/tread source patches may share a walking envelope within two height cells, allowing existing buried-stair repair without requiring identical patch IDs. 2026.3.10: revoke component-local cap support, probe adjacent WMO floor, prevent upward source-edge extrapolation beyond one voxel, synchronize complete detail edge profiles. 2026.3.11: a wall-footing ramp exemption requires meaningful rise and run, not tangent length alone. Exposed cap support can be verified directly from source WMO faces. 2026.3.12: rescue stair edges from wrong lower WMO storeys while preserving direct landing support; distinguish full-width ramp continuations from narrow trim. Preserve sub-voxel thresholds and low transitions onto broad exposed flat floors. Optional thread-local coverage observer for offline geometry audit. 2026.3.13: broad exposed indoor floor cannot become a footing solely because a probe finds terrain through an adjacent WMO footprint gap; retain separate lower-WMO stair evidence. 2026.3.15: expose selected shallow source-floor support for selective contour coverage protection; flat landings and full stair ramps retain prior contour behavior. 2026.3.16: clip eligible WMO source triangles to the raster cell before matching its top, preserving gently sloped bridge deck corners.",
+      "Extractor/Extractor.cs": "Reject missing nonzero collision dependencies rather than silently omit obstacles.",
+      "Extractor/M2.cs": "Reject malformed collision arrays, nonfinite vertices, unsupported headers and invalid indices; preserve valid models with no collision.",
+      "Extractor/Names.cs": "Accept the pinned embedded texture snapshot in memory without writing shared executable-directory files.",
+      "Nav/SurfaceClearance.cs": "Source-labelled WMO cap classifier with bounded cardinal/diagonal shelf probes indoors and outdoors. Short bevel provenance prevents false stair protection; structural continuation requires nearby supported step heights and full headroom. Checks run only for proposed cap rejections. Supersedes the roof-only expanded-probe exception. Stair exemption requires two successive rises or descents; one higher shelf is insufficient. Continuation is traced through twice the cap-probe reach, preserving deep outdoor treads; opposing rises/descents reset the monotonic sequence. Revision 2026.3.5: walkable temporary WMO markers use 58/59, below permanent WMO cap marker 60 and prop marker 63, so climb-bounded merging respects explicit blocking. Structural-top priority remains higher than bevel priority (59 > 58), preserving real tread evidence in mixed raster cells. Revision 2026.3.6: longer layered-base probes require a lower-floor/backing-wall pair and retain structural stair continuation; lower floor on both distant sides does not reject a freestanding platform.",
+      "Nav/MapEdits.cs": "Height-bounded road, cut, restore and permanent-block strokes; typed links with stable user IDs.",
+      "Nav/OffMeshLinks.cs": "Preserve walk/portal/elevator modes and authoring IDs.",
+      "Nav/RoadMask.cs": "Inspect blended texture layers; classify road basenames rather than directory names, exclude crater textures, apply explicit texture overrides and per-stroke height bands.",
+      "Nav/NavPrune.cs": "Preserve manually blocked polygons and exclude them from walking and liquid connectivity.",
+      "Nav/WmoCapPatches.cs": "Classify flat shelves and short wall-backed inclined mouldings before rasterization. Combine patch area/perimeter with projected width, including bent trim strips. Ramp exemptions require meaningful run along the gradient. Terrain may establish lower support only for a shelf backed by a tall wall along its narrow axis, preserving exposed entrance landings. Spatially index wall evidence. Preserve actual tread sequences and continuing ramps; rejected sources cannot control final floor fitting. Revision 2026.3.5: protect visible treads overlaid by a smooth collision ramp even without shared edges. Inspect wall backing across the full patch and the standing body band, including segmented steep wall faces. Require monotonic, unobstructed stair continuation. Evaluate actual boundary clearance to distinguish closed trim rings from standing floors. Detect low lips and stacked bevel trim before rasterization. Optional EXPLORER_CAP_TRACE emits classification decisions only when explicitly enabled. Revision 2026.3.6: backing-wall evidence includes multi-part shelves beyond the first bevel; short incline width uses its own gradient frame while flat landings retain wall-relative width checks. Review 2026.3.7: deduplicate source face measurements and reject all copies; identify boundary sides rather than incidence count; distinguish thin raised sloping railings above wide ramps from actual ramps and protect only supported ramp joins. Review: use cached actual patch standing room for ramp-join exemptions; bent railing bounds/length do not replace standing room over a wider ramp. 2026.3.8: broad suspended WMO tabletops require underside plus low underlying WMO-floor evidence, with terrain-under-buildings excluded. A narrow flat railing joining multiple narrow incline patches no longer receives an automatic landing exemption; genuine wide ramp joins and open single-ramp landings remain supported. Revision 2026.3.9: area-weight suspended furniture evidence; recognize inclined undersides, propagate rejected furniture to attached bevels with lower-floor evidence, and preserve low open steps separately from wall-backed trim. Stair/tread continuation voting retained after captured stair-seam regression from broader area weighting. 2026.3.10: production mode requires an inclined cap and exposed terrain with standing headroom; keep horizontal floor/tread decisions local. Verify actual body radius and supporting ramp width. 2026.3.11: production local-obstacle mode applies indoors too, protects broad horizontal coplanar floors, and tests individual low open steps. Short elevated bevels are not preserved solely for having a small height span. 2026.3.12: short bevels require exposed broad-floor support within a low step, rather than rejecting floor transition bevels solely because a wall is nearby. 2026.3.13: low cap/bevel exceptions require opposite broad-floor supports and collision-clear approaches, rather than several probes on the same side of a wall or railing. 2026.3.14: verify exposed standing footprints across floor triangulation and retain short collision-clear upper/lower floor turns around railings. 2026.3.15: footprint perimeter probes support one body radius instead of expanding a second body at every probe. Search several standing positions before rejecting a whole source face, and follow continuous slope-bounded support across floor creases rather than requiring one coplanar plane.",
+      "Extractor/Wmo.cs": "Correct the inherited MOPY bit definitions and physical-face selection. Retain explicit collision (0x08), including detail+collision; retain rendered non-detail faces (0x20 without 0x04); exclude hint-only and other nonphysical faces. The prior blanket 0x04 exclusion was not a NoCollision rule. Match TypeScript extraction and TrinityCore physical-face semantics.",
+      "Nav/SourceSurfaceContinuity.cs": "Preserve Recast continuous topology and curved boundary sampling. Weld fitted coincident vertex heights only within the same or adjacent ground polygons, with millimetre XY tolerance and a bounded vertical cluster. Disconnected storeys are excluded. No collision patch clipping, source-tread export, coarse subdivision or new triangulation.",
+      "Nav/SourceBodyClearance.cs": "2026.3.6: spatially indexed original collision confirms conservative voxel wall hits in the legal-step/standing-body band. Physical WMO, blocked doodad and terrain walls retain agent-radius clearance without extra voxel inflation at clear ramp margins. Review 2026.3.7: source-rejected caps and blocked props also support exact low-obstacle exclusion checks, distinct from ordinary legal-step/tall-wall clearance. 2026.3.10: retain configured body radius; use the three-voxel stepping band rather than ignoring walls through climb plus an extra voxel. 2026.3.11: ordinary wall clearance honors AgentMaxClimb instead of a smaller three-voxel cutoff; explicit obstacle margins remain separate.",
+      "Nav/PlanarDetailReducer.cs": "2026.3.9: reduce convex planar detail patches/fans within 0.0001 yard height tolerance; preserve all footprint boundary samples, flags, coarse topology, nonplanar relief and multi-loop/concave patches.",
+      "Nav/IndoorSupportGraph.cs": "Revision 2026.3.10: classify isolated raised compact surfaces using underlying/perimeter WMO floor support; preserve connected walking floors and revoke rejected height authority. 2026.3.11: include unroofed/window-edge caps only when their component has direct WMO support; handle single-cell raised components without deleting surrounding terrain. 2026.3.14: perimeter furniture evidence must surround most of the component boundary; two lower stair samples cannot delete a landing.",
+      "Nav/SourceDetailEdges.cs": "Revision 2026.3.10: synchronize linked polygon detail profiles with shared breakpoints and canonical coordinates; preserve stepped height profiles, flags and local-index limits."
+    },
+    "adapterFiles": {
+      "Program.cs": "fc7deeaf75455aa78a3a708eea3d1028d48002251c7040b39a5e0b48454f345f",
+      "MemoryFiles.cs": "fed69b1fc35c6fd331c1d8ebf4eb3a23b88273f5f09a84bae495bed258e0febd",
+      "Reachability.cs": "b68a468923d9a6ccb25a2f0869205c2330825d87b281323ed9403fdeaad39c95",
+      "StreamAnalysis.cs": "1cb9ceb2173e094945397b0d61c95f910031dcd38fdc17108e676a016178532e",
+      "engine.csproj": "7db5d9b097a59117316d465a83b4a44c3ecf118cd8f9ac17f422fc613de3237b",
+      "../engine-native/Runner.cs": "00df2ae971ba6c61856ee92affc7f1329a47a348641d04cf8d759f194b836619",
+      "../engine-native/engine-native.csproj": "bbad841cf5e8af84fa831cb2dc0b824a446b782d6ad2fd653f4d8d52acba7da3",
+      "../source.ts": "03656cb99925609b19dcaf2df95545b287373d97da5fe51905f83057e3070d13",
+      "../geometry.ts": "9fa07f0106b2e2f5a1bb313b24e99f7e769d115dcea207d21560c5c9197a8182",
+      "../liquid-classification.ts": "4253421947e8134407d8aaff46137fdee7302f68e0842f2414187210b8786a3d",
+      "../engine-api.ts": "cccdb0c38450d45eccac3f6f7108e157353e4010c1d3e21c292c10ebc0b5066b",
+      "../authoring.ts": "6af028f54cceaa76fd0bfbd817b78b37fc64421e3b607067fdfe73acbbfc59af"
+    }
+  },
+  "builds": {
+    "checkerExit": 0,
+    "nativeExit": 0,
+    "browserExit": 0,
+    "nativeLogSha256": "2b6e373f4f3eb9f6fb6e021ce313406bc625edb26a877b7f37896f6d791df8b6",
+    "browserLogSha256": "34dc128f2542db9249428f025ed7d9e381abe10451868dd3d7ba38492f1b01c2"
+  },
+  "packaging": {
+    "packagingExit": 0,
+    "pipeline": "explorer-recast-2026.3.16",
+    "launcherUnchanged": true,
+    "files": {
+      "release\\MapExplorer\\MapExplorer.exe": {
+        "bytes": 123904,
+        "sha256": "f04b88a5a499d100c4a37755225fb24dbd1379153ac5408af2496e2f9cc114fc"
+      },
+      "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe": {
+        "bytes": 74632630,
+        "sha256": "413fae876b01e45c53fa49040e1afb60b4598f6b612fad229923c91f3b11c18e"
+      },
+      "release\\MapExplorer-portable.zip": {
+        "bytes": 199278261,
+        "sha256": "8ce9cabd84c66712f5abebdada57b582dfd0a2b441b2cf077557d333b78627f2"
+      },
+      "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll": {
+        "bytes": 992256,
+        "sha256": "326d419cc355592467345de457d5984918bca803eb82c648363e3c9a5b1caa63"
+      },
+      "docs\\diagnostics\\bridge-2026.3.16.png": {
+        "bytes": 92461,
+        "sha256": "1d7d215ee3d8622de3ffbb59d54e4e9accffb0de4f77059401ebd93e2adacf9c"
+      }
+    }
+  },
+  "wasmSha256": "93abb9765cf37303e4aacdb436148a317c4ce1d986abeff894a26f3066765c53",
+  "outputs": {
+    "native": {
+      "bake": {
+        "command": [
+          "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+          ".cache\\oct29-current\\313-parity.input",
+          ".cache\\oct29-current\\316-native.zip"
+        ],
+        "exit": 0
+      },
+      "tileBytes": 6056324,
+      "tileSha256": "32f93332856c0983e30764b0c55bb654aee71d554a61e553186bee574abab214",
+      "engine": {
+        "pipeline": "explorer-recast-2026.3.16",
+        "milliseconds": 32197.7132,
+        "settings": {
+          "TileSizeCells": 2000,
+          "CellSize": 0.26666665,
+          "CellHeight": 0.26666665,
+          "AgentHeight": 2.1333332,
+          "AgentRadius": 0.5333333,
+          "AgentMaxClimb": 1.0666666,
+          "SwimDepth": 1.2188,
+          "SwimConnectClimb": 2,
+          "SwimSurfaceMargin": 0.3,
+          "SwimShoreBand": 3,
+          "BuriedMargin": 0,
+          "RasterizeLiquid": false,
+          "SubmergedSlack": 0.5,
+          "AgentMaxSlope": 50,
+          "MinRegionArea": 2,
+          "MergeRegionArea": 8,
+          "EdgeMaxLen": 12,
+          "EdgeMaxError": 1.3,
+          "VertsPerPoly": 6,
+          "RegionSplit": 7,
+          "PlainBuild": false,
+          "DetailSampleDist": 2,
+          "DetailSampleMaxError": 0.5,
+          "DetailSpikeSnap": 1,
+          "DetailBladeArea": 0.02,
+          "RetriangulateDetail": true,
+          "DetailSeedSpacing": 0,
+          "ErodedPinholeFill": 0,
+          "PinholeFill": 4,
+          "ContourEdgeMax": 0,
+          "DetailBandMargin": 2,
+          "MinIndoorStripWidth": 0,
+          "IndoorOpenCells": 0,
+          "IndoorFloorDrop": 0.3,
+          "LedgeMinDrop": 0.35,
+          "RailingReach": 5,
+          "OffMeshLinks": [],
+          "ErodeStepBreak": 0,
+          "IndoorIslandArea": 0,
+          "IndoorStepCut": 0,
+          "MinRegionCells": 6,
+          "BlockDoodads": true,
+          "IndoorErodeCells": 0,
+          "DebugForceArea": 0,
+          "DebugSpanTally": false
+        },
+        "metrics": {
+          "polygons": 15481,
+          "tiles": 1,
+          "regionsSplit": 8456,
+          "pinholesFilled": 25,
+          "detailRetriangulated": 11978,
+          "detailSpikes": 369,
+          "detailBlades": 3,
+          "detailClamped": 274,
+          "longDetailEdges": 0,
+          "regionSplitGrid": 0,
+          "regionsUnwound": 0,
+          "tinyRegionCells": 14,
+          "areaIslandCellsRestored": 1,
+          "indoorCells": 181003,
+          "trimCells": 24419,
+          "roadCells": 71129,
+          "railingCells": 0,
+          "asymmetricLinks": 0,
+          "doodadSpansReblocked": 6631,
+          "sourceSurfaceVertices": 230566,
+          "planarDetailVerticesRemoved": 2690,
+          "sourceWmoCapsBlocked": 48169,
+          "solidWallCells": 24419,
+          "raisedWmoCapsBlocked": 4619,
+          "coveredWmoSpansRestored": 527,
+          "swimPolygons": 552,
+          "submergedPolygons": 781,
+          "hazardPolygons": 0,
+          "waterlineCuts": 5801,
+          "coarserContours": 0,
+          "monotoneTiles": 0,
+          "splitGaveUp": 0,
+          "swimBuildFellBack": 0,
+          "fallbackWhy": "",
+          "stages": {
+            "rasterize": 11837.0716,
+            "build": 20316.1125,
+            "detour": 44.5291
+          }
+        }
+      },
+      "checkerSha256": "326d419cc355592467345de457d5984918bca803eb82c648363e3c9a5b1caa63",
+      "checks": [
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "snapshot-tile",
+            ".cache\\oct29-current\\316-shipped-native\\0000_48_32.mmtile",
+            ".cache\\oct29-current\\316-shipped-native\\surface-weld.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+            "tools/checkMeshRegression.py",
+            "--baseline",
+            ".cache\\oct29-current\\315-shipped-native",
+            "--candidate",
+            ".cache\\oct29-current\\316-shipped-native",
+            "--fixture",
+            "docs/diagnostics/abbey-cave-bridge-2026.3.16-regression-points.json",
+            "--out",
+            ".cache\\oct29-current\\316-native-regression.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"exit\": 0, \"pointsPassed\": 62, \"negativePointsPassed\": 6, \"flatSamples\": 1536, \"changedFlatSamples\": 0, \"largestFlatDelta\": 0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-native\\0000_48_32.mmtile",
+            "-8940",
+            "-235",
+            "-8840",
+            "-115"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8940,-235,-8840,-115],\"checkedEdges\":3011,\"gaps\":0,\"missing\":0,\"worst\":0.006389092611485125,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-native\\0000_48_32.mmtile",
+            "-8670",
+            "-185",
+            "-8533",
+            "-110"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8670,-185,-8533,-110],\"checkedEdges\":1788,\"gaps\":0,\"missing\":0,\"worst\":0.002224029113619963,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-native\\0000_48_32.mmtile",
+            "-9005",
+            "-320",
+            "-8960",
+            "-275"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-9005,-320,-8960,-275],\"checkedEdges\":247,\"gaps\":0,\"missing\":0,\"worst\":0.004408544999108699,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8913.011",
+            "-136.033",
+            "80.7",
+            "-8898",
+            "-175",
+            "115.72"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":69,\"start\":[-8913.011,-136.033,80.87563],\"end\":[-8898,-175,115.98812]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8898",
+            "-175",
+            "115.72",
+            "-8897",
+            "-171",
+            "115.49"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8898,-175,115.98812],\"end\":[-8897,-171,115.75169]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8638",
+            "-145",
+            "86.5",
+            "-8614",
+            "-148",
+            "87"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":11,\"start\":[-8638,-145,86.58533],\"end\":[-8614,-148,87.42741]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8657",
+            "-126",
+            "90.3",
+            "-8653",
+            "-123",
+            "90"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":3,\"start\":[-8657,-126,90.801],\"end\":[-8652.969,-123.04674,89.724915]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8643",
+            "-133",
+            "86.8",
+            "-8639",
+            "-130",
+            "87.7"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":2,\"start\":[-8643,-133,87.33442],\"end\":[-8639.574,-131.14682,87.86869]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8594",
+            "-149",
+            "90.1",
+            "-8590",
+            "-144",
+            "89.5"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8592.9375,-148.88225,90.431114],\"end\":[-8590,-144,89.92828]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8589",
+            "-167",
+            "91.3",
+            "-8585",
+            "-165",
+            "90.6"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":10,\"start\":[-8589,-167,91.40134],\"end\":[-8585,-165,91.008286]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8546",
+            "-170",
+            "86",
+            "-8535",
+            "-174",
+            "86"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":7,\"start\":[-8545.377,-169.25252,86.3008],\"end\":[-8535.466,-175.20068,85.78579]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-native",
+            "-8995",
+            "-307",
+            "71.34",
+            "-8976",
+            "-289",
+            "71.32"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":15,\"start\":[-8995,-307,71.59023],\"end\":[-8976,-289,71.927315]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "mesh-quality"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Mesh quality checks passed: low open rim retained, tabletop/bevel rejected, planar fan reduced, boundary samples/flags and real relief retained; unequal shared stair profiles synchronized.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-rules"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Surface rules passed: caps/wall trim blocked; treads, terrain and narrow corridors preserved; interior WMO collision covered without lifting ground onto unrelated trim.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-heights"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Removed ledges excluded; live steps preserved; source fitting follows flat/ramped/stacked floors without floor switching; small-triangle coverage preserved.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "collision-detail"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Continuous step envelope passed: original Recast topology and coverage retained, legal step crossed without separate tread surfaces.\nBoundary weld passed: connected copies agree, disconnected floors and curved sampling remain intact.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-native\\0000_48_32.mmtile"
+          ],
+          "exit": 3762504530,
+          "expectedExit": 3762504530,
+          "stdout": "{\"bounds\":null,\"checkedEdges\":22656,\"gaps\":1,\"missing\":0,\"worst\":0.015881231623893655,\"verticalStepEdges\":3,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}",
+          "stderr": "gap p=15452 other=15478 point=<-8533.359, -190.10735, 84.1074> heights=84.14371475372543,84.12783352210154\nUnhandled exception. System.Exception: Navigation detail surfaces do not meet across linked polygon edges or internal tread edges\n   at SurfaceCheck.Seams(String file, Single[] bounds) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\SurfaceCheck.cs:line 74\n   at NativeCheck.Main(String[] args) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\Program.cs:line 42"
+        }
+      ],
+      "regression": {
+        "exit": 0,
+        "scope": "captured Abbey source only",
+        "fixtureSha256": "79562304829fc9ecca34777fac9c98254577c00bf074169306330d389020f1dc",
+        "candidateSnapshotSha256": "a1e3665fbf6db430970f183ded8902afaa3dac504024c181bd0856de3f3c37d2",
+        "points": [
+          {
+            "name": "shared contour floor gap",
+            "x": -8905.072,
+            "y": -203.571,
+            "floor": 81.940186,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              103.64760441398509,
+              82.20685599999999
+            ],
+            "candidateHeights": [
+              103.64760441398509,
+              82.20685599999999
+            ],
+            "passed": true
+          },
+          {
+            "name": "upper stair corner",
+            "x": -8909.551,
+            "y": -202.05,
+            "floor": 96.508835,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              96.53103398445879
+            ],
+            "candidateHeights": [
+              96.53103398445879
+            ],
+            "passed": true
+          },
+          {
+            "name": "opposite stair corner",
+            "x": -8874.601,
+            "y": -181.35,
+            "floor": 97.68831,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.21070554166316,
+              97.95825660978511
+            ],
+            "candidateHeights": [
+              82.21070554166316,
+              97.95825660978511
+            ],
+            "passed": true
+          },
+          {
+            "name": "circular floor threshold",
+            "x": -8892.3755,
+            "y": -179.025,
+            "floor": 82.07549,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.18429166005279
+            ],
+            "candidateHeights": [
+              82.18429166005279
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported indoor stair hole",
+            "x": -8902.266,
+            "y": -186,
+            "floor": 81.9397,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.31353604066075,
+              97.94700722210872
+            ],
+            "candidateHeights": [
+              82.31353604066075,
+              97.94700722210872
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported outside stair hole",
+            "x": -8915.025,
+            "y": -138.825,
+            "floor": 81.276,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              81.54296136516268
+            ],
+            "candidateHeights": [
+              81.54296136516268
+            ],
+            "passed": true
+          },
+          {
+            "name": "round table low floor ring",
+            "x": -8918,
+            "y": -210,
+            "floor": 82.114,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              89.43250084652432,
+              82.20685687910029,
+              102.74411044146296
+            ],
+            "candidateHeights": [
+              89.43250084652432,
+              82.20685687910029,
+              102.74411044146296
+            ],
+            "passed": true
+          },
+          {
+            "name": "central circular low floor transition",
+            "x": -8897,
+            "y": -180,
+            "floor": 81.577,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              113.42420236064719,
+              81.97878407000546
+            ],
+            "candidateHeights": [
+              113.42420236064719,
+              81.97878407000546
+            ],
+            "passed": true
+          },
+          {
+            "name": "upper wooden landing",
+            "x": -8898,
+            "y": -175,
+            "floor": 115.72,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              81.84431560232815,
+              115.98812119860102
+            ],
+            "candidateHeights": [
+              81.84431560232815,
+              115.98812119860102
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave tessellation seam",
+            "x": -8623,
+            "y": -147,
+            "floor": 86.581,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              86.8380887314198
+            ],
+            "candidateHeights": [
+              86.8380887314198
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave cross floor continuation",
+            "x": -8625,
+            "y": -145,
+            "floor": 86.438,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              86.70569712802163,
+              140.05048250623665
+            ],
+            "candidateHeights": [
+              86.70569712802163,
+              140.05048250623665
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave north tunnel reported gap",
+            "x": -8655.045,
+            "y": -124.708,
+            "floor": 89.978,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              112.97980747399224,
+              90.32445512324978
+            ],
+            "candidateHeights": [
+              112.97980747399224,
+              90.32445512324978
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave junction reported gap",
+            "x": -8641.078,
+            "y": -131.283,
+            "floor": 87.415,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              87.68068351241868
+            ],
+            "candidateHeights": [
+              87.68068351241868
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave east bend reported gap",
+            "x": -8592.298,
+            "y": -146.533,
+            "floor": 89.769,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              157.02150471352394,
+              90.03279768076813
+            ],
+            "candidateHeights": [
+              157.02150471352394,
+              90.03279768076813
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave south bend contour gap",
+            "x": -8587.675,
+            "y": -165.839,
+            "floor": 90.974,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              136.98530865504017,
+              91.25129651684921
+            ],
+            "candidateHeights": [
+              136.98530865504017,
+              91.24203205672617
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave worst eastern tunnel floor",
+            "x": -8541.596,
+            "y": -171.485,
+            "floor": 85.109,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              85.39759394926975
+            ],
+            "candidateHeights": [
+              85.39759394926975
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across -2.5",
+            "x": -8993.97065,
+            "y": -302.82095,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.65064122951028
+            ],
+            "candidateHeights": [
+              71.65064122951028
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across -1.25",
+            "x": -8993.09453,
+            "y": -303.71258,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.64386419305211
+            ],
+            "candidateHeights": [
+              71.64386419305211
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across 0",
+            "x": -8992.2184,
+            "y": -304.6042,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.62055791679303
+            ],
+            "candidateHeights": [
+              71.62055791679303
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across 1.25",
+            "x": -8991.34227,
+            "y": -305.49582,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.62030970025555
+            ],
+            "candidateHeights": [
+              71.62030970025555
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across 2.5",
+            "x": -8990.46615,
+            "y": -306.38745,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.62203292339086
+            ],
+            "candidateHeights": [
+              71.62203292339086
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across -2.5",
+            "x": -8992.54405,
+            "y": -301.41915,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.86963347400241
+            ],
+            "candidateHeights": [
+              71.86963347400241
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across -1.25",
+            "x": -8991.66793,
+            "y": -302.31078,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89227201305329
+            ],
+            "candidateHeights": [
+              71.89227201305329
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across 0",
+            "x": -8990.7918,
+            "y": -303.2024,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89227907478214
+            ],
+            "candidateHeights": [
+              71.89227907478214
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across 1.25",
+            "x": -8989.91568,
+            "y": -304.09402,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89226301851028
+            ],
+            "candidateHeights": [
+              71.89226301851028
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across 2.5",
+            "x": -8989.03955,
+            "y": -304.98565,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89223731362573
+            ],
+            "candidateHeights": [
+              71.89223731362573
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across -2.5",
+            "x": -8991.11745,
+            "y": -300.01735,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12310914603458
+            ],
+            "candidateHeights": [
+              72.12310914603458
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across -1.25",
+            "x": -8990.24133,
+            "y": -300.90898,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12305650129208
+            ],
+            "candidateHeights": [
+              72.12305650129208
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across 0",
+            "x": -8989.3652,
+            "y": -301.8006,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11827411951778
+            ],
+            "candidateHeights": [
+              72.11827411951778
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across 1.25",
+            "x": -8988.48907,
+            "y": -302.69223,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12159810215542
+            ],
+            "candidateHeights": [
+              72.12159810215542
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across 2.5",
+            "x": -8987.61295,
+            "y": -303.58385,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12155324448375
+            ],
+            "candidateHeights": [
+              72.12155324448375
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across -2.5",
+            "x": -8989.69085,
+            "y": -298.61555,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.2772194029806
+            ],
+            "candidateHeights": [
+              72.2772194029806
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across -1.25",
+            "x": -8988.81473,
+            "y": -299.50718,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27226083386992
+            ],
+            "candidateHeights": [
+              72.27226083386992
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across 0",
+            "x": -8987.9386,
+            "y": -300.3988,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26324756137974
+            ],
+            "candidateHeights": [
+              72.26324756137974
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across 1.25",
+            "x": -8987.06248,
+            "y": -301.29042,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26341237491272
+            ],
+            "candidateHeights": [
+              72.26341237491272
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across 2.5",
+            "x": -8986.18635,
+            "y": -302.18205,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27719702544219
+            ],
+            "candidateHeights": [
+              72.27719702544219
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across -2.5",
+            "x": -8988.26425,
+            "y": -297.21375,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.30510619661652
+            ],
+            "candidateHeights": [
+              72.30838606292114
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across -1.25",
+            "x": -8987.38813,
+            "y": -298.10538,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27176624791642
+            ],
+            "candidateHeights": [
+              72.28040972871811
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across 0",
+            "x": -8986.512,
+            "y": -298.997,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26985423993739
+            ],
+            "candidateHeights": [
+              72.26985423993739
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across 1.25",
+            "x": -8985.63587,
+            "y": -299.88862,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26972218459221
+            ],
+            "candidateHeights": [
+              72.27756805461203
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across 2.5",
+            "x": -8984.75975,
+            "y": -300.78025,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.31191564455648
+            ],
+            "candidateHeights": [
+              72.31878362846025
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across -2.5",
+            "x": -8986.83765,
+            "y": -295.81195,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27678141028592
+            ],
+            "candidateHeights": [
+              72.27678075504912
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across -1.25",
+            "x": -8985.96153,
+            "y": -296.70358,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27658827888281
+            ],
+            "candidateHeights": [
+              72.27678045702395
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across 0",
+            "x": -8985.0854,
+            "y": -297.5952,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27635513905713
+            ],
+            "candidateHeights": [
+              72.27635513905713
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across 1.25",
+            "x": -8984.20927,
+            "y": -298.48683,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.2760100269151
+            ],
+            "candidateHeights": [
+              72.27656271031412
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across 2.5",
+            "x": -8983.33315,
+            "y": -299.37845,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.25632615891027
+            ],
+            "candidateHeights": [
+              72.2760976702148
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across -2.5",
+            "x": -8985.41105,
+            "y": -294.41015,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12102943966055
+            ],
+            "candidateHeights": [
+              72.12131873560935
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across -1.25",
+            "x": -8984.53493,
+            "y": -295.30178,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11712454695352
+            ],
+            "candidateHeights": [
+              72.11704325002862
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across 0",
+            "x": -8983.6588,
+            "y": -296.1934,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11108434945903
+            ],
+            "candidateHeights": [
+              72.1169389286992
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across 1.25",
+            "x": -8982.78268,
+            "y": -297.08502,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11427400756415
+            ],
+            "candidateHeights": [
+              72.11721004154043
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across 2.5",
+            "x": -8981.90655,
+            "y": -297.97665,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.09836794972043
+            ],
+            "candidateHeights": [
+              72.12056800835896
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across -2.5",
+            "x": -8983.98445,
+            "y": -293.00835,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              71.89006904053159
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across -1.25",
+            "x": -8983.10833,
+            "y": -293.89998,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89004861826403
+            ],
+            "candidateHeights": [
+              71.89005480968886
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across 0",
+            "x": -8982.2322,
+            "y": -294.7916,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89005538941495
+            ],
+            "candidateHeights": [
+              71.89004638595307
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across 1.25",
+            "x": -8981.35607,
+            "y": -295.68322,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89005459279383
+            ],
+            "candidateHeights": [
+              71.89005245337034
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across 2.5",
+            "x": -8980.47995,
+            "y": -296.57485,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              71.89009620062765
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across -2.5",
+            "x": -8982.55785,
+            "y": -291.60655,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.66984613435575
+            ],
+            "candidateHeights": [
+              71.6428412099207
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across -1.25",
+            "x": -8981.68173,
+            "y": -292.49818,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.67206550397857
+            ],
+            "candidateHeights": [
+              71.67011339922446
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across 0",
+            "x": -8980.8056,
+            "y": -293.3898,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.68627133749496
+            ],
+            "candidateHeights": [
+              71.68627133749496
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across 1.25",
+            "x": -8979.92948,
+            "y": -294.28143,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.68139413153655
+            ],
+            "candidateHeights": [
+              71.68139413153655
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across 2.5",
+            "x": -8979.05335,
+            "y": -295.17305,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.67676602893879
+            ],
+            "candidateHeights": [
+              71.6605357015075
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported bridge camera deck",
+            "x": -8980.903,
+            "y": -296.641,
+            "floor": 71.676,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              71.94279083731095
+            ],
+            "passed": true
+          }
+        ],
+        "negativePoints": [
+          {
+            "name": "central wall cap",
+            "x": -8891.199,
+            "y": -178.66733,
+            "heightBand": [
+              82.6,
+              83.3
+            ],
+            "baselineHeights": [
+              99.07992
+            ],
+            "candidateHeights": [
+              99.07992
+            ],
+            "passed": true
+          },
+          {
+            "name": "window bevel",
+            "x": -8903.466,
+            "y": -212.00067,
+            "heightBand": [
+              82.5,
+              83.3
+            ],
+            "baselineHeights": [
+              99.96266357487941
+            ],
+            "candidateHeights": [
+              99.96266357487941
+            ],
+            "passed": true
+          },
+          {
+            "name": "stair trim",
+            "x": -8911.553,
+            "y": -198.946,
+            "heightBand": [
+              86.15,
+              87.0
+            ],
+            "baselineHeights": [
+              103.74207225251635
+            ],
+            "candidateHeights": [
+              103.74207225251635
+            ],
+            "passed": true
+          },
+          {
+            "name": "round tabletop remains excluded",
+            "x": -8913,
+            "y": -210,
+            "heightBand": [
+              82.8,
+              83.6
+            ],
+            "baselineHeights": [
+              80.7063028200083
+            ],
+            "candidateHeights": [
+              80.7063028200083
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge post cap east",
+            "x": -8981.133,
+            "y": -300.21242,
+            "heightBand": [
+              73.4,
+              74.3
+            ],
+            "baselineHeights": [],
+            "candidateHeights": [],
+            "passed": true
+          },
+          {
+            "name": "bridge post cap west",
+            "x": -8987.64567,
+            "y": -293.5847,
+            "heightBand": [
+              73.4,
+              74.3
+            ],
+            "baselineHeights": [],
+            "candidateHeights": [],
+            "passed": true
+          }
+        ],
+        "flatWalkway": {
+          "samples": 1536,
+          "changes": [],
+          "largestDelta": 0
+        }
+      }
+    },
+    "wasm": {
+      "bake": {
+        "command": [
+          "node",
+          "tools/checkMeshWasm.mjs",
+          ".cache\\oct29-current\\313-parity.input",
+          ".cache\\oct29-current\\316-wasm.zip"
+        ],
+        "exit": 0
+      },
+      "tileBytes": 6055944,
+      "tileSha256": "5a169bcadfd237ea46661742f50304666ef99e47fe9621055e285b4840218c00",
+      "engine": {
+        "pipeline": "explorer-recast-2026.3.16",
+        "milliseconds": 104809.32900000001,
+        "settings": {
+          "TileSizeCells": 2000,
+          "CellSize": 0.26666665,
+          "CellHeight": 0.26666665,
+          "AgentHeight": 2.1333332,
+          "AgentRadius": 0.5333333,
+          "AgentMaxClimb": 1.0666666,
+          "SwimDepth": 1.2188,
+          "SwimConnectClimb": 2,
+          "SwimSurfaceMargin": 0.3,
+          "SwimShoreBand": 3,
+          "BuriedMargin": 0,
+          "RasterizeLiquid": false,
+          "SubmergedSlack": 0.5,
+          "AgentMaxSlope": 50,
+          "MinRegionArea": 2,
+          "MergeRegionArea": 8,
+          "EdgeMaxLen": 12,
+          "EdgeMaxError": 1.3,
+          "VertsPerPoly": 6,
+          "RegionSplit": 7,
+          "PlainBuild": false,
+          "DetailSampleDist": 2,
+          "DetailSampleMaxError": 0.5,
+          "DetailSpikeSnap": 1,
+          "DetailBladeArea": 0.02,
+          "RetriangulateDetail": true,
+          "DetailSeedSpacing": 0,
+          "ErodedPinholeFill": 0,
+          "PinholeFill": 4,
+          "ContourEdgeMax": 0,
+          "DetailBandMargin": 2,
+          "MinIndoorStripWidth": 0,
+          "IndoorOpenCells": 0,
+          "IndoorFloorDrop": 0.3,
+          "LedgeMinDrop": 0.35,
+          "RailingReach": 5,
+          "OffMeshLinks": [],
+          "ErodeStepBreak": 0,
+          "IndoorIslandArea": 0,
+          "IndoorStepCut": 0,
+          "MinRegionCells": 6,
+          "BlockDoodads": true,
+          "IndoorErodeCells": 0,
+          "DebugForceArea": 0,
+          "DebugSpanTally": false
+        },
+        "metrics": {
+          "polygons": 15478,
+          "tiles": 1,
+          "regionsSplit": 8456,
+          "pinholesFilled": 25,
+          "detailRetriangulated": 11980,
+          "detailSpikes": 369,
+          "detailBlades": 3,
+          "detailClamped": 274,
+          "longDetailEdges": 0,
+          "regionSplitGrid": 0,
+          "regionsUnwound": 0,
+          "tinyRegionCells": 14,
+          "areaIslandCellsRestored": 1,
+          "indoorCells": 181004,
+          "trimCells": 24419,
+          "roadCells": 71129,
+          "railingCells": 0,
+          "asymmetricLinks": 0,
+          "doodadSpansReblocked": 6631,
+          "sourceSurfaceVertices": 230564,
+          "planarDetailVerticesRemoved": 2690,
+          "sourceWmoCapsBlocked": 48171,
+          "solidWallCells": 24419,
+          "raisedWmoCapsBlocked": 4619,
+          "coveredWmoSpansRestored": 527,
+          "swimPolygons": 551,
+          "submergedPolygons": 779,
+          "hazardPolygons": 0,
+          "waterlineCuts": 5823,
+          "coarserContours": 0,
+          "monotoneTiles": 0,
+          "splitGaveUp": 0,
+          "swimBuildFellBack": 0,
+          "fallbackWhy": "",
+          "stages": {
+            "rasterize": 56061.2012,
+            "build": 48634.8321,
+            "detour": 113.2957
+          }
+        }
+      },
+      "checkerSha256": "326d419cc355592467345de457d5984918bca803eb82c648363e3c9a5b1caa63",
+      "checks": [
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "snapshot-tile",
+            ".cache\\oct29-current\\316-shipped-wasm\\0000_48_32.mmtile",
+            ".cache\\oct29-current\\316-shipped-wasm\\surface-weld.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+            "tools/checkMeshRegression.py",
+            "--baseline",
+            ".cache\\oct29-current\\315-shipped-native",
+            "--candidate",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "--fixture",
+            "docs/diagnostics/abbey-cave-bridge-2026.3.16-regression-points.json",
+            "--out",
+            ".cache\\oct29-current\\316-wasm-regression.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"exit\": 0, \"pointsPassed\": 62, \"negativePointsPassed\": 6, \"flatSamples\": 1536, \"changedFlatSamples\": 0, \"largestFlatDelta\": 0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-wasm\\0000_48_32.mmtile",
+            "-8940",
+            "-235",
+            "-8840",
+            "-115"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8940,-235,-8840,-115],\"checkedEdges\":3011,\"gaps\":0,\"missing\":0,\"worst\":0.006389092611485125,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-wasm\\0000_48_32.mmtile",
+            "-8670",
+            "-185",
+            "-8533",
+            "-110"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8670,-185,-8533,-110],\"checkedEdges\":1787,\"gaps\":0,\"missing\":0,\"worst\":0.0022231449898271194,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-current\\316-shipped-wasm\\0000_48_32.mmtile",
+            "-9005",
+            "-320",
+            "-8960",
+            "-275"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-9005,-320,-8960,-275],\"checkedEdges\":247,\"gaps\":0,\"missing\":0,\"worst\":0.004408544999108699,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8913.011",
+            "-136.033",
+            "80.7",
+            "-8898",
+            "-175",
+            "115.72"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":69,\"start\":[-8913.011,-136.033,80.87563],\"end\":[-8898,-175,115.98812]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8898",
+            "-175",
+            "115.72",
+            "-8897",
+            "-171",
+            "115.49"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8898,-175,115.98812],\"end\":[-8897,-171,115.7517]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8638",
+            "-145",
+            "86.5",
+            "-8614",
+            "-148",
+            "87"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":11,\"start\":[-8638,-145,86.58533],\"end\":[-8614,-148,87.42741]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8657",
+            "-126",
+            "90.3",
+            "-8653",
+            "-123",
+            "90"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":3,\"start\":[-8657,-126,90.801],\"end\":[-8652.969,-123.04674,89.724915]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8643",
+            "-133",
+            "86.8",
+            "-8639",
+            "-130",
+            "87.7"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":2,\"start\":[-8643,-133,87.33442],\"end\":[-8639.574,-131.14682,87.86869]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8594",
+            "-149",
+            "90.1",
+            "-8590",
+            "-144",
+            "89.5"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8592.9375,-148.88225,90.431114],\"end\":[-8590,-144,89.92828]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8589",
+            "-167",
+            "91.3",
+            "-8585",
+            "-165",
+            "90.6"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":10,\"start\":[-8589,-167,91.40134],\"end\":[-8585,-165,91.008286]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8546",
+            "-170",
+            "86",
+            "-8535",
+            "-174",
+            "86"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":7,\"start\":[-8545.377,-169.25252,86.3008],\"end\":[-8535.466,-175.20068,85.78579]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-current\\316-shipped-wasm",
+            "-8995",
+            "-307",
+            "71.34",
+            "-8976",
+            "-289",
+            "71.32"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":15,\"start\":[-8995,-307,71.59023],\"end\":[-8976,-289,71.927315]}",
+          "stderr": ""
+        }
+      ],
+      "regression": {
+        "exit": 0,
+        "scope": "captured Abbey source only",
+        "fixtureSha256": "79562304829fc9ecca34777fac9c98254577c00bf074169306330d389020f1dc",
+        "candidateSnapshotSha256": "b95bff22abbbe50761ac60416d24fdbc2cf35abcca862d0c27aac6e09db80198",
+        "points": [
+          {
+            "name": "shared contour floor gap",
+            "x": -8905.072,
+            "y": -203.571,
+            "floor": 81.940186,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              103.64760441398509,
+              82.20685599999999
+            ],
+            "candidateHeights": [
+              103.64760441398509,
+              82.20685599999999
+            ],
+            "passed": true
+          },
+          {
+            "name": "upper stair corner",
+            "x": -8909.551,
+            "y": -202.05,
+            "floor": 96.508835,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              96.53103398445879
+            ],
+            "candidateHeights": [
+              96.53103398445879
+            ],
+            "passed": true
+          },
+          {
+            "name": "opposite stair corner",
+            "x": -8874.601,
+            "y": -181.35,
+            "floor": 97.68831,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.21070554166316,
+              97.95825660978511
+            ],
+            "candidateHeights": [
+              82.21070554166316,
+              97.95825660978511
+            ],
+            "passed": true
+          },
+          {
+            "name": "circular floor threshold",
+            "x": -8892.3755,
+            "y": -179.025,
+            "floor": 82.07549,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.18429166005279
+            ],
+            "candidateHeights": [
+              82.18429166005279
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported indoor stair hole",
+            "x": -8902.266,
+            "y": -186,
+            "floor": 81.9397,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              82.31353604066075,
+              97.94700722210872
+            ],
+            "candidateHeights": [
+              82.31353604066075,
+              97.94700722210872
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported outside stair hole",
+            "x": -8915.025,
+            "y": -138.825,
+            "floor": 81.276,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              81.54296136516268
+            ],
+            "candidateHeights": [
+              81.54296136516268
+            ],
+            "passed": true
+          },
+          {
+            "name": "round table low floor ring",
+            "x": -8918,
+            "y": -210,
+            "floor": 82.114,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              89.43250084652432,
+              82.20685687910029,
+              102.74411044146296
+            ],
+            "candidateHeights": [
+              89.43250084652432,
+              82.20685687910029,
+              102.74411044146296
+            ],
+            "passed": true
+          },
+          {
+            "name": "central circular low floor transition",
+            "x": -8897,
+            "y": -180,
+            "floor": 81.577,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              113.42420236064719,
+              81.97878407000546
+            ],
+            "candidateHeights": [
+              113.42420236064719,
+              81.97878407000546
+            ],
+            "passed": true
+          },
+          {
+            "name": "upper wooden landing",
+            "x": -8898,
+            "y": -175,
+            "floor": 115.72,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              81.84431560232815,
+              115.98812119860102
+            ],
+            "candidateHeights": [
+              81.84431560232815,
+              115.98812119860102
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave tessellation seam",
+            "x": -8623,
+            "y": -147,
+            "floor": 86.581,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              86.8380887314198
+            ],
+            "candidateHeights": [
+              86.8380887314198
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave cross floor continuation",
+            "x": -8625,
+            "y": -145,
+            "floor": 86.438,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              86.70569712802163,
+              140.05048250623665
+            ],
+            "candidateHeights": [
+              86.70569712802163,
+              140.05048250623665
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave north tunnel reported gap",
+            "x": -8655.045,
+            "y": -124.708,
+            "floor": 89.978,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              112.97980747399224,
+              90.32445512324978
+            ],
+            "candidateHeights": [
+              112.97980747399224,
+              90.32445512324978
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave junction reported gap",
+            "x": -8641.078,
+            "y": -131.283,
+            "floor": 87.415,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              87.68068351241868
+            ],
+            "candidateHeights": [
+              87.68068351241868
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave east bend reported gap",
+            "x": -8592.298,
+            "y": -146.533,
+            "floor": 89.769,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              157.02150471352394,
+              90.03279768076813
+            ],
+            "candidateHeights": [
+              157.02150471352394,
+              90.03279768076813
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave south bend contour gap",
+            "x": -8587.675,
+            "y": -165.839,
+            "floor": 90.974,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              136.98530865504017,
+              91.25129651684921
+            ],
+            "candidateHeights": [
+              136.98530865504017,
+              91.24203205672617
+            ],
+            "passed": true
+          },
+          {
+            "name": "cave worst eastern tunnel floor",
+            "x": -8541.596,
+            "y": -171.485,
+            "floor": 85.109,
+            "maxClearance": 0.65,
+            "baselineHeights": [
+              85.39759394926975
+            ],
+            "candidateHeights": [
+              85.39759394926975
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across -2.5",
+            "x": -8993.97065,
+            "y": -302.82095,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.65064122951028
+            ],
+            "candidateHeights": [
+              71.65064122951028
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across -1.25",
+            "x": -8993.09453,
+            "y": -303.71258,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.64386419305211
+            ],
+            "candidateHeights": [
+              71.64386419305211
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across 0",
+            "x": -8992.2184,
+            "y": -304.6042,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.62055791679303
+            ],
+            "candidateHeights": [
+              71.62055791679303
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across 1.25",
+            "x": -8991.34227,
+            "y": -305.49582,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.62030970025555
+            ],
+            "candidateHeights": [
+              71.62030970025555
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -8 across 2.5",
+            "x": -8990.46615,
+            "y": -306.38745,
+            "floor": 71.345,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.62203292339086
+            ],
+            "candidateHeights": [
+              71.62203292339086
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across -2.5",
+            "x": -8992.54405,
+            "y": -301.41915,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.86963347400241
+            ],
+            "candidateHeights": [
+              71.86963347400241
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across -1.25",
+            "x": -8991.66793,
+            "y": -302.31078,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89227201305329
+            ],
+            "candidateHeights": [
+              71.89227201305329
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across 0",
+            "x": -8990.7918,
+            "y": -303.2024,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89227907478214
+            ],
+            "candidateHeights": [
+              71.89227907478214
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across 1.25",
+            "x": -8989.91568,
+            "y": -304.09402,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89226301851028
+            ],
+            "candidateHeights": [
+              71.89226301851028
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -6 across 2.5",
+            "x": -8989.03955,
+            "y": -304.98565,
+            "floor": 71.626,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89223731362573
+            ],
+            "candidateHeights": [
+              71.89223731362573
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across -2.5",
+            "x": -8991.11745,
+            "y": -300.01735,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12310914603458
+            ],
+            "candidateHeights": [
+              72.12310914603458
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across -1.25",
+            "x": -8990.24133,
+            "y": -300.90898,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12305650129208
+            ],
+            "candidateHeights": [
+              72.12305650129208
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across 0",
+            "x": -8989.3652,
+            "y": -301.8006,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11827411951778
+            ],
+            "candidateHeights": [
+              72.11827411951778
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across 1.25",
+            "x": -8988.48907,
+            "y": -302.69223,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12159810215542
+            ],
+            "candidateHeights": [
+              72.12159810215542
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -4 across 2.5",
+            "x": -8987.61295,
+            "y": -303.58385,
+            "floor": 71.857,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12155324448375
+            ],
+            "candidateHeights": [
+              72.12155324448375
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across -2.5",
+            "x": -8989.69085,
+            "y": -298.61555,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.2772194029806
+            ],
+            "candidateHeights": [
+              72.2772194029806
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across -1.25",
+            "x": -8988.81473,
+            "y": -299.50718,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27226083386992
+            ],
+            "candidateHeights": [
+              72.27226083386992
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across 0",
+            "x": -8987.9386,
+            "y": -300.3988,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26324756137974
+            ],
+            "candidateHeights": [
+              72.26324756137974
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across 1.25",
+            "x": -8987.06248,
+            "y": -301.29042,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26341237491272
+            ],
+            "candidateHeights": [
+              72.26341237491272
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along -2 across 2.5",
+            "x": -8986.18635,
+            "y": -302.18205,
+            "floor": 72.011,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27719702544219
+            ],
+            "candidateHeights": [
+              72.27719702544219
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across -2.5",
+            "x": -8988.26425,
+            "y": -297.21375,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.30510619661652
+            ],
+            "candidateHeights": [
+              72.30838606292114
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across -1.25",
+            "x": -8987.38813,
+            "y": -298.10538,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27176624791642
+            ],
+            "candidateHeights": [
+              72.28040972871811
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across 0",
+            "x": -8986.512,
+            "y": -298.997,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26985423993739
+            ],
+            "candidateHeights": [
+              72.26985423993739
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across 1.25",
+            "x": -8985.63587,
+            "y": -299.88862,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.26972218459221
+            ],
+            "candidateHeights": [
+              72.27756805461203
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 0 across 2.5",
+            "x": -8984.75975,
+            "y": -300.78025,
+            "floor": 72.09,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.31191564455648
+            ],
+            "candidateHeights": [
+              72.31878362846025
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across -2.5",
+            "x": -8986.83765,
+            "y": -295.81195,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27678141028592
+            ],
+            "candidateHeights": [
+              72.27678075504912
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across -1.25",
+            "x": -8985.96153,
+            "y": -296.70358,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27658827888281
+            ],
+            "candidateHeights": [
+              72.27678045702395
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across 0",
+            "x": -8985.0854,
+            "y": -297.5952,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.27635513905713
+            ],
+            "candidateHeights": [
+              72.27635513905713
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across 1.25",
+            "x": -8984.20927,
+            "y": -298.48683,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.2760100269151
+            ],
+            "candidateHeights": [
+              72.27656271031412
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 2 across 2.5",
+            "x": -8983.33315,
+            "y": -299.37845,
+            "floor": 72.01,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.25632615891027
+            ],
+            "candidateHeights": [
+              72.2760976702148
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across -2.5",
+            "x": -8985.41105,
+            "y": -294.41015,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.12102943966055
+            ],
+            "candidateHeights": [
+              72.12131873560935
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across -1.25",
+            "x": -8984.53493,
+            "y": -295.30178,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11712454695352
+            ],
+            "candidateHeights": [
+              72.11704325002862
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across 0",
+            "x": -8983.6588,
+            "y": -296.1934,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11108434945903
+            ],
+            "candidateHeights": [
+              72.1169389286992
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across 1.25",
+            "x": -8982.78268,
+            "y": -297.08502,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.11427400756415
+            ],
+            "candidateHeights": [
+              72.11721004154043
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 4 across 2.5",
+            "x": -8981.90655,
+            "y": -297.97665,
+            "floor": 71.855,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              72.09836794972043
+            ],
+            "candidateHeights": [
+              72.12056800835896
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across -2.5",
+            "x": -8983.98445,
+            "y": -293.00835,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              71.89006904053159
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across -1.25",
+            "x": -8983.10833,
+            "y": -293.89998,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89004861826403
+            ],
+            "candidateHeights": [
+              71.89005480968886
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across 0",
+            "x": -8982.2322,
+            "y": -294.7916,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89005538941495
+            ],
+            "candidateHeights": [
+              71.89004638595307
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across 1.25",
+            "x": -8981.35607,
+            "y": -295.68322,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.89005459279383
+            ],
+            "candidateHeights": [
+              71.89005245337034
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 6 across 2.5",
+            "x": -8980.47995,
+            "y": -296.57485,
+            "floor": 71.623,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              71.89009620062765
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across -2.5",
+            "x": -8982.55785,
+            "y": -291.60655,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.66984613435575
+            ],
+            "candidateHeights": [
+              71.6428412099207
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across -1.25",
+            "x": -8981.68173,
+            "y": -292.49818,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.67206550397857
+            ],
+            "candidateHeights": [
+              71.67011339922446
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across 0",
+            "x": -8980.8056,
+            "y": -293.3898,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.68627133749496
+            ],
+            "candidateHeights": [
+              71.68627133749496
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across 1.25",
+            "x": -8979.92948,
+            "y": -294.28143,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.68139413153655
+            ],
+            "candidateHeights": [
+              71.68139413153655
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge deck along 8 across 2.5",
+            "x": -8979.05335,
+            "y": -295.17305,
+            "floor": 71.344,
+            "maxClearance": 0.55,
+            "baselineHeights": [
+              71.67676602893879
+            ],
+            "candidateHeights": [
+              71.6605357015075
+            ],
+            "passed": true
+          },
+          {
+            "name": "reported bridge camera deck",
+            "x": -8980.903,
+            "y": -296.641,
+            "floor": 71.676,
+            "maxClearance": 0.55,
+            "baselineHeights": [],
+            "candidateHeights": [
+              71.94279083731095
+            ],
+            "passed": true
+          }
+        ],
+        "negativePoints": [
+          {
+            "name": "central wall cap",
+            "x": -8891.199,
+            "y": -178.66733,
+            "heightBand": [
+              82.6,
+              83.3
+            ],
+            "baselineHeights": [
+              99.07992
+            ],
+            "candidateHeights": [
+              99.07992
+            ],
+            "passed": true
+          },
+          {
+            "name": "window bevel",
+            "x": -8903.466,
+            "y": -212.00067,
+            "heightBand": [
+              82.5,
+              83.3
+            ],
+            "baselineHeights": [
+              99.96266357487941
+            ],
+            "candidateHeights": [
+              99.96266357487941
+            ],
+            "passed": true
+          },
+          {
+            "name": "stair trim",
+            "x": -8911.553,
+            "y": -198.946,
+            "heightBand": [
+              86.15,
+              87.0
+            ],
+            "baselineHeights": [
+              103.74207225251635
+            ],
+            "candidateHeights": [
+              103.74207225251635
+            ],
+            "passed": true
+          },
+          {
+            "name": "round tabletop remains excluded",
+            "x": -8913,
+            "y": -210,
+            "heightBand": [
+              82.8,
+              83.6
+            ],
+            "baselineHeights": [
+              80.7063028200083
+            ],
+            "candidateHeights": [
+              80.7063028200083
+            ],
+            "passed": true
+          },
+          {
+            "name": "bridge post cap east",
+            "x": -8981.133,
+            "y": -300.21242,
+            "heightBand": [
+              73.4,
+              74.3
+            ],
+            "baselineHeights": [],
+            "candidateHeights": [],
+            "passed": true
+          },
+          {
+            "name": "bridge post cap west",
+            "x": -8987.64567,
+            "y": -293.5847,
+            "heightBand": [
+              73.4,
+              74.3
+            ],
+            "baselineHeights": [],
+            "candidateHeights": [],
+            "passed": true
+          }
+        ],
+        "flatWalkway": {
+          "samples": 1536,
+          "changes": [],
+          "largestDelta": 0
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "bridge": {
+      "path": "docs\\diagnostics\\bridge-2026.3.16.png",
+      "sha256": "1d7d215ee3d8622de3ffbb59d54e4e9accffb0de4f77059401ebd93e2adacf9c"
+    },
+    "abbey": {
+      "path": "docs\\diagnostics\\abbey-control-2026.3.16.png",
+      "sha256": "cecfe9d95aeb55c806f8c46aa062562013a6aab43119b099d109bf011b77cf28"
+    },
+    "cave": {
+      "path": "docs\\diagnostics\\cave-control-2026.3.16.png",
+      "sha256": "a6570b736517df808a2446ea15e606abc50d1d61f659e601e44cab70530d9c00"
+    }
+  },
+  "knownFullTileFailure": {
+    "position": [
+      -8533.359,
+      -190.10735,
+      84.1074
+    ],
+    "difference": 0.015881231623893655,
+    "status": "Pre-existing tile-border seam discrepancy unchanged. Full native seam command still exits 3762504530; scoped bridge, Abbey and cave seam commands exit 0."
+  },
+  "limits": [
+    "46 bridge coverage points plus 16 prior points, 6 exclusions, 1536 unchanged upstairs samples and local routes verified independently on both actual engines. This is not whole-world validation.",
+    "Railings and posts retain body clearance; the mesh does not cover every visible plank edge.",
+    "The user must reopen the updated portable application and rebake tile 32,48."
+  ]
+}

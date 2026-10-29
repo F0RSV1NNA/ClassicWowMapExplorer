@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using MapExtract;
 using System.Numerics;
 
@@ -50,11 +50,23 @@ public static class NativeCheck
                 MeshSnapshots.Write(data,Path.Combine(args[2],$"surface-{name}.json"));
             };
             NavBake.ContoursObserver=cset=>{
-                var contours=cset.conts.Select(c=>new{c.reg,c.area,verts=Enumerable.Range(0,c.nverts).Select(i=>new{X=cset.bmin.Z+c.verts[i*4+2]*cset.cs,Y=cset.bmin.X+c.verts[i*4]*cset.cs,Z=cset.bmin.Y+c.verts[i*4+1]*cset.ch,flags=c.verts[i*4+3]}).ToArray()}).ToArray();
+                var contours=cset.conts.Select(c=>new{c.reg,c.area,verts=Enumerable.Range(0,c.nverts).Select(i=>new{X=cset.bmin.Z+c.verts[i*4+2]*cset.cs,Y=cset.bmin.X+c.verts[i*4]*cset.cs,Z=cset.bmin.Y+c.verts[i*4+1]*cset.ch,flags=c.verts[i*4+3]}).ToArray(),raw=Enumerable.Range(0,c.nrverts).Select(i=>new{X=cset.bmin.Z+c.rverts[i*4+2]*cset.cs,Y=cset.bmin.X+c.rverts[i*4]*cset.cs,Z=cset.bmin.Y+c.rverts[i*4+1]*cset.ch,flags=c.rverts[i*4+3]}).ToArray()}).ToArray();
                 File.WriteAllText(Path.Combine(args[2],"contours.json"),System.Text.Json.JsonSerializer.Serialize(contours));
             };
             float[] stageBounds=(Environment.GetEnvironmentVariable("EXPLORER_MESH_STAGE_BOUNDS")??"-8940,-235,-8590,-110,78,120").Split(',').Select(v=>float.Parse(v,System.Globalization.CultureInfo.InvariantCulture)).ToArray();
             if(stageBounds.Length!=6)throw new ArgumentException("EXPLORER_MESH_STAGE_BOUNDS requires minX,minY,maxX,maxY,minZ,maxZ");
+            NavBake.SolidObserver=(name,hf)=>{
+                var rows=new List<string>{"x,y,z,bottom,area"};
+                for(int z=0;z<hf.height;z++)for(int x=0;x<hf.width;x++){
+                    float wx=hf.bmin.Z+(z+.5f)*hf.cs,wy=hf.bmin.X+(x+.5f)*hf.cs;
+                    if(wx<stageBounds[0]||wy<stageBounds[1]||wx>stageBounds[2]||wy>stageBounds[3])continue;
+                    for(var span=hf.spans[x+z*hf.width];span!=null;span=span.next){
+                        float h=hf.bmin.Y+span.smax*hf.ch;if(h<stageBounds[4]||h>stageBounds[5])continue;
+                        rows.Add($"{wx},{wy},{h},{hf.bmin.Y+span.smin*hf.ch},{span.area}");
+                    }
+                }
+                File.WriteAllLines(Path.Combine(args[2],$"solid-{name.Replace(' ','_')}.csv"),rows);
+            };
             int stage=0;NavBake.StageObserver=(name,chf)=>{
                 var rows=new List<string>{"x,y,z,area,links,region"};
                 for(int z=0;z<chf.height;z++)for(int x=0;x<chf.width;x++){

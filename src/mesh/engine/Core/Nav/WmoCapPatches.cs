@@ -212,23 +212,37 @@ internal static class WmoCapPatches
         // Coplanar patch width is not floor width: a gently tessellated cave
         // and a low floor border can consist of individually narrow patches.
         // Verify a standing disk against the surrounding exposed source instead.
-
         bool FloorFootprint(Face face){
             if(floorFootprints.TryGetValue(face.Triangle,out bool value))return value;
-            var center=(face.A+face.B+face.C)/3;
-            for(int d=0;d<8;d++){
-                float angle=d*MathF.PI/4,x=center.X+MathF.Cos(angle)*settings.AgentRadius,y=center.Y+MathF.Sin(angle)*settings.AgentRadius;
-                float expected=face.A.Z-(face.Normal.X*(x-face.A.X)+face.Normal.Y*(y-face.A.Y))/face.Normal.Z;
-                if(!bins.TryGetValue(((int)MathF.Floor(x/binSize),(int)MathF.Floor(y/binSize)),out var nearby)){floorFootprints[face.Triangle]=false;return false;}
-                bool supported=false;
-                foreach(int i in nearby){var f=faces[i];if(!f.Wmo||Vector3.Dot(f.Normal,face.Normal)<.95f)continue;
-                    float h=At(f,x,y);if(!float.IsFinite(h)||MathF.Abs(h-expected)>settings.CellHeight||!ClearBody(x,y,h))continue;
-                    if(nearby.Any(j=>{float above=At(faces[j],x,y)-h;return above>.03f&&above<settings.AgentHeight;}))continue;
-                    supported=true;break;
+            // A long collision face can touch a wall at its centroid while
+            // another part is genuine floor. One supported standing position
+            // disproves whole-face obstacle rejection. Cell-level physical
+            // clearance still excludes the portion beside the actual wall.
+            var positions=new[]{(face.A+face.B+face.C)/3,
+                face.A*.6f+face.B*.2f+face.C*.2f,face.B*.6f+face.C*.2f+face.A*.2f,face.C*.6f+face.A*.2f+face.B*.2f,
+                face.A*.4f+face.B*.4f+face.C*.2f,face.B*.4f+face.C*.4f+face.A*.2f,face.C*.4f+face.A*.4f+face.B*.2f};
+            bool Supported(Vector3 center){
+                // Perimeter probes support one body, not eight new bodies.
+                if(!ClearBody(center.X,center.Y,center.Z))return false;
+                int steps=Math.Max(2,(int)MathF.Ceiling(settings.AgentRadius/settings.CellSize));
+                float maxChange=MathF.Tan(settings.AgentMaxSlope*MathF.PI/180)*settings.AgentRadius/steps+.005f;
+                for(int d=0;d<8;d++){
+                    float previous=center.Z,angle=d*MathF.PI/4;
+                    for(int n=1;n<=steps;n++){
+                        float distance=settings.AgentRadius*n/steps,x=center.X+MathF.Cos(angle)*distance,y=center.Y+MathF.Sin(angle)*distance;
+                        if(!bins.TryGetValue(((int)MathF.Floor(x/binSize),(int)MathF.Floor(y/binSize)),out var nearby))return false;
+                        float next=float.NaN,gap=float.PositiveInfinity;
+                        foreach(int i in nearby){var f=faces[i];if(!f.Wmo)continue;
+                            float h=At(f,x,y),delta=MathF.Abs(h-previous);if(!float.IsFinite(h)||delta>maxChange||delta>=gap)continue;
+                            if(nearby.Any(j=>{float above=At(faces[j],x,y)-h;return above>.03f&&above<settings.AgentHeight;}))continue;
+                            next=h;gap=delta;
+                        }
+                        if(!float.IsFinite(next))return false;previous=next;
+                    }
                 }
-                if(!supported){floorFootprints[face.Triangle]=false;return false;}
+                return true;
             }
-            return floorFootprints[face.Triangle]=true;
+            return floorFootprints[face.Triangle]=positions.Any(Supported);
         }
         bool LowOpenStep(Face face)
         {
@@ -381,21 +395,30 @@ internal static class WmoCapPatches
             return true;
         }
         bool LowFloorTransition(Face face){
-            var center=(face.A+face.B+face.C)/3;float step=MathF.Min(settings.AgentMaxClimb,settings.CellHeight*2.01f);int support=0,lower=0;
+            var center=(face.A+face.B+face.C)/3;float step=MathF.Min(settings.AgentMaxClimb,settings.CellHeight*2.01f);int support=0,lower=0,upper=0;
+            float reach=settings.AgentRadius+settings.CellSize;
             for(int dir=0;dir<8;dir++){
-                float angle=dir*MathF.PI/4,x=center.X+MathF.Cos(angle)*probe,y=center.Y+MathF.Sin(angle)*probe;
+                float angle=dir*MathF.PI/4,x=center.X+MathF.Cos(angle)*reach,y=center.Y+MathF.Sin(angle)*reach;
                 if(!bins.TryGetValue(((int)MathF.Floor(x/binSize),(int)MathF.Floor(y/binSize)),out var nearby))continue;
                 foreach(int i in nearby){var floor=faces[i];if(!floor.Wmo||floor.Normal.Z<.98f)continue;
-                    float h=At(floor,x,y),drop=center.Z-h;if(!float.IsFinite(h)||MathF.Abs(drop)>step||!ClearStepApproach(center,x,y,h))continue;
-                    // Require a real exposed broad floor, not another little
-                    // cap belonging to the same piece of furniture/window trim.
+                    float h=At(floor,x,y),drop=center.Z-h;
+                    if(!float.IsFinite(h)||MathF.Abs(drop)>step||!ClearStepApproach(center,x,y,h))continue;
+                    // Require exposed support: a covered lower face is not
+                    // an approach to this transition.
                     if(nearby.Any(j=>{float above=At(faces[j],x,y)-h;return above>.03f&&above<settings.AgentHeight;}))continue;
-                    support|=1<<dir;if(drop>.03f)lower|=1<<dir;break;
+                    support|=1<<dir;if(drop>.03f)lower|=1<<dir;if(drop<-.03f)upper|=1<<dir;break;
                 }
             }
             // A floor threshold has floor on both sides. Several probes on
             // one side of a wall/railing do not establish a through passage.
-            return (support&(support>>4))!=0&&lower!=0;
+            if((support&(support>>4))!=0&&lower!=0)return true;
+            // A landing can turn around the end of a railing. Its exposed
+            // upper and lower floors need not lie on opposite compass rays.
+            // Require both elevations and a clear approach on each side of
+            // a genuine turn; several lower-floor probes alone do not qualify.
+            for(int a=0;a<8;a++)if((lower&(1<<a))!=0)
+                for(int b=0;b<8;b++)if((upper&(1<<b))!=0){int angle=(a-b+8)&7;if(angle>=2&&angle<=6)return true;}
+            return false;
         }
         if(localObstaclesOnly){
             var allowed=new HashSet<int>();
@@ -406,7 +429,7 @@ internal static class WmoCapPatches
                 // a narrow branch. Evaluate individual low steps separately.
                 if(FloorFootprint(f))continue;
                 if(f.Normal.Z>=.98f){if(StandingRoom(Root(i))||LowOpenStep(f))continue;}
-                else if(HeightSpan(f)<=2*settings.CellHeight+.0001f&&(FloorFootprint(f)||LowFloorTransition(f)))continue;
+                else if(HeightSpan(f)<=2*settings.CellHeight+.0001f&&LowFloorTransition(f))continue;
                 allowed.Add(f.Triangle);
                 if(copies.TryGetValue(i,out var aliases))allowed.UnionWith(aliases);
             }

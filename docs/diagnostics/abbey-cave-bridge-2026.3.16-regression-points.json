@@ -1,0 +1,509 @@
+{
+  "sourceSha256": "4d5160a38300283f711bb04cbf22b2827bd77285331e2185eac1286edf8bd186",
+  "points": [
+    {
+      "name": "shared contour floor gap",
+      "x": -8905.072,
+      "y": -203.571,
+      "floor": 81.940186,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "upper stair corner",
+      "x": -8909.551,
+      "y": -202.05,
+      "floor": 96.508835,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "opposite stair corner",
+      "x": -8874.601,
+      "y": -181.35,
+      "floor": 97.68831,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "circular floor threshold",
+      "x": -8892.3755,
+      "y": -179.025,
+      "floor": 82.07549,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "reported indoor stair hole",
+      "x": -8902.266,
+      "y": -186,
+      "floor": 81.9397,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "reported outside stair hole",
+      "x": -8915.025,
+      "y": -138.825,
+      "floor": 81.276,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "round table low floor ring",
+      "x": -8918,
+      "y": -210,
+      "floor": 82.114,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "central circular low floor transition",
+      "x": -8897,
+      "y": -180,
+      "floor": 81.577,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "upper wooden landing",
+      "x": -8898,
+      "y": -175,
+      "floor": 115.72,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "cave tessellation seam",
+      "x": -8623,
+      "y": -147,
+      "floor": 86.581,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "cave cross floor continuation",
+      "x": -8625,
+      "y": -145,
+      "floor": 86.438,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "cave north tunnel reported gap",
+      "x": -8655.045,
+      "y": -124.708,
+      "floor": 89.978,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "cave junction reported gap",
+      "x": -8641.078,
+      "y": -131.283,
+      "floor": 87.415,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "cave east bend reported gap",
+      "x": -8592.298,
+      "y": -146.533,
+      "floor": 89.769,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "cave south bend contour gap",
+      "x": -8587.675,
+      "y": -165.839,
+      "floor": 90.974,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "cave worst eastern tunnel floor",
+      "x": -8541.596,
+      "y": -171.485,
+      "floor": 85.109,
+      "maxClearance": 0.65
+    },
+    {
+      "name": "bridge deck along -8 across -2.5",
+      "x": -8993.97065,
+      "y": -302.82095,
+      "floor": 71.345,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -8 across -1.25",
+      "x": -8993.09453,
+      "y": -303.71258,
+      "floor": 71.345,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -8 across 0",
+      "x": -8992.2184,
+      "y": -304.6042,
+      "floor": 71.345,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -8 across 1.25",
+      "x": -8991.34227,
+      "y": -305.49582,
+      "floor": 71.345,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -8 across 2.5",
+      "x": -8990.46615,
+      "y": -306.38745,
+      "floor": 71.345,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -6 across -2.5",
+      "x": -8992.54405,
+      "y": -301.41915,
+      "floor": 71.626,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -6 across -1.25",
+      "x": -8991.66793,
+      "y": -302.31078,
+      "floor": 71.626,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -6 across 0",
+      "x": -8990.7918,
+      "y": -303.2024,
+      "floor": 71.626,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -6 across 1.25",
+      "x": -8989.91568,
+      "y": -304.09402,
+      "floor": 71.626,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -6 across 2.5",
+      "x": -8989.03955,
+      "y": -304.98565,
+      "floor": 71.626,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -4 across -2.5",
+      "x": -8991.11745,
+      "y": -300.01735,
+      "floor": 71.857,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -4 across -1.25",
+      "x": -8990.24133,
+      "y": -300.90898,
+      "floor": 71.857,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -4 across 0",
+      "x": -8989.3652,
+      "y": -301.8006,
+      "floor": 71.857,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -4 across 1.25",
+      "x": -8988.48907,
+      "y": -302.69223,
+      "floor": 71.857,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -4 across 2.5",
+      "x": -8987.61295,
+      "y": -303.58385,
+      "floor": 71.857,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -2 across -2.5",
+      "x": -8989.69085,
+      "y": -298.61555,
+      "floor": 72.011,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -2 across -1.25",
+      "x": -8988.81473,
+      "y": -299.50718,
+      "floor": 72.011,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -2 across 0",
+      "x": -8987.9386,
+      "y": -300.3988,
+      "floor": 72.011,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -2 across 1.25",
+      "x": -8987.06248,
+      "y": -301.29042,
+      "floor": 72.011,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along -2 across 2.5",
+      "x": -8986.18635,
+      "y": -302.18205,
+      "floor": 72.011,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 0 across -2.5",
+      "x": -8988.26425,
+      "y": -297.21375,
+      "floor": 72.09,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 0 across -1.25",
+      "x": -8987.38813,
+      "y": -298.10538,
+      "floor": 72.09,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 0 across 0",
+      "x": -8986.512,
+      "y": -298.997,
+      "floor": 72.09,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 0 across 1.25",
+      "x": -8985.63587,
+      "y": -299.88862,
+      "floor": 72.09,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 0 across 2.5",
+      "x": -8984.75975,
+      "y": -300.78025,
+      "floor": 72.09,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 2 across -2.5",
+      "x": -8986.83765,
+      "y": -295.81195,
+      "floor": 72.01,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 2 across -1.25",
+      "x": -8985.96153,
+      "y": -296.70358,
+      "floor": 72.01,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 2 across 0",
+      "x": -8985.0854,
+      "y": -297.5952,
+      "floor": 72.01,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 2 across 1.25",
+      "x": -8984.20927,
+      "y": -298.48683,
+      "floor": 72.01,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 2 across 2.5",
+      "x": -8983.33315,
+      "y": -299.37845,
+      "floor": 72.01,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 4 across -2.5",
+      "x": -8985.41105,
+      "y": -294.41015,
+      "floor": 71.855,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 4 across -1.25",
+      "x": -8984.53493,
+      "y": -295.30178,
+      "floor": 71.855,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 4 across 0",
+      "x": -8983.6588,
+      "y": -296.1934,
+      "floor": 71.855,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 4 across 1.25",
+      "x": -8982.78268,
+      "y": -297.08502,
+      "floor": 71.855,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 4 across 2.5",
+      "x": -8981.90655,
+      "y": -297.97665,
+      "floor": 71.855,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 6 across -2.5",
+      "x": -8983.98445,
+      "y": -293.00835,
+      "floor": 71.623,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 6 across -1.25",
+      "x": -8983.10833,
+      "y": -293.89998,
+      "floor": 71.623,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 6 across 0",
+      "x": -8982.2322,
+      "y": -294.7916,
+      "floor": 71.623,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 6 across 1.25",
+      "x": -8981.35607,
+      "y": -295.68322,
+      "floor": 71.623,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 6 across 2.5",
+      "x": -8980.47995,
+      "y": -296.57485,
+      "floor": 71.623,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 8 across -2.5",
+      "x": -8982.55785,
+      "y": -291.60655,
+      "floor": 71.344,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 8 across -1.25",
+      "x": -8981.68173,
+      "y": -292.49818,
+      "floor": 71.344,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 8 across 0",
+      "x": -8980.8056,
+      "y": -293.3898,
+      "floor": 71.344,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 8 across 1.25",
+      "x": -8979.92948,
+      "y": -294.28143,
+      "floor": 71.344,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "bridge deck along 8 across 2.5",
+      "x": -8979.05335,
+      "y": -295.17305,
+      "floor": 71.344,
+      "maxClearance": 0.55
+    },
+    {
+      "name": "reported bridge camera deck",
+      "x": -8980.903,
+      "y": -296.641,
+      "floor": 71.676,
+      "maxClearance": 0.55
+    }
+  ],
+  "flatControl": {
+    "bounds": [
+      -8904,
+      -191,
+      -8877,
+      -166
+    ],
+    "heightBand": [
+      97.94,
+      97.96
+    ],
+    "spacing": 0.2,
+    "tolerance": 0.01
+  },
+  "negativePoints": [
+    {
+      "name": "central wall cap",
+      "x": -8891.199,
+      "y": -178.66733,
+      "heightBand": [
+        82.6,
+        83.3
+      ]
+    },
+    {
+      "name": "window bevel",
+      "x": -8903.466,
+      "y": -212.00067,
+      "heightBand": [
+        82.5,
+        83.3
+      ]
+    },
+    {
+      "name": "stair trim",
+      "x": -8911.553,
+      "y": -198.946,
+      "heightBand": [
+        86.15,
+        87.0
+      ]
+    },
+    {
+      "name": "round tabletop remains excluded",
+      "x": -8913,
+      "y": -210,
+      "heightBand": [
+        82.8,
+        83.6
+      ]
+    },
+    {
+      "name": "bridge post cap east",
+      "x": -8981.133,
+      "y": -300.21242,
+      "heightBand": [
+        73.4,
+        74.3
+      ]
+    },
+    {
+      "name": "bridge post cap west",
+      "x": -8987.64567,
+      "y": -293.5847,
+      "heightBand": [
+        73.4,
+        74.3
+      ]
+    }
+  ]
+}

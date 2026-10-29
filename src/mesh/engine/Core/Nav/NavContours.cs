@@ -527,6 +527,46 @@ namespace MapExtract;
             throw new InvalidOperationException("Contour simplification could not preserve a nonzero raw boundary.");
         }
 
+        internal static bool ContainsPoint(IReadOnlyList<int> polygon,double x,double z)
+        {
+            bool inside=false;int n=polygon.Count/4;
+            for(int i=0,j=n-1;i<n;j=i++){
+                double ax=polygon[i*4],az=polygon[i*4+2],bx=polygon[j*4],bz=polygon[j*4+2];
+                if((az>z)!=(bz>z)&&x<(bx-ax)*(z-az)/(bz-az)+ax)inside=!inside;
+            }
+            return inside;
+        }
+        internal static int PreserveFloorCoverage(List<int> raw,List<int> simplified,RcCompactHeightfield chf,int region,int area,float error,int edgeLength,int flags,Func<int,int,int,bool>? protect)
+        {
+            if(protect==null||raw.Count<12||simplified.Count<12)return 0;
+            bool outline=SignedContourArea(raw)>0;
+            var cells=new HashSet<(int X,int Z)>();int count=raw.Count/4;
+            for(int i=0;i<count;i++){
+                int previous=(i+count-1)%count;
+                // Shared portals are synchronized separately. Their chord can
+                // redistribute cells between regions without losing floor.
+                if((raw[i*4+3]&RC_CONTOUR_REG_MASK)!=0&&(raw[previous*4+3]&RC_CONTOUR_REG_MASK)!=0)continue;
+                int vx=raw[i*4],vz=raw[i*4+2];
+                for(int dz=-1;dz<=0;dz++)for(int dx=-1;dx<=0;dx++){
+                    int x=vx+dx,z=vz+dz;if(x<0||z<0||x>=chf.width||z>=chf.height)continue;
+                    if(ContainsPoint(raw,x+.5,z+.5)!=outline)continue;
+                    var c=chf.cells[x+z*chf.width];
+                    for(int id=c.index;id<c.index+c.count;id++)
+                        if(chf.areas[id]==area&&chf.spans[id].reg==region&&protect(x,z,id)){cells.Add((x,z));break;}
+                }
+            }
+            bool Lost()=>cells.Any(p=>ContainsPoint(simplified,p.X+.5,p.Z+.5)!=outline);
+            if(!Lost())return 0;
+            int before=simplified.Count;
+            for(int attempt=1;attempt<=5;attempt++){
+                simplified.Clear();float tolerance=attempt==5?0:error/(1<<attempt);
+                SimplifyContour(raw,simplified,tolerance,edgeLength,flags);
+                RemoveDegenerateSegments(simplified);PreserveContourWinding(raw,simplified,tolerance,edgeLength,flags);
+                if(!Lost())break;
+            }
+            return Math.Max(0,(simplified.Count-before)/4);
+        }
+
         // Winding recovery can refine a portal on one contour only. Its
         // neighbour must retain the same raw boundary breakpoints, otherwise
         // the two valid regions leave a triangular crack between them.
@@ -901,7 +941,7 @@ namespace MapExtract;
         }
 
         public static RcContourSet BuildContours(RcContext ctx, RcCompactHeightfield chf, float maxError, int maxEdgeLen,
-            int buildFlags)
+            int buildFlags,Func<int,int,int,bool>? protectFloor=null)
         {
             int w = chf.width;
             int h = chf.height;
@@ -1006,6 +1046,7 @@ namespace MapExtract;
                         SimplifyContour(verts, simplified, maxError, maxEdgeLen, buildFlags);
                         RemoveDegenerateSegments(simplified);
                         PreserveContourWinding(verts, simplified, maxError, maxEdgeLen, buildFlags);
+                        PreserveFloorCoverage(verts,simplified,chf,reg,area,maxError,maxEdgeLen,buildFlags,protectFloor);
                         ctx.StopTimer(RcTimerLabel.RC_TIMER_BUILD_CONTOURS_SIMPLIFY);
 
                         // Store region->contour remap info.

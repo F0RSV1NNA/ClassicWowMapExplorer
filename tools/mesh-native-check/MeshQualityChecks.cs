@@ -24,6 +24,28 @@ internal static class MeshQualityChecks
         if(!localCaps.IsSupersetOf(new[]{2,3})||localCaps.Overlaps(new[]{0,1}))throw new Exception("Short elevated indoor bevel survived or its broad room floor was removed");
         soup=new();Tri(new(0,-2,0),new(0,2,0),new(0,2,.9f));soup.Seal();
         if(new SourceBodyClearance(soup,settings).Hits(.1f,0,0))throw new Exception("Configured legal climb was replaced by a smaller wall-clearance stepping band");
+        // Buried rejected geometry must not poison a merged, supported deck.
+        // The same-height cap and a genuine cap at the top must stay blocked.
+        soup=new();Quad(-2,-2,2,2,4);soup.Seal();
+        var deckSource=new SourceSurfaceFit(soup,settings,null);
+        var merged=new DotRecast.Recast.RcHeightfield(3,1,new(-1,0,-.5f),new(2,6,.5f),1,1,0);
+        var rejected=new DotRecast.Recast.RcHeightfield(3,1,new(-1,0,-.5f),new(2,6,.5f),1,1,0);
+        for(int i=0;i<3;i++){
+            merged.spans[i]=new(){smin=0,smax=4,area=NavBake.AreaWmoSolid};
+            rejected.spans[i]=new(){smin=0,smax=i==0?2:4,area=NavBake.AreaWmoSolid};
+        }
+        if(NavBake.RestoreCoveredWmoSpans(merged,rejected,deckSource)!=1||merged.spans[0].area!=SurfaceClearance.WmoTop||merged.spans[1].area!=NavBake.AreaWmoSolid||merged.spans[2].area!=NavBake.AreaWmoSolid)
+            throw new Exception("Buried support lost its deck or exposed caps became walkable");
+        soup=new();soup.Seal();merged.spans[0].area=NavBake.AreaWmoSolid;
+        if(NavBake.RestoreCoveredWmoSpans(merged,rejected,new SourceSurfaceFit(soup,settings,null))!=0)
+            throw new Exception("Rejected geometry regained walkability without direct source support");
+        soup=new();
+        Tri(new(-2,-2,2.6f),new(2,-2,2.6f),new(2,2,5.8f));
+        Tri(new(-2,-2,2.6f),new(2,2,5.8f),new(-2,2,5.8f));soup.Seal();
+        var slopedDeck=new SourceSurfaceFit(soup,settings,null);
+        merged.spans[0].smax=5;
+        if(slopedDeck.HasWmoSupport(0,-.5f,5,1)||!slopedDeck.HasWmoCellSupport(0,-.5f,5,1,1)||NavBake.RestoreCoveredWmoSpans(merged,rejected,slopedDeck)!=1)
+            throw new Exception("Sloped deck high corner was lost by a centre-only raster provenance check");
         // A contour corner just outside an upper WMO floor must not snap to
         // a lower WMO storey when the upper edge matches its original height.
         soup=new();Quad(-5,-5,5,5,0);Quad(-2,-2,0,2,1.4f);soup.Seal();
@@ -119,6 +141,47 @@ internal static class MeshQualityChecks
         soup.Seal();
         if(WmoCapPatches.Detect(soup,settings,localObstaclesOnly:true).Overlaps(interiorFaces))
             throw new Exception("Narrow tessellation patches deleted a supported gently sloping floor");
+        // A floor patch beside a wall needs one body radius of clearance,
+        // not another body radius at each footprint-perimeter probe.
+        soup=new();
+        for(int i=0;i<16;i++){
+            float x0=-3.2f+i*.4f,x1=x0+.4f;
+            float H(float x)=>.1f*x+.035f*x*x;
+            Tri(new(x0,0,H(x0)),new(x1,0,H(x1)),new(x1,2f,H(x1)));
+            Tri(new(x0,0,H(x0)),new(x1,2f,H(x1)),new(x0,2f,H(x0)));
+        }
+        Quad(-5,-3,5,5,-1);
+        Tri(new(-5,0,-1),new(5,0,4),new(-5,0,4));Tri(new(-5,0,-1),new(5,0,-1),new(5,0,4));soup.Seal();
+        var nearbyFloorCaps=WmoCapPatches.Detect(soup,settings,localObstaclesOnly:true);
+        if(nearbyFloorCaps.Overlaps(Enumerable.Range(8,16)))
+            throw new Exception("Footprint perimeter probes inflated a second body radius near a cave wall");
+        // A simplified exterior chord must not remove retained WMO floor
+        // cells. Recover only the contour that loses support; remain idempotent.
+        var coverageSolid=new DotRecast.Recast.RcHeightfield(4,4,new(0,0,0),new(4,4,4),1,.1f,0);
+        for(int i=0;i<16;i++)coverageSolid.spans[i]=new(){smin=0,smax=10,area=NavBake.AreaGround};
+        var coverageField=DotRecast.Recast.RcCompacts.BuildCompactHeightfield(new DotRecast.Core.RcContext(),20,5,coverageSolid);
+        for(int i=0;i<coverageField.spanCount;i++){var b=DotRecast.Recast.RcCompactSpanBuilder.NewBuilder(ref coverageField.spans[i]);b.reg=1;coverageField.spans[i]=b.Build();}
+        var rawSquare=new List<int>{0,10,0,0,0,10,4,0,4,10,4,0,4,10,0,0};
+        var cutSquare=new List<int>{0,10,0,0,4,10,4,0,4,10,0,0};
+        if(NavContours.PreserveFloorCoverage(rawSquare,cutSquare,coverageField,1,NavBake.AreaGround,4,12,DotRecast.Recast.RcBuildContoursFlags.RC_CONTOUR_TESS_WALL_EDGES,(x,z,id)=>true)==0)
+            throw new Exception("Contour chord discarded supported WMO floor cells");
+        for(int x=0;x<4;x++)for(int z=0;z<4;z++)if(!NavContours.ContainsPoint(cutSquare,x+.5,z+.5))throw new Exception("Refined floor contour still loses a retained floor center");
+        if(NavContours.PreserveFloorCoverage(rawSquare,cutSquare,coverageField,1,NavBake.AreaGround,4,12,0,(x,z,id)=>true)!=0)
+            throw new Exception("Floor contour coverage repair was not idempotent");
+        // Hole winding is the reverse case: simplifying an L-shaped hole
+        // into its hull must not swallow the retained floor in its notch.
+        var holeSolid=new DotRecast.Recast.RcHeightfield(6,6,new(0,0,0),new(6,4,6),1,.1f,0);
+        for(int i=0;i<36;i++)holeSolid.spans[i]=new(){smin=0,smax=10,area=NavBake.AreaGround};
+        var holeField=DotRecast.Recast.RcCompacts.BuildCompactHeightfield(new DotRecast.Core.RcContext(),20,5,holeSolid);
+        var rawHole=new List<int>{1,10,1,0,5,10,1,0,5,10,5,0,3,10,5,0,3,10,3,0,1,10,3,0};
+        var cutHole=new List<int>{1,10,1,0,5,10,1,0,5,10,5,0,1,10,3,0};
+        for(int x=0;x<6;x++)for(int z=0;z<6;z++){
+            int i=holeField.cells[x+z*6].index;var b=DotRecast.Recast.RcCompactSpanBuilder.NewBuilder(ref holeField.spans[i]);b.reg=1;holeField.spans[i]=b.Build();
+            if(NavContours.ContainsPoint(rawHole,x+.5,z+.5))holeField.areas[i]=NavBake.AreaNull;
+        }
+        NavContours.PreserveFloorCoverage(rawHole,cutHole,holeField,1,NavBake.AreaGround,4,12,0,(x,z,id)=>true);
+        if(NavContours.ContainsPoint(cutHole,2.5,3.5))
+            throw new Exception("Simplified obstacle hole swallowed retained floor in its notch");
         // Two linked quads have unequal boundary sampling. A raised midpoint
         // on one side must be represented on both sides, without flattening it.
         var left=new DtPoly(0,6){vertCount=4};var right=new DtPoly(1,6){vertCount=4};
