@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using MapExtract;
 using DotRecast.Detour;
 internal static class MeshQualityChecks
@@ -46,6 +46,35 @@ internal static class MeshQualityChecks
         merged.spans[0].smax=5;
         if(slopedDeck.HasWmoSupport(0,-.5f,5,1)||!slopedDeck.HasWmoCellSupport(0,-.5f,5,1,1)||NavBake.RestoreCoveredWmoSpans(merged,rejected,slopedDeck)!=1)
             throw new Exception("Sloped deck high corner was lost by a centre-only raster provenance check");
+        // A rejected lower tread can share a quantized voxel with a genuine
+        // ramp. Actual clipped cap height, not voxel height, proves burial.
+        soup=new();
+        Tri(new(-1,-1,0),new(1,-1,1.2f),new(1,1,1.2f));Tri(new(-1,-1,0),new(1,1,1.2f),new(-1,1,0));
+        Quad(-.1f,-.1f,.1f,.1f,.4f);soup.Seal();var lowerCaps=new HashSet<int>{2,3};
+        var rampFit=new SourceSurfaceFit(soup,settings,null,lowerCaps);var rampBody=new SourceBodyClearance(soup,settings,lowerCaps);
+        var rampMerged=new DotRecast.Recast.RcHeightfield(1,1,new(-.133333f,0,-.133333f),new(.133333f,3,.133333f),settings.CellSize,settings.CellHeight,0);
+        var rampRejected=new DotRecast.Recast.RcHeightfield(1,1,rampMerged.bmin,rampMerged.bmax,settings.CellSize,settings.CellHeight,0);
+        rampMerged.spans[0]=new(){smin=0,smax=3,area=NavBake.AreaWmoSolid};rampRejected.spans[0]=new(){smin=1,smax=2,area=NavBake.AreaWmoSolid};
+        if(NavBake.RestoreCoveredWmoSpans(rampMerged,rampRejected,rampFit,rampBody)!=1)throw new Exception("Sub-voxel buried tread erased a directly supported ramp");
+        // A neighboring rejected tread is collision buried below the ramp,
+        // rather than an exposed obstacle protruding into the standing body.
+        soup=new();
+        Tri(new(-1,-1,0),new(1,-1,1.2f),new(1,1,1.2f));Tri(new(-1,-1,0),new(1,1,1.2f),new(-1,1,0));
+        Quad(.3f,-.1f,.45f,.1f,.65f);soup.Seal();
+        var coveredFit=new SourceSurfaceFit(soup,settings,null,lowerCaps);
+        var coveredBody=new SourceBodyClearance(soup,settings,lowerCaps);
+        if(!coveredBody.HitsRejected(0,0,.4f)||coveredBody.HitsRejected(0,0,.4f,coveredFit))throw new Exception("A ramp-covered adjacent tread erased standing clearance");
+        if(!coveredBody.HitsRejected(0,0,.4f,new SourceSurfaceFit(soup,settings,null,new HashSet<int>{0,1,2,3})))throw new Exception("An exposed rejected cap lost obstacle clearance");
+        soup=new();Tri(new(-1,-1,0),new(1,-1,.5f),new(1,1,.5f));Tri(new(-1,-1,0),new(1,1,.5f),new(-1,1,0));Quad(-1,-1,1,1,.01f);
+        Tri(new(.3f,-.1f,.9f),new(.45f,-.1f,1.1f),new(.45f,.1f,1.1f));Tri(new(.3f,-.1f,.9f),new(.45f,.1f,1.1f),new(.3f,.1f,.9f));soup.Seal();var stringerCaps=new HashSet<int>{4,5};
+        var stringerFit=new SourceSurfaceFit(soup,settings,null,stringerCaps);var stringerBody=new SourceBodyClearance(soup,settings,stringerCaps);
+        if(!stringerBody.HitsRejected(0,0,.533f)||stringerBody.HitsRejected(0,0,.533f,stringerFit))throw new Exception("Low inclined stringer narrowed a supported stair transition");
+        foreach(int index in Enumerable.Range(12,6)){var v=soup.Verts[index];v.Z+=1.2f;soup.Verts[index]=v;}
+        if(!new SourceBodyClearance(soup,settings,stringerCaps).HitsRejected(0,0,.533f,new SourceSurfaceFit(soup,settings,null,stringerCaps)))throw new Exception("A tall stair-side obstacle lost body clearance");
+        // Recreate the original coincident-cap fixture independently.
+        soup=new();Tri(new(-1,-1,0),new(1,-1,1.2f),new(1,1,1.2f));Tri(new(-1,-1,0),new(1,1,1.2f),new(-1,1,0));Quad(-.1f,-.1f,.1f,.1f,.4f);soup.Seal();
+        foreach(int index in new[]{6,7,8,9,10,11}){var v=soup.Verts[index];v.Z=.6f;soup.Verts[index]=v;}
+        if(new SourceBodyClearance(soup,settings,lowerCaps).RejectedBuriedInCell(0,0,.6f,settings.CellSize,0,.8f))throw new Exception("Coincident obstacle top was mistaken for buried geometry");
         // A contour corner just outside an upper WMO floor must not snap to
         // a lower WMO storey when the upper edge matches its original height.
         soup=new();Quad(-5,-5,5,5,0);Quad(-2,-2,0,2,1.4f);soup.Seal();

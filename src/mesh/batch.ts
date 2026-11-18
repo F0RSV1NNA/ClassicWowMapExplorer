@@ -26,7 +26,7 @@ export function serialLane() {
 
 export function defaultBakeConcurrency(cores: number, memoryGB?: number): number {
 	// Reserve a core for rendering/storage; avoid multiple heaps on small devices.
-	return Math.max(1, Math.min(4, Math.floor((cores || 2) / 2), memoryGB && memoryGB <= 4 ? 1 : memoryGB && memoryGB <= 8 ? 2 : 4));
+	return Math.max(1, Math.min(8, Math.floor((cores || 2) / 2), memoryGB && memoryGB <= 4 ? 1 : memoryGB && memoryGB <= 8 ? 2 : memoryGB && memoryGB <= 16 ? 4 : 8));
 }
 
 /** Resume known OOM tiles directly on the isolated recovery backend. */

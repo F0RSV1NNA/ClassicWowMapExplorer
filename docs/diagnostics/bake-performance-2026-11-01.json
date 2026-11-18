@@ -1,0 +1,61 @@
+{
+  "atUtc": "2026-11-02T04:07:24.558110+00:00",
+  "scope": "Read-only snapshot of ongoing bake; no configuration or executable changed",
+  "jobSha256": "4dc9303b41ed97790071bece567f0cc411ecc60eedf55d283befc193179642df",
+  "job": {
+    "concurrency": 4,
+    "elapsedMs": 3345953.099999994,
+    "sourceMs": 135810.39999999106,
+    "bakeMs": 10439683.99999997,
+    "exportMs": 108328.7000002116,
+    "format": "map-explorer-mappster",
+    "product": "wowf",
+    "sourceBuild": {
+      "product": "wowf",
+      "version": "1.60.1.70707",
+      "buildName": "WOW-70707patch1.60.1_Retail"
+    },
+    "state": "running",
+    "completed": 256,
+    "written": 256,
+    "reused": 0,
+    "attempted": 261,
+    "total": 736,
+    "failedTiles": 5,
+    "reachability": [],
+    "memoryRetries": [],
+    "failures": [
+      "Map 0, 38_24: Program terminated with exit(1); last stage: Recast bake: 921,153 collision triangles; managed heap 112 MB",
+      "Map 0, 38_25: Shared-edge detail exceeds Detour's byte-index limit; last stage: Recast bake: 834,893 collision triangles; managed heap 123 MB",
+      "Map 0, 31_28: 1 tile(s) failed \u2014 OutOfMemoryException: Arg_OutOfMemoryException; OutOfMemoryException: Arg_OutOfMemoryException; failed tiles: 1; last stage: Recast bake: 1,857,340 collision triangles; managed heap 186 MB",
+      "Map 0, 31_29: Shared-edge detail exceeds Detour's byte-index limit; last stage: Recast bake: 1,862,311 collision triangles; managed heap 235 MB",
+      "Map 0, 31_31: 1 tile(s) failed \u2014 OutOfMemoryException: Arg_OutOfMemoryException; OutOfMemoryException: Arg_OutOfMemoryException; failed tiles: 1; last stage: Recast bake: 4,208,590 collision triangles; managed heap 291 MB"
+    ]
+  },
+  "metadataCount": 256,
+  "backends": {
+    "wasm": 256
+  },
+  "medianSourceMs": 457.70000000298023,
+  "medianBakeMs": 36841.79999999702,
+  "stages": {
+    "rasterize": {
+      "medianMs": 780.5,
+      "sumMs": 530714.5957
+    },
+    "build": {
+      "medianMs": 33929.49995,
+      "sumMs": 9657477.0012
+    },
+    "detour": {
+      "medianMs": 64.4,
+      "sumMs": 20018.3952
+    }
+  },
+  "machine": {
+    "physicalCores": 8,
+    "logicalProcessors": 16,
+    "physicalMemoryBytes": 33441210368
+  },
+  "inspectionExit": 0
+}

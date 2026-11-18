@@ -1,0 +1,364 @@
+{
+  "scope": "Fixes for 11 detail-limit failures and native upload/connection handling; complete owner 39-tile retry still pending",
+  "testsPassed": 143,
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "mesh:native"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "gcc",
+        "-O2",
+        "-s",
+        "-static",
+        "-municode",
+        "-mwindows",
+        "-Wall",
+        "tools/portable/launcher.c",
+        ".cache/portable/launcher.res",
+        "-lws2_32",
+        "-lshell32",
+        "-ladvapi32",
+        "-luser32",
+        "-lwinhttp",
+        "-o",
+        ".cache\\tile-failures\\MapExplorer.exe"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0,
+      "logSha256": "dab0a1c6a0603fd02ba62ebeadac9f849aa3cbb118647623d2eea30dc1c862a0"
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "logSha256": "86da25bca4b253fc76236e56cd4c3f9db1a672ceb455f1d29ed9a3a558a76332"
+    },
+    {
+      "command": "Package integrity and current app/launcher/engine verification",
+      "exit": 0
+    }
+  ],
+  "input": {
+    "jobSha256": "ecb509c4040a8ed1a2a500d69cda330cc551b3975deb1553b14e77b13ab711d3",
+    "completed": 697,
+    "failedTiles": 39,
+    "groups": {
+      "geometry": [
+        "Map 0, 38_24",
+        "Map 0, 38_25",
+        "Map 0, 31_29",
+        "Map 0, 31_31",
+        "Map 0, 39_45",
+        "Map 0, 40_45",
+        "Map 0, 34_46",
+        "Map 0, 39_46",
+        "Map 0, 38_52",
+        "Map 0, 30_48",
+        "Map 0, 26_57"
+      ],
+      "transport": [
+        "Map 0, 29_49",
+        "Map 0, 30_49",
+        "Map 0, 31_49",
+        "Map 0, 32_49",
+        "Map 0, 30_50",
+        "Map 0, 31_50",
+        "Map 0, 32_50",
+        "Map 0, 33_50",
+        "Map 0, 34_50",
+        "Map 0, 36_50",
+        "Map 0, 37_50",
+        "Map 0, 38_50",
+        "Map 0, 39_50",
+        "Map 0, 40_50",
+        "Map 0, 42_50",
+        "Map 0, 43_50",
+        "Map 0, 44_50",
+        "Map 0, 25_51",
+        "Map 0, 26_51",
+        "Map 0, 27_51",
+        "Map 0, 28_51",
+        "Map 0, 29_51",
+        "Map 0, 30_51",
+        "Map 0, 31_51",
+        "Map 0, 41_51",
+        "Map 0, 42_51",
+        "Map 0, 25_52",
+        "Map 0, 32_52"
+      ]
+    }
+  },
+  "resume": {
+    "completed": 697,
+    "reusable": 697,
+    "rejected": []
+  },
+  "managedRegressions": [
+    {
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "tools/mesh-native-check/check.csproj",
+        "-c",
+        "Release",
+        "--",
+        "shared-edge-capacity"
+      ],
+      "exit": 0,
+      "logSha256": "a28b68021b6afed994f5e09a2677163f2863c8b6c227f176a1c05c620bb6d69a"
+    },
+    {
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "tools/mesh-native-check/check.csproj",
+        "-c",
+        "Release",
+        "--",
+        "surface-rules"
+      ],
+      "exit": 0,
+      "logSha256": "64de991d638a5dfe43d9cf02517cd19ab3243690863ef09aa521ffdda4b786b4"
+    },
+    {
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "tools/mesh-native-check/check.csproj",
+        "-c",
+        "Release",
+        "--",
+        "collision-detail"
+      ],
+      "exit": 0,
+      "logSha256": "cda6180b3160efc1e2ececd80b285512dedd771413cf833997d7c201fff16c19"
+    },
+    {
+      "command": [
+        "dotnet",
+        "run",
+        "--project",
+        "tools/mesh-native-check/check.csproj",
+        "-c",
+        "Release",
+        "--",
+        "audit-guards"
+      ],
+      "exit": 0,
+      "logSha256": "0636fdda81a14c29e493eb9377a7fb5bb491bca2fca8c94bea05b0a065c41927"
+    }
+  ],
+  "oldNativeUpload": {
+    "largeBusyUploadError": "[WinError 10053] An established connection was aborted by the software in your host machine",
+    "errorType": "ConnectionAbortedError",
+    "heldStatuses": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ]
+  },
+  "fixedNativeUpload": {
+    "largeBusyUploadStatus": 429,
+    "body": "All eight native bake slots are busy.",
+    "heldStatuses": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "launcherSha256": "0b4375a83f7ba40e9f62c046b968a834567a3b47512b3d48c38e9f5ade0bdb13"
+  },
+  "server": {
+    "capability": {
+      "available": true,
+      "backend": "native-x64",
+      "version": 1,
+      "maxConcurrency": 8,
+      "memoryBytes": 33441210368
+    },
+    "nineConcurrentRequests": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      429,
+      200,
+      200
+    ],
+    "cancelledChildTerminated": true,
+    "afterCancelEightRequests": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "streamedResponse": {
+      "firstHeartbeatSeconds": 0.004324300010921434,
+      "heartbeats": 3,
+      "payloadMatches": true
+    },
+    "realNativeRequests": [
+      {
+        "lowMemory": false,
+        "httpStatus": 200,
+        "payloadsMatchCli": true
+      },
+      {
+        "lowMemory": true,
+        "httpStatus": 200,
+        "payloadsMatchCli": true
+      }
+    ],
+    "streamedEngineErrorReported": true,
+    "launcherSha256": "0b4375a83f7ba40e9f62c046b968a834567a3b47512b3d48c38e9f5ade0bdb13",
+    "engineSha256": "dc3ea8bafeb82338c6afab24d72657d397d995d41db5fdf303363c8e640c4e46",
+    "exit": 0
+  },
+  "realGeometryControl": {
+    "scope": "Retargeted existing Goldshire collision capture to failed Stormwind tile 30_48. Neighbor padding/source build may differ from the owners full current capture; this is a real-geometry control, not verification of all 11 failed source inputs.",
+    "inputSha256": "7ca223eedddf4b2be2c2f0bb89ac433d2f80dfff903ceda1bc772166743b6ab8",
+    "runs": [
+      {
+        "backend": "previous",
+        "executableSha256": "5deaa7306e9f3f9be73de83bca3687e7f4aaf48980e18dc5429796bc53546932",
+        "exit": 1,
+        "seconds": 388.4143133999896,
+        "outputTail": "ng dangling face 19 [2,0,-1]\ndelaunayHull: Removing dangling face 7 [2,5,-1]\ndelaunayHull: Removing dangling face 226 [102,53,-1]\ndelaunayHull: Removing dangling face 203 [87,119,-1]\ndelaunayHull: Removing dangling face 23 [10,12,-1]\ndelaunayHull: Removing dangling face 6 [4,0,-1]\ndelaunayHull: Removing dangling face 20 [4,6,-1]\ndelaunayHull: Removing dangling face 11 [2,7,-1]\ndelaunayHull: Removing dangling face 25 [17,11,-1]\ndelaunayHull: Removing dangling face 7 [5,1,-1]\ndelaunayHull: Removing dangling face 12 [10,1,-1]\ndelaunayHull: Removing dangling face 11 [5,9,-1]\ndelaunayHull: Removing dangling face 46 [22,31,-1]\ndelaunayHull: Removing dangling face 55 [11,15,-1]\ndelaunayHull: Removing dangling face 4 [3,1,-1]\ndelaunayHull: Removing dangling face 3 [2,0,-1]\ndelaunayHull: Removing dangling face 3 [3,1,-1]\ndelaunayHull: Removing dangling face 15 [6,8,-1]\ndelaunayHull: Removing dangling face 4 [2,4,-1]\ndelaunayHull: Removing dangling face 4 [0,4,-1]\ndelaunayHull: Removing dangling face 152 [87,24,-1]\ndelaunayHull: Removing dangling face 11 [7,5,-1]\ndelaunayHull: Removing dangling face 22 [20,4,-1]\ndelaunayHull: Removing dangling face 5 [2,0,-1]\ndelaunayHull: Removing dangling face 10 [6,1,-1]\nSystem.IO.InvalidDataException: Shared-edge detail exceeds Detour's byte-index limit\n   at MapExtract.SourceSurfaceFit.SynchronizeDetailEdges(DtMeshData data)\n   at MapExtract.SourceSurfaceFit.Apply(DtMeshData data)\n   at MapExtract.NavBake.Bake(Soup soup, Settings s, CancellationToken ct, Nullable`1 clip, RoadMask roads)\n   at MeshEngine.BakeSoup(Soup soup, Int32 map, Int32 x, Int32 y, RoadMask roads, Map edits, Boolean wholeModel)\n   at MeshEngine.BakeRawMode(Byte[] input, Boolean lowMemory)\n   at MeshEngine.BakeRaw(Byte[] input)\n   at ExplorerMeshRunner.Main(String[] args)\n"
+      },
+      {
+        "backend": "fixed",
+        "executableSha256": "dc3ea8bafeb82338c6afab24d72657d397d995d41db5fdf303363c8e640c4e46",
+        "exit": 0,
+        "seconds": 381.07155920000514,
+        "outputTail": "oving dangling face 29 [23,8,-1]\ndelaunayHull: Removing dangling face 14 [2,0,-1]\ndelaunayHull: Removing dangling face 16 [2,0,-1]\ndelaunayHull: Removing dangling face 17 [2,0,-1]\ndelaunayHull: Removing dangling face 16 [2,0,-1]\ndelaunayHull: Removing dangling face 17 [2,0,-1]\ndelaunayHull: Removing dangling face 19 [2,0,-1]\ndelaunayHull: Removing dangling face 19 [2,0,-1]\ndelaunayHull: Removing dangling face 7 [2,5,-1]\ndelaunayHull: Removing dangling face 226 [102,53,-1]\ndelaunayHull: Removing dangling face 203 [87,119,-1]\ndelaunayHull: Removing dangling face 23 [10,12,-1]\ndelaunayHull: Removing dangling face 6 [4,0,-1]\ndelaunayHull: Removing dangling face 20 [4,6,-1]\ndelaunayHull: Removing dangling face 11 [2,7,-1]\ndelaunayHull: Removing dangling face 25 [17,11,-1]\ndelaunayHull: Removing dangling face 7 [5,1,-1]\ndelaunayHull: Removing dangling face 12 [10,1,-1]\ndelaunayHull: Removing dangling face 11 [5,9,-1]\ndelaunayHull: Removing dangling face 46 [22,31,-1]\ndelaunayHull: Removing dangling face 55 [11,15,-1]\ndelaunayHull: Removing dangling face 4 [3,1,-1]\ndelaunayHull: Removing dangling face 3 [2,0,-1]\ndelaunayHull: Removing dangling face 3 [3,1,-1]\ndelaunayHull: Removing dangling face 15 [6,8,-1]\ndelaunayHull: Removing dangling face 4 [2,4,-1]\ndelaunayHull: Removing dangling face 4 [0,4,-1]\ndelaunayHull: Removing dangling face 152 [87,24,-1]\ndelaunayHull: Removing dangling face 11 [7,5,-1]\ndelaunayHull: Removing dangling face 22 [20,4,-1]\ndelaunayHull: Removing dangling face 5 [2,0,-1]\ndelaunayHull: Removing dangling face 10 [6,1,-1]\nWriting native tiles; managed heap 2930 MB\nBuilding liquid volume; managed heap 2963 MB\nValidating native tiles; managed heap 2964 MB\nSerializing mesh and preview; managed heap 2996 MB\nNative x64 bake complete; peak working set 4464 MB\n"
+      }
+    ],
+    "quality": {
+      "polygons": 13598,
+      "coarserContours": 0,
+      "monotoneTiles": 0,
+      "splitGaveUp": 0,
+      "swimBuildFellBack": 1,
+      "fallbackWhy": "InvalidOperationException: rcBuildContours: No enclosing outline for hole in region 23092, area 11. @ at MapExtract.NavContours.MergeContourHoles(RcContext ctx, RcContourSet cset) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Core\\Nav\\NavContours.cs:line 918"
+    },
+    "qualityNote": "The retargeted partial-source capture used the existing swim contour fallback. This is not an unqualified full-quality acceptance of the current owner tile; all 39 exact current inputs remain subject to owner resume validation."
+  },
+  "goldshireRegression": {
+    "exit": 0,
+    "tileSha256": "ddb26c4e9732a52defb6b71e2126cb9e082ce3ea6d6e516efc07fa0d9dfdb5e8",
+    "matchesAcceptedTile": true,
+    "engineSha256": "dc3ea8bafeb82338c6afab24d72657d397d995d41db5fdf303363c8e640c4e46"
+  },
+  "tools": [
+    {
+      "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+    },
+    {
+      "path": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+      "sha256": "f96a3bdb1d3a3967b309d75c7413399391e857b5be4cb17162572ed66f6772a0"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "0b4375a83f7ba40e9f62c046b968a834567a3b47512b3d48c38e9f5ade0bdb13"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+      "sha256": "dc3ea8bafeb82338c6afab24d72657d397d995d41db5fdf303363c8e640c4e46"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "749a50005b5dadccd9a5a7f6f3111d1e48d5aceb3fa1372327cfb2a73c1accc6"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Core\\Nav\\SourceDetailEdges.cs",
+      "sha256": "254146c3e7e6f73722fb405172d58e6e6aa5ff0f1febda1ae3a413d63ed415f4"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\provenance.json",
+      "sha256": "4c4a5b7e457bb670ddedcbaf110f83aa25b6aaa1da6d2ec01eb46a66bf96f71a"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\project.ts",
+      "sha256": "316f427f4eea50f84d95aabd73b44acbec087c9672976e851881146f8acfabf0"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\export.ts",
+      "sha256": "c776fa8236b623da1f9fa43e3a9453ef8a39e2068f2e7d1d43489572c7bb5352"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\native-request.ts",
+      "sha256": "ef8727fb8034d297636c92d7c919a9aaec1243af341c0031ac43c34c2cda491d"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\client.ts",
+      "sha256": "f8ddca3a5e07b687a47bff39fe5b90bad1639fbd2155cf13f12c8d504e792f22"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\bake.worker.ts",
+      "sha256": "876fa0d641857598ff04fcacd0384495a2c059bbde5300c621e89f662bdcbd87"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\menu.ts",
+      "sha256": "bd49f5d541899d4bec4d99a6f1efc06cbb7387eafb2af23255d1f34b74997691"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\portable\\mesh-bake.h",
+      "sha256": "ce154b98579363bab6907d7a785959ad65c794438c5a5bb74b9521663af7152b"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "9fa21473827906c1c7baa32db9a606f305498c342c27b30ec52baed0cbe25eb1"
+    }
+  ]
+}

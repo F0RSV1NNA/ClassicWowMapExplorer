@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using DotRecast.Core;
 using DotRecast.Core.Numerics;
 using DotRecast.Detour;
@@ -672,6 +672,7 @@ public static class NavBake
         public int SourceWmoCapsBlocked, SolidWallCells;
         public int RaisedWmoCapsBlocked;
         public int CoveredWmoSpansRestored;
+        public int AddedMeshCells;
         /// Compact cells judged to be under a roof, which erode less.
         public int IndoorCells;
         /// Cells erosion removed.
@@ -794,7 +795,8 @@ public static class NavBake
         // collision support; reject obstacles from the compact walking graph.
         var sourceCaps = WmoCapPatches.Detect(soup,s,localObstaclesOnly:true);
         r.SourceWmoCapsBlocked=sourceCaps.Count;
-        var surfaceFit = new SourceSurfaceFit(soup, s, clip,sourceCaps);
+        var added=roads?.HasAddedMesh==true?new AddedMesh(soup,roads,s):null;
+        var surfaceFit = new SourceSurfaceFit(soup, s, clip,sourceCaps,added);
         var bodyClearance = new SourceBodyClearance(soup,s,sourceCaps);
 
         // ---- decide every solid triangle's area, splitting at the waterline -----
@@ -1060,7 +1062,21 @@ public static class NavBake
                 RcRasterizations.RasterizeTriangles(ctx, verts, tris, areas, r.InputTris, solid, realClimb);
                 if (rasterized == 0) continue;
                 SolidObserver?.Invoke("rasterized",solid);
-                r.CoveredWmoSpansRestored += RestoreCoveredWmoSpans(ctx,solid,verts,tris,areas,r.InputTris,realClimb,surfaceFit);
+                r.CoveredWmoSpansRestored += RestoreCoveredWmoSpans(ctx,solid,verts,tris,areas,r.InputTris,realClimb,surfaceFit,bodyClearance);
+
+                // Buried prop triangles can merge into an otherwise exposed
+                // floor voxel. Confirm against direct collision before allowing
+                // that marker to erase the floor and inflate a false cutout.
+                for(int ci=0;ci<solid.spans.Length;ci++)for(var span=solid.spans[ci];span!=null;span=span.next){
+                    if(span.area!=AreaDoodadSolid)continue;
+                    float wx=solid.bmin.Z+(ci/solid.width+.5f)*solid.cs,wy=solid.bmin.X+(ci%solid.width+.5f)*solid.cs;
+                    float top=solid.bmin.Y+span.smax*solid.ch;
+                    float floor=surfaceFit.Height(new(wx,wy,top))-solid.ch;
+                    if(!float.IsFinite(floor)||MathF.Abs(top-floor)>solid.ch*2.01f||bodyClearance.HitsRejected(wx,wy,floor))continue;
+                    span.area=surfaceFit.HasWmoSupport(wx,wy,floor,.01f)?SurfaceClearance.WmoTop:AreaGround;
+                }
+
+                added?.RestoreRaster(solid,cfg.WalkableHeight);
 
                 // A tree is not a roof.
                 //
@@ -1112,7 +1128,7 @@ public static class NavBake
                     for(var sp=solid.spans[ci];sp!=null;sp=sp.next){
                         if(sp.smin!=(int)(key&0xfffff)||sp.area!=AreaGround)continue;
                         float wx=solid.bmin.Z+(ci/solid.width+.5f)*solid.cs,wy=solid.bmin.X+(ci%solid.width+.5f)*solid.cs;
-                        if(!surfaceFit.IsWallFooting(wx,wy,solid.bmin.Y+sp.smax*solid.ch))continue;
+                        if(!surfaceFit.IsWallFooting(wx,wy,solid.bmin.Y+sp.smax*solid.ch,bodyClearance))continue;
                         localFootings.Add((ci,sp,key));
                     }
                 }
@@ -1124,6 +1140,7 @@ public static class NavBake
                 }
                 SolidObserver?.Invoke("source exclusions",solid);
                 FilterKeepingSwimFloor(ctx, cfg, realClimb, s.SwimSurfaceMargin, solid, ceiling, r, nonWalkableWmo);
+                added?.RestoreRaster(solid,cfg.WalkableHeight);
                 // Flat WMO floor near an exterior drop is not a trim cap.
                 // Whole source patches already classify raised flat shelves;
                 // the voxel supplement may only reject source-labelled bevels.
@@ -1212,7 +1229,7 @@ public static class NavBake
                     try
                     {
                         built = BuildTileMesh(ctx, tx, tz, cfg, solid, ceiling, s.SwimShoreBand,
-                                              split, dense, s, r, part, roads, ground,bodyClearance,rejectedWmoCaps,DoodadRoofSpans,surfaceFit);
+                                              split, dense, s, r, part, roads, ground,bodyClearance,rejectedWmoCaps,DoodadRoofSpans,surfaceFit,added);
 
                         // Producing nothing counts as failing. Chopping regions can shred
                         // a tile that only ever held a scrap of navmesh - [25,26] holds
@@ -1353,7 +1370,7 @@ public static class NavBake
                                          RcHeightfield solid, LiquidCeiling? ceiling, float shoreBand,
                                          float regionSplit, float contourMax, Settings s, Result r,
                                          int partition, RoadMask? roads = null, GroundLevel? ground = null,
-                                         SourceBodyClearance? bodyClearance=null,IReadOnlySet<long>? rejectedCaps=null,IReadOnlySet<long>? blockedProps=null,SourceSurfaceFit? surfaceFit=null)
+                                         SourceBodyClearance? bodyClearance=null,IReadOnlySet<long>? rejectedCaps=null,IReadOnlySet<long>? blockedProps=null,SourceSurfaceFit? surfaceFit=null,AddedMesh? added=null)
     {
         int swimClimb = (int)MathF.Ceiling(s.SwimConnectClimb / s.CellHeight);
 
@@ -1441,7 +1458,7 @@ public static class NavBake
             r.IndoorCells += indoors;
             ProbeCompact("after radius erosion",chf);
             var afterRadius=(int[])chf.areas.Clone();
-            int solidWallCells=ErodeSolidIndoorWalls(chf,solid,indoorCells,preErode,s,bodyClearance,protectedClearance,rejectedCaps,blockedProps);
+            int solidWallCells=ErodeSolidIndoorWalls(chf,solid,indoorCells,preErode,s,bodyClearance,protectedClearance,rejectedCaps,blockedProps,surfaceFit);
             r.TrimCells+=solidWallCells;r.SolidWallCells+=solidWallCells;
             ProbeCompact("after solid wall clearance",chf);
             if (bridge) r.TrimCells += RestoreErodedBridges(chf, preErode, indoorCells);
@@ -1518,6 +1535,9 @@ public static class NavBake
         r.Pinholes += FillPinholes(chf, s.PinholeFill, out int biggest,protectedClearance);
         r.BiggestPinhole = Math.Max(r.BiggestPinhole, biggest);
 
+        var forced=added?.RestoreCompact(chf);
+        if(forced!=null)r.AddedMeshCells+=forced.Count(v=>v);
+
         // After the pinhole fill, so an erase stroke is not filled straight back in as a
         // "pinhole", and a filled cell gets its road label like any other.
         if (roads != null && ground != null)
@@ -1536,6 +1556,7 @@ public static class NavBake
             RcRegions.BuildRegions(ctx, chf, cfg.MinRegionArea, cfg.MergeRegionArea);
         }
 
+        if(forced!=null)AddedMesh.PreserveSmallRegions(chf,forced);
         r.AreaIslandCellsRestored += RestoreConnectedFloorAreaIslands(chf);
         ProbeCompact("after BuildRegions", chf, true);
         for (int i = 0; i < chf.spanCount; i++) if (chf.areas[i] != AreaNull) r.WalkableCells++;
@@ -1554,11 +1575,11 @@ public static class NavBake
         r.RegionsUnwound += SplitDisconnectedRegions(chf);
         r.RegionsUnwound += SplitRegionsOverThemselves(chf);
         ProbeCompact("after unwinding self-overlap", chf, true);
-        r.TinyRegionCells += DropTinyRegions(chf, s.MinRegionCells);
+        r.TinyRegionCells += DropTinyRegions(chf, s.MinRegionCells,forced);
         if (Environment.GetEnvironmentVariable("CHECK_REGIONS") == "1") CheckRegions(chf, "before contours");
         var cset = NavContours.BuildContours(ctx, chf, cfg.MaxSimplificationError, cfg.MaxEdgeLen,
                                             RcBuildContoursFlags.RC_CONTOUR_TESS_WALL_EDGES,
-                                            surfaceFit==null?null:(x,z,id)=>surfaceFit.HasShallowWmoSupport(chf.bmin.Z+(z+.5f)*chf.cs,chf.bmin.X+(x+.5f)*chf.cs,chf.bmin.Y+chf.spans[id].y*chf.ch,chf.ch*1.15f));
+                                            surfaceFit==null?null:(x,z,id)=>((added?.TryFloor(chf.bmin.Z+(z+.5f)*chf.cs,chf.bmin.X+(x+.5f)*chf.cs,chf.bmin.Y+chf.spans[id].y*chf.ch,out _)??false)||surfaceFit.HasLowTerrainThreshold(chf.bmin.Z+(z+.5f)*chf.cs,chf.bmin.X+(x+.5f)*chf.cs,chf.bmin.Y+chf.spans[id].y*chf.ch,bodyClearance)||surfaceFit.HasShallowWmoSupport(chf.bmin.Z+(z+.5f)*chf.cs,chf.bmin.X+(x+.5f)*chf.cs,chf.bmin.Y+chf.spans[id].y*chf.ch,chf.ch*1.15f)||surfaceFit.HasWmoStepTransition(chf.bmin.Z+(z+.5f)*chf.cs,chf.bmin.X+(x+.5f)*chf.cs,chf.bmin.Y+chf.spans[id].y*chf.ch)));
         r.ContourVertsAdded += DensifyContours(cset, contourMax, cfg.Cs, chf);
         ContoursObserver?.Invoke(cset);
 
@@ -2796,7 +2817,7 @@ public static class NavBake
     // field instead of applying general boundary erosion to the whole staircase.
     internal static int ErodeSolidIndoorWalls(RcCompactHeightfield chf,RcHeightfield solid,bool[] indoor,int[] preErode,Settings settings,
                                             SourceBodyClearance? source=null,bool[]? protectedClearance=null,
-                                            IReadOnlySet<long>? rejectedCaps=null,IReadOnlySet<long>? blockedProps=null)
+                                            IReadOnlySet<long>? rejectedCaps=null,IReadOnlySet<long>? blockedProps=null,SourceSurfaceFit? surfaceFit=null)
     {
         int reach=(int)MathF.Ceiling(settings.AgentRadius/chf.cs),removed=0;
         float radius2=settings.AgentRadius*settings.AgentRadius;
@@ -2822,7 +2843,7 @@ public static class NavBake
                     }
                 }
                 float wx=chf.bmin.Z+(z+.5f)*chf.cs,wy=chf.bmin.X+(x+.5f)*chf.cs;
-                if((deliberate&&(source==null||source.HitsRejected(wx,wy,floor)))||
+                if((deliberate&&(source==null||source.HitsRejected(wx,wy,floor,surfaceFit)))||
                    (hit&&(source==null||source.Hits(wx,wy,floor))))blocked.Add(i);
             }
         }
@@ -4117,7 +4138,7 @@ public static class NavBake
         return restored;
     }
 
-    static int DropTinyRegions(RcCompactHeightfield chf, int minCells)
+    static int DropTinyRegions(RcCompactHeightfield chf, int minCells,bool[]? forced=null)
     {
         if (minCells <= 0) return 0;
 
@@ -4128,6 +4149,7 @@ public static class NavBake
             if (reg != 0) count[reg] = count.GetValueOrDefault(reg) + 1;
         }
         var tiny = count.Where(kv => kv.Value < minCells).Select(kv => kv.Key).ToHashSet();
+        if(forced!=null)for(int i=0;i<forced.Length;i++)if(forced[i])tiny.Remove(chf.spans[i].reg);
         if (tiny.Count == 0) return 0;
 
         // Splitting a large surface can leave a tiny boundary fragment. Its
@@ -4781,16 +4803,16 @@ public static class NavBake
     // original top. Re-rasterize rejected WMO geometry alone to recover that
     // evidence. Only an independently supported, higher WMO surface may win;
     // a cap at the actual top remains blocked, including coplanar overlaps.
-    static int RestoreCoveredWmoSpans(RcContext ctx,RcHeightfield solid,float[] verts,int[] tris,int[] areas,int count,int climb,SourceSurfaceFit source)
+    static int RestoreCoveredWmoSpans(RcContext ctx,RcHeightfield solid,float[] verts,int[] tris,int[] areas,int count,int climb,SourceSurfaceFit source,SourceBodyClearance body)
     {
         var blockedTris=new List<int>();
         for(int t=0;t<count;t++)if(areas[t]==AreaWmoSolid){blockedTris.Add(tris[t*3]);blockedTris.Add(tris[t*3+1]);blockedTris.Add(tris[t*3+2]);}
         if(blockedTris.Count==0)return 0;
         var blocked=new RcHeightfield(solid.width,solid.height,solid.bmin,solid.bmax,solid.cs,solid.ch,solid.borderSize);
         RcRasterizations.RasterizeTriangles(ctx,verts,blockedTris.ToArray(),Enumerable.Repeat(AreaWmoSolid,blockedTris.Count/3).ToArray(),blockedTris.Count/3,blocked,climb);
-        return RestoreCoveredWmoSpans(solid,blocked,source);
+        return RestoreCoveredWmoSpans(solid,blocked,source,body);
     }
-    internal static int RestoreCoveredWmoSpans(RcHeightfield solid,RcHeightfield blocked,SourceSurfaceFit source)
+    internal static int RestoreCoveredWmoSpans(RcHeightfield solid,RcHeightfield blocked,SourceSurfaceFit source,SourceBodyClearance? body=null)
     {
         int restored=0;
         for(int ci=0;ci<solid.spans.Length;ci++)for(var span=solid.spans[ci];span!=null;span=span.next){
@@ -4803,10 +4825,18 @@ public static class NavBake
                 // obstacle tops are not proof of burial below the floor.
                 if(cap.smax>=span.smax-1){exposed=true;break;}
             }
-            if(!buried||exposed)continue;
+            if(!buried)continue;
             float x=solid.bmin.Z+(ci/solid.width+.5f)*solid.cs,y=solid.bmin.X+(ci%solid.width+.5f)*solid.cs;
             float top=solid.bmin.Y+span.smax*solid.ch;
             if(!source.HasWmoCellSupport(x,y,top,solid.cs,solid.ch))continue;
+            if(exposed){
+                // A stair ramp may cover a rejected lower tread within the
+                // same voxel. Prove actual burial in the clipped collision;
+                // raster quantization alone cannot distinguish these surfaces.
+                float floor=source.Height(new(x,y,top))-solid.ch;
+                if(body==null||!float.IsFinite(floor)||!source.HasDirectWmoRamp(x,y,floor,solid.ch*2.01f)||body.Hits(x,y,floor)||
+                   !body.RejectedBuriedInCell(x,y,floor,solid.cs,solid.bmin.Y+span.smin*solid.ch,top))continue;
+            }
             span.area=SurfaceClearance.WmoTop;restored++;
         }
         return restored;

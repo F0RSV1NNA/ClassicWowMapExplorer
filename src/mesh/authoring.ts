@@ -1,5 +1,5 @@
 import type { MeshPoint, MeshTile } from './types';
-export type BrushKind = 0 | 1 | 2 | 3 | 4;
+export type BrushKind = 0 | 1 | 2 | 3 | 4 | 5;
 export interface Stroke { X: number; Y: number; Z: number; Radius: number; HeightBand: number; Kind: BrushKind }
 export interface Link { Ax: number; Ay: number; Az: number; Bx: number; By: number; Bz: number; Radius: number; Bidirectional: boolean; Mode: 'walk' | 'portal' | 'elevator'; Note: string; UserId: number }
 export interface MapEdits { Roads: Stroke[]; OffMesh: Link[] }
@@ -13,7 +13,7 @@ export function readProject(text: string, product: string): AuthoringProject {
 	const finite = (v: number) => typeof v === 'number' && Number.isFinite(v);
 	for (const [map, edits] of Object.entries(p.maps)) {
 		if (!/^\d+$/.test(map) || !Array.isArray(edits.Roads) || !Array.isArray(edits.OffMesh) || edits.Roads.length > 100000 || edits.OffMesh.length > 10000) throw Error('Invalid edit map.');
-		for (const s of edits.Roads) if (![s.X,s.Y,s.Z,s.Radius,s.HeightBand].every(finite) || s.Radius < .25 || s.Radius > 100 || s.HeightBand < .1 || s.HeightBand > 10 || ![0,1,2,3,4].includes(s.Kind)) throw Error('Invalid brush stroke.');
+		for (const s of edits.Roads) if (![s.X,s.Y,s.Z,s.Radius,s.HeightBand].every(finite) || s.Radius < .25 || s.Radius > 100 || s.HeightBand < .1 || s.HeightBand > 10 || ![0,1,2,3,4,5].includes(s.Kind)) throw Error('Invalid brush stroke.');
 		const ids = new Set<number>();
 		for (const l of edits.OffMesh) {
 			if (![l.Ax,l.Ay,l.Az,l.Bx,l.By,l.Bz,l.Radius].every(finite) || l.Radius < .1 || l.Radius > 20 || !['walk','portal','elevator'].includes(l.Mode) || typeof l.Bidirectional !== 'boolean' || typeof l.Note !== 'string' || !Number.isSafeInteger(l.UserId) || l.UserId <= 0 || l.UserId > 2147483647 || ids.has(l.UserId)) throw Error('Invalid or duplicate connection.');
@@ -26,6 +26,7 @@ export function readProject(text: string, product: string): AuthoringProject {
 }
 export function editsForTile(project: AuthoringProject, tile: MeshTile): BakeEdits {
 	const map = project.maps[tile.mapId] ?? emptyEdits(), size = Math.fround(533.33333);
+	if (tile.kind === 'global-wmo') return { Map: structuredClone(map), Global: structuredClone(project.global) };
 	const minX = (31 - tile.y) * size - 8, maxX = (32 - tile.y) * size + 8;
 	const minY = (31 - tile.x) * size - 8, maxY = (32 - tile.x) * size + 8;
 	return { Map: { Roads: map.Roads.filter(s => s.X + s.Radius >= minX && s.X - s.Radius <= maxX && s.Y + s.Radius >= minY && s.Y - s.Radius <= maxY), OffMesh: map.OffMesh.filter(l => l.Ax >= minX && l.Ax <= maxX && l.Ay >= minY && l.Ay <= maxY) }, Global: structuredClone(project.global) };

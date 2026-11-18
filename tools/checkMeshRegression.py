@@ -76,7 +76,7 @@ for x in np.arange(x0, x1, control['spacing']):
             changes.append(dict(x=float(x), y=float(y), before=before, after=after))
 
 passed = all(p['passed'] for p in points+negative) and samples > 0 and not changes
-result = dict(exit=0 if passed else 1, scope='captured Abbey source only',
+result = dict(exit=0 if passed else 1, scope=fixture.get('scope', 'captured Abbey source only'),
               fixtureSha256=hashlib.sha256(Path(args.fixture).read_bytes()).hexdigest(),
               candidateSnapshotSha256=hashlib.sha256((Path(args.candidate)/'surface-weld.json').read_bytes()).hexdigest(),
               points=points, negativePoints=negative, flatWalkway=dict(samples=samples, changes=changes, largestDelta=largest))

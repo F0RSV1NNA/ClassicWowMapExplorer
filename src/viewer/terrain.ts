@@ -391,6 +391,15 @@ export class TerrainManager {
 	 * Where to look to frame a continent: the centre of mass of its land tiles and the
 	 * north-south span of the middle 90%, so stray islands don't pull the view off.
 	 */
+    /** Display-space footprint of actual land, excluding the WDL's open-sea fringe. */
+    landBounds(continent: ContinentPlacement): THREE.Box2 {
+        const bounds=new THREE.Box2();
+        for(const tile of this.tiles.values())if(tile.continent===continent&&tile.hasAdt){
+            bounds.expandByPoint(new THREE.Vector2(tile.originX,tile.originZ));
+            bounds.expandByPoint(new THREE.Vector2(tile.originX+TILE_SIZE,tile.originZ+TILE_SIZE));
+        }
+        return bounds;
+    }
 	focus(continent: ContinentPlacement): { center: THREE.Vector2; extent: number } {
 		const land = [...this.tiles.values()].filter((t) => t.continent === continent && t.hasAdt);
 		const center = new THREE.Vector2();

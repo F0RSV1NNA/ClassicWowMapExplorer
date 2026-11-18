@@ -28,7 +28,7 @@
 #define PORT_TRIES 20
 // Answered by a running launcher, so a second one just opens the page instead of another server.
 #define HELLO_PATH "/__mapexplorer"
-#define HELLO_BODY "Map Explorer native-mesh-v1"
+#define HELLO_BODY "Map Explorer native-mesh-v1 cdn-v1"
 // The World of Warcraft install, served to the page here so it opens without asking for the folder.
 #define WOW_PATH "/__wow/"
 
@@ -251,6 +251,7 @@ static void sendListing(SOCKET s, const char *method, const wchar_t *dir) {
 }
 
 #include "mesh-bake.h"
+#include "cdn.h"
 
 // Answers one request; false when the connection should close after it.
 static int answer(SOCKET s, const char *request) {
@@ -269,11 +270,18 @@ static int answer(SOCKET s, const char *request) {
 	wchar_t file[MAX_PATH * 2];
 	if (!cleanPath(path)) {
 		sendStatus(s, method, "404 Not Found", "Not found");
-	} else if (strcmp(path, HELLO_PATH) == 0) {
+	} else if (strncmp(path,"/__cdn/",7)==0) {
+        if(addressedHere(request))serveCdn(s,method,path+7,request);
+        else sendStatus(s,method,"403 Forbidden","Local requests only");
+        return 0;
+    } else if (strcmp(path, HELLO_PATH) == 0) {
 		sendStatus(s, method, "200 OK", HELLO_BODY);
 	} else if (strcmp(path, "/__mesh-native") == 0) {
 		wchar_t engine[MAX_PATH]; nativeBakerPath(engine, MAX_PATH);
-		sendStatus(s, method, "200 OK", addressedHere(request) && GetFileAttributesW(engine) != INVALID_FILE_ATTRIBUTES ? "{\"available\":true,\"backend\":\"native-x64\",\"version\":1}" : "{\"available\":false}");
+        MEMORYSTATUSEX memory={0};memory.dwLength=sizeof memory;GlobalMemoryStatusEx(&memory);
+        char capability[256];
+        snprintf(capability,sizeof capability,"{\"available\":%s,\"backend\":\"native-x64\",\"version\":1,\"maxConcurrency\":8,\"memoryBytes\":%llu}",addressedHere(request)&&GetFileAttributesW(engine)!=INVALID_FILE_ATTRIBUTES?"true":"false",(unsigned long long)memory.ullTotalPhys);
+        sendStatus(s,method,"200 OK",capability);
 	} else if (strncmp(path, WOW_PATH, strlen(WOW_PATH)) == 0) {
 		const char *relative = path + strlen(WOW_PATH);
 		// Only what the page reads: .build.info and the Data folder.

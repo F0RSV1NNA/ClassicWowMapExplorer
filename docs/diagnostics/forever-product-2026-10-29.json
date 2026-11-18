@@ -1,0 +1,28 @@
+{
+  "checkedUtc": "2026-10-30T05:41:19.883746+00:00",
+  "records": [
+    {
+      "product": "wowf",
+      "url": "https://us.version.battle.net/wowf/versions",
+      "httpStatus": 200,
+      "body": "Region!STRING:0|BuildConfig!HEX:16|CDNConfig!HEX:16|KeyRing!HEX:16|BuildId!DEC:4|VersionsName!String:0|ProductConfig!HEX:16\n## seqn = 4108689\nus|002a8047a7c3a53de5e981936db76cce|2a6e419be5b7d7d896f7bc40395256dd||70685|1.60.1.70685|2ced73c17301c297ca062bc7c3583420\neu|002a8047a7c3a53de5e981936db76cce|2a6e419be5b7d7d896f7bc40395256dd||70685|1.60.1.70685|2ced73c17301c297ca062bc7c3583420\ncn|7feb61f3c994bcb168526b8db521514a|2a6e419be5b7d7d896f7bc40395256dd||70707|1.60.1.70707|2ced73c17301c297ca062bc7c3583420\nkr|002a8047a7c3a53de5e981936db76cce|2a6e419be5b7d7d896f7bc40395256dd||70685|1.60.1.70685|2ced73c17301c297ca062bc7c3583420\ntw|002a8047a7c3a53de5e981936db76cce|2a6e419be5b7d7d896f7bc40395256dd||70685|1.60.1.70685|2ced73c17301c297ca062bc7c3583420\n"
+    },
+    {
+      "product": "wow_forever",
+      "url": "https://us.version.battle.net/wow_forever/versions",
+      "httpStatus": 404
+    },
+    {
+      "product": "wow_classic_beta",
+      "url": "https://us.version.battle.net/wow_classic_beta/versions",
+      "httpStatus": 200,
+      "body": "Region!STRING:0|BuildConfig!HEX:16|CDNConfig!HEX:16|KeyRing!HEX:16|BuildId!DEC:4|VersionsName!String:0|ProductConfig!HEX:16\n## seqn = 4108686\nus|ad1802f4455e427ed8b7769aab25b0c0|2a6e419be5b7d7d896f7bc40395256dd||70532|1.60.1.70532|fcfd1bc39031f5921d00aee2d869adb5\neu|ad1802f4455e427ed8b7769aab25b0c0|2a6e419be5b7d7d896f7bc40395256dd||70532|1.60.1.70532|fcfd1bc39031f5921d00aee2d869adb5\nkr|ad1802f4455e427ed8b7769aab25b0c0|2a6e419be5b7d7d896f7bc40395256dd||70532|1.60.1.70532|fcfd1bc39031f5921d00aee2d869adb5\ntw|ad1802f4455e427ed8b7769aab25b0c0|2a6e419be5b7d7d896f7bc40395256dd||70532|1.60.1.70532|fcfd1bc39031f5921d00aee2d869adb5\n"
+    },
+    {
+      "product": "wow",
+      "url": "https://us.version.battle.net/wow/versions",
+      "httpStatus": 200,
+      "body": "Region!STRING:0|BuildConfig!HEX:16|CDNConfig!HEX:16|KeyRing!HEX:16|BuildId!DEC:4|VersionsName!String:0|ProductConfig!HEX:16\n## seqn = 4108676\nus|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\neu|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\ncn|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\nkr|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\ntw|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\nsg|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\nxx|d718abcc42604d8efbd35aecfa5bb75b|2a6e419be5b7d7d896f7bc40395256dd|3ca57fe7319a297346440e4d2a03a0cd|70575|12.1.5.70575|53020d32e1a25648c8e1eafd5771935f\n"
+    }
+  ]
+}

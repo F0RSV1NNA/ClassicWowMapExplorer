@@ -30,3 +30,17 @@ test('authoring tail is explicit and preserves legacy geometry input when absent
 	const length=new DataView(encoded.buffer).getInt32(legacy.length,true);expect(encoded.length).toBe(legacy.length+4+length);
 	expect(JSON.parse(new TextDecoder().decode(encoded.subarray(legacy.length+4)))).toEqual(input.edits);
 });
+
+test('Add mesh survives project export, per-tile filtering, and undo/restore',()=>{
+	const h=new EditHistory(newProject('test')),next=structuredClone(h.project);
+	next.maps[0]={Roads:[dab({mapId:0,x:-100,y:-100,z:6},2,.4,5)],OffMesh:[]};
+	h.commit(next);
+	const loaded=readProject(JSON.stringify(h.project),'test');
+	expect(editsForTile(loaded,{mapId:0,wdt:1,x:32,y:32}).Map.Roads[0]).toEqual(next.maps[0].Roads[0]);
+	h.undo();expect(h.project.maps[0]).toBeUndefined();h.redo();expect(h.project.maps[0].Roads[0].Kind).toBe(5);
+	const restored=structuredClone(h.project);restored.maps[0].Roads.push(dab({mapId:0,x:-100,y:-100,z:6},1,.4,4));
+	h.commit(restored);expect(h.project.maps[0].Roads.map(s=>s.Kind)).toEqual([5,4]);
+	h.undo();expect(h.project.maps[0].Roads.map(s=>s.Kind)).toEqual([5]);
+	const invalid=JSON.parse(JSON.stringify(loaded));invalid.maps[0].Roads[0].Kind=6;
+	expect(()=>readProject(JSON.stringify(invalid),'test')).toThrow('Invalid brush stroke');
+});

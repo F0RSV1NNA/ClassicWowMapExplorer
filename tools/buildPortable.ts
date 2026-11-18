@@ -21,6 +21,10 @@ const run = (command: string, args: string[]) => {
 mkdirSync(OUT, { recursive: true });
 mkdirSync(WORK, { recursive: true });
 cpSync('LICENSE', join(OUT, 'LICENSE'));
+cpSync('docs/diagnostics/goldshire-touchups.json', join(OUT, 'Goldshire-touchups.json'));
+cpSync('docs/goldshire-2026.3.18.md', join(OUT, 'Goldshire-notes.md'));
+cpSync('docs/wmo-transport-2026.3.19.md', join(OUT, 'Instance-transport-notes.md'));
+cpSync('docs/casc-cdn-2026-10-29.md', join(OUT, 'CASC-CDN-notes.md'));
 
 // The app itself: type-checked and built to dist, then copied in as "app".
 // Run with the same bun that is running this script.
@@ -42,7 +46,7 @@ run('magick', [...pngs, join(WORK, 'icon.ico')]);
 // static, so it needs no DLLs.
 const resource = join(WORK, 'launcher.res');
 run('windres', ['--include-dir', WORK, 'tools/portable/launcher.rc', '-O', 'coff', '-o', resource]);
-run('gcc', ['-O2', '-s', '-static', '-municode', '-mwindows', '-Wall', 'tools/portable/launcher.c', resource, '-lws2_32', '-lshell32', '-ladvapi32', '-luser32', '-o', join(OUT, 'MapExplorer.exe')]);
+run('gcc', ['-O2', '-s', '-static', '-municode', '-mwindows', '-Wall', 'tools/portable/launcher.c', resource, '-lws2_32', '-lshell32', '-ladvapi32', '-luser32', '-lwinhttp', '-o', join(OUT, 'MapExplorer.exe')]);
 
 writeFileSync(join(OUT, 'README.txt'), `Map Explorer (portable)
 

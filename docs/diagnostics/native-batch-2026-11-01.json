@@ -1,0 +1,363 @@
+{
+  "scope": "Native-first batch execution and eight lanes; geometry settings unchanged",
+  "testsPassed": 136,
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "mesh:native"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "gcc",
+        "-O2",
+        "-s",
+        "-static",
+        "-municode",
+        "-mwindows",
+        "-Wall",
+        "tools/portable/launcher.c",
+        ".cache/portable/launcher.res",
+        "-lws2_32",
+        "-lshell32",
+        "-ladvapi32",
+        "-luser32",
+        "-lwinhttp",
+        "-o",
+        ".cache\\native-batch\\MapExplorer.exe"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0,
+      "logSha256": "8a7e38455de48612650bd937b0db0aca09172ae1606f6eba4ef0b8149b21b586"
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "logSha256": "e1d21539d7815a7005f25328101d3c8d774542ffc86ef3ff4b05cd7186fef799"
+    },
+    {
+      "command": "ZIP integrity and current app/launcher/engine verification",
+      "exit": 0
+    }
+  ],
+  "resume": {
+    "completed": 256,
+    "reusable": 256,
+    "rejected": []
+  },
+  "nativeServer": {
+    "capability": {
+      "available": true,
+      "backend": "native-x64",
+      "version": 1,
+      "maxConcurrency": 8,
+      "memoryBytes": 33441210368
+    },
+    "nineConcurrentRequests": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      429,
+      200
+    ],
+    "cancelledChildTerminated": true,
+    "afterCancelEightRequests": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "realNativeRequests": [
+      {
+        "lowMemory": false,
+        "httpStatus": 200,
+        "payloadsMatchCli": true
+      },
+      {
+        "lowMemory": true,
+        "httpStatus": 200,
+        "payloadsMatchCli": true
+      }
+    ],
+    "launcherSha256": "14ac1fc7db8b52b5f858f04d22a8e2963e8b8671363bc52e08cfd4cb87fb6da6",
+    "engineSha256": "5deaa7306e9f3f9be73de83bca3687e7f4aaf48980e18dc5429796bc53546932",
+    "exit": 0
+  },
+  "nativeParity": {
+    "engineSha256": "5deaa7306e9f3f9be73de83bca3687e7f4aaf48980e18dc5429796bc53546932",
+    "cases": [
+      {
+        "case": "transport",
+        "mode": "normal",
+        "exit": 0,
+        "elapsedSeconds": 0.4406943000067258,
+        "log": "Reading source archive; managed heap 0 MB\nRecast bake: 2 collision triangles; managed heap 1 MB\nWriting native tiles; managed heap 105 MB\nBuilding liquid volume; managed heap 105 MB\nValidating native tiles; managed heap 105 MB\nSerializing mesh and preview; managed heap 106 MB\nNative x64 bake complete; peak working set 149 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "116306.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "116306_32_32.mmtile": "39a580e1560469a322a03095e112473c9c77ce21ed74ce23efcd6b37f36f51da",
+          "preview.bin": "f765ac3639718d71f69120df8accf091d369aa3d153531a0dc90fb9287f4b469",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "transport",
+        "mode": "low-memory",
+        "exit": 0,
+        "elapsedSeconds": 0.42975080000178423,
+        "log": "Reading source archive (low-memory recovery); managed heap 0 MB\nRecast bake: 2 collision triangles; managed heap 1 MB\nWriting native tiles; managed heap 105 MB\nBuilding liquid volume; managed heap 105 MB\nValidating native tiles; managed heap 105 MB\nSerializing mesh and preview; managed heap 106 MB\nNative x64 bake complete; peak working set 149 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "116306.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "116306_32_32.mmtile": "39a580e1560469a322a03095e112473c9c77ce21ed74ce23efcd6b37f36f51da",
+          "preview.bin": "f765ac3639718d71f69120df8accf091d369aa3d153531a0dc90fb9287f4b469",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "instance",
+        "mode": "normal",
+        "exit": 0,
+        "elapsedSeconds": 0.5109154000092531,
+        "log": "Reading source archive; managed heap 0 MB\nRecast bake: 2 collision triangles; managed heap 1 MB\nWriting native tiles; managed heap 138 MB\nBuilding liquid volume; managed heap 138 MB\nValidating native tiles; managed heap 138 MB\nSerializing mesh and preview; managed heap 139 MB\nNative x64 bake complete; peak working set 182 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "0033.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "0033_35_37.mmtile": "46fed88cd57fb1726a6de264de14af091932d7aecf4471889ac6e7eee8d9dfbd",
+          "preview.bin": "82cd3419691ee2afc40c85723951391627a5bde712bcafd8aa862a9831430681",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "instance",
+        "mode": "low-memory",
+        "exit": 0,
+        "elapsedSeconds": 0.5119178000022657,
+        "log": "Reading source archive (low-memory recovery); managed heap 0 MB\nRecast bake: 2 collision triangles; managed heap 1 MB\nWriting native tiles; managed heap 138 MB\nBuilding liquid volume; managed heap 138 MB\nValidating native tiles; managed heap 138 MB\nSerializing mesh and preview; managed heap 139 MB\nNative x64 bake complete; peak working set 182 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "0033.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "0033_35_37.mmtile": "46fed88cd57fb1726a6de264de14af091932d7aecf4471889ac6e7eee8d9dfbd",
+          "preview.bin": "82cd3419691ee2afc40c85723951391627a5bde712bcafd8aa862a9831430681",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "crossing-deck",
+        "mode": "normal",
+        "exit": 0,
+        "elapsedSeconds": 0.7205946999893058,
+        "log": "Reading source archive; managed heap 0 MB\nRecast bake: 2 collision triangles; managed heap 1 MB\nWriting native tiles; managed heap 129 MB\nBuilding liquid volume; managed heap 129 MB\nValidating native tiles; managed heap 129 MB\nSerializing mesh and preview; managed heap 130 MB\nNative x64 bake complete; peak working set 392 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "116306.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "116306_31_31.mmtile": "99e7bcaafa3212d4afdbb02e9efb17cc9de7549a102e6ada9433a5afcd2fa860",
+          "116306_31_32.mmtile": "89759693db05d983dbeda01c5c26c7ca9a4020bcd50e12be2548f8c74a825bd1",
+          "116306_32_31.mmtile": "9ef283c8da94e022fd8a8b3dcfa02ba10d69862166372256df4a13f87e1b4a8d",
+          "116306_32_32.mmtile": "3de5c61315eac2d2aedabc614cf900407e5c16b8409b4ba83bd38ab04b5ed8a5",
+          "preview.bin": "33ae62c2e8c71f27bbd256f4322e4bcd28974fadb60c9a60fbc871e9dd25f9d0",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "crossing-deck",
+        "mode": "low-memory",
+        "exit": 0,
+        "elapsedSeconds": 0.7277814999979455,
+        "log": "Reading source archive (low-memory recovery); managed heap 0 MB\nRecast bake: 2 collision triangles; managed heap 1 MB\nWriting native tiles; managed heap 129 MB\nBuilding liquid volume; managed heap 129 MB\nValidating native tiles; managed heap 129 MB\nSerializing mesh and preview; managed heap 130 MB\nNative x64 bake complete; peak working set 392 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "116306.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "116306_31_31.mmtile": "99e7bcaafa3212d4afdbb02e9efb17cc9de7549a102e6ada9433a5afcd2fa860",
+          "116306_31_32.mmtile": "89759693db05d983dbeda01c5c26c7ca9a4020bcd50e12be2548f8c74a825bd1",
+          "116306_32_31.mmtile": "9ef283c8da94e022fd8a8b3dcfa02ba10d69862166372256df4a13f87e1b4a8d",
+          "116306_32_32.mmtile": "3de5c61315eac2d2aedabc614cf900407e5c16b8409b4ba83bd38ab04b5ed8a5",
+          "preview.bin": "33ae62c2e8c71f27bbd256f4322e4bcd28974fadb60c9a60fbc871e9dd25f9d0",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "captured-wmo",
+        "mode": "normal",
+        "exit": 0,
+        "elapsedSeconds": 1.4984781999955885,
+        "log": "Reading source archive; managed heap 87 MB\nRecast bake: 1,616 collision triangles; managed heap 88 MB\nWriting native tiles; managed heap 271 MB\nBuilding liquid volume; managed heap 271 MB\nValidating native tiles; managed heap 271 MB\nSerializing mesh and preview; managed heap 272 MB\nNative x64 bake complete; peak working set 524 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "0999.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "0999_31_31.mmtile": "ee2ab328b0c72c853dc5bf607723bf7a307e36dbbc1c0458de2dc8f079a216c2",
+          "0999_31_32.mmtile": "e2088cfbdfcd71262ce2ee982cf574505f7a792fe329e2c2650a894118a60f82",
+          "0999_32_31.mmtile": "b310a352881bed0fe7976d66d8c549833829e2f04b3a1ba4294bbbd6804185ff",
+          "0999_32_32.mmtile": "af80594589916c4d51ac91e3b5d196392805a153f883e34af8f402bc73f523ea",
+          "preview.bin": "4c284f3e99fb1f4f0577d8b8efe1e8bbe40c4b866c5fa03cf052f2ad94839482",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      },
+      {
+        "case": "captured-wmo",
+        "mode": "low-memory",
+        "exit": 0,
+        "elapsedSeconds": 1.4895071999926586,
+        "log": "Reading source archive (low-memory recovery); managed heap 87 MB\nRecast bake: 1,616 collision triangles; managed heap 88 MB\nWriting native tiles; managed heap 271 MB\nBuilding liquid volume; managed heap 271 MB\nValidating native tiles; managed heap 271 MB\nSerializing mesh and preview; managed heap 272 MB\nNative x64 bake complete; peak working set 524 MB\n",
+        "byteIdenticalToWasm": true,
+        "hashes": {
+          "0999.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "0999_31_31.mmtile": "ee2ab328b0c72c853dc5bf607723bf7a307e36dbbc1c0458de2dc8f079a216c2",
+          "0999_31_32.mmtile": "e2088cfbdfcd71262ce2ee982cf574505f7a792fe329e2c2650a894118a60f82",
+          "0999_32_31.mmtile": "b310a352881bed0fe7976d66d8c549833829e2f04b3a1ba4294bbbd6804185ff",
+          "0999_32_32.mmtile": "af80594589916c4d51ac91e3b5d196392805a153f883e34af8f402bc73f523ea",
+          "preview.bin": "4c284f3e99fb1f4f0577d8b8efe1e8bbe40c4b866c5fa03cf052f2ad94839482",
+          "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+        }
+      }
+    ]
+  },
+  "denseBenchmark": {
+    "scope": "Dense captured Goldshire tile, same input/settings/current engine; native and WASM run sequentially",
+    "input": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-goldshire\\touchups.input",
+    "inputSha256": "cba2e049092a8b72f1f34ea65f7f8b5df1fd124dc570a11443cd96fd39b6c004",
+    "runs": [
+      {
+        "backend": "native",
+        "exit": 0,
+        "wallSeconds": 33.2,
+        "engineMs": 32195.941300000002,
+        "peakWorkingSetMiB": 2102
+      },
+      {
+        "backend": "wasm",
+        "exit": 0,
+        "wallSeconds": 117.97,
+        "engineMs": 116065.9979
+      }
+    ],
+    "nativeMatchesPreviouslyAcceptedNativeTile": true,
+    "nativeTileSha256": "ddb26c4e9732a52defb6b71e2126cb9e082ce3ea6d6e516efc07fa0d9dfdb5e8",
+    "acceptedTileSha256": "ddb26c4e9732a52defb6b71e2126cb9e082ce3ea6d6e516efc07fa0d9dfdb5e8",
+    "nativeWasmByteIdentical": false,
+    "nativeWasmSameCoarsePolygonBytes": true,
+    "nativeWasmMaxCoarseVertexDeltaYards": 0.00016021728515625,
+    "nativeWasmDetailCounts": {
+      "native": {
+        "verts": 223913,
+        "tris": 403883
+      },
+      "wasm": {
+        "verts": 223912,
+        "tris": 403882
+      }
+    },
+    "initialStrictParityCheck": {
+      "exit": 1,
+      "reason": "Byte equality failed on dense source fitting; native output was then compared with the previously accepted native Goldshire artifact and matches exactly. Native/WASM near-boundary floating-point differences are retained, not concealed."
+    }
+  },
+  "tools": [
+    {
+      "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+    },
+    {
+      "path": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+      "sha256": "f96a3bdb1d3a3967b309d75c7413399391e857b5be4cb17162572ed66f6772a0"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "14ac1fc7db8b52b5f858f04d22a8e2963e8b8671363bc52e08cfd4cb87fb6da6"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+      "sha256": "5deaa7306e9f3f9be73de83bca3687e7f4aaf48980e18dc5429796bc53546932"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "fb5bcb05c80b472c3660688dc435af1016fe9d0aab41325b79f089afb2310d81"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine-native\\Runner.cs",
+      "sha256": "ea12c1db02880c44e6434f46d11f7422153187a28495add4e0a303a8125855f5"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\provenance.json",
+      "sha256": "05e43778339e0e2cf01368e8b545e610e3249a5ad4b182a6986d701439e607ba"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\bake.worker.ts",
+      "sha256": "7011be7b82cdefb5e141be100a1c4881dbef0bddb592330bd7b90213ed6671bd"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\client.ts",
+      "sha256": "55c0fe7e9fbad20dfdc78295d46f2278e3289173b871ad46cd4ae71201a36c83"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\batch.ts",
+      "sha256": "f3db758b5a6047be92bed3a9d2f647767cbb2d76963202b66b3c3dfdba648e35"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\menu.ts",
+      "sha256": "6558d3d305011d5c7c31221f56fa8e3d33e81f35af9da455300eb94518e09f29"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\project.ts",
+      "sha256": "f9d7537222806db19e24b02b07cfc234f92a53ca6203d69ffaf1f528ee4ce43a"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\export.ts",
+      "sha256": "c776fa8236b623da1f9fa43e3a9453ef8a39e2068f2e7d1d43489572c7bb5352"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\index.html",
+      "sha256": "366c168de4eacf265f78659c71e03337d156a2154b3a9b0811e28bc86443a6da"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\portable\\mesh-bake.h",
+      "sha256": "108be6c11b601d4d790614a3846cc1e57f0ae99bc228eaa7f04cd36b5c56f81c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\portable\\launcher.c",
+      "sha256": "564e9b599b959a40a06556b567531e629082edb21fd0680e351623e1546e03d3"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "9e979c1a3e34c139c3fd55cd9b20fd3450715c60895fac8147b7957fef156827"
+    }
+  ]
+}

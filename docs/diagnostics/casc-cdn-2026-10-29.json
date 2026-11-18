@@ -1,0 +1,130 @@
+{
+  "scope": "CASC selected-build CDN fallback, BLTE Salsa20, and alternate root lookup; live Forever final count not verified",
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0,
+      "logSha256": "63540bd4032e1bb9cc0917dbb6a37a2dd0d8673405f7669975fbd0aa403456ab"
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "logSha256": "a3c0e70643caa435161346443f4321339e41740a62f684f5ea0418ddd88eb9f3"
+    },
+    {
+      "command": [
+        "gcc",
+        "-O2",
+        "-s",
+        "-static",
+        "-municode",
+        "-mwindows",
+        "-Wall",
+        "tools/portable/launcher.c",
+        ".cache/portable/launcher.res",
+        "-lws2_32",
+        "-lshell32",
+        "-ladvapi32",
+        "-luser32",
+        "-lwinhttp",
+        "-o",
+        ".cache/cdn-check/MapExplorer.exe"
+      ],
+      "exit": 0
+    },
+    {
+      "command": "Python zipfile integrity/current launcher/current app verification",
+      "exit": 0
+    }
+  ],
+  "tools": [
+    {
+      "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+    }
+  ],
+  "nativeProxy": {
+    "executableSha256": "5cb3594e03cc0cef64a4bf996caaee255a2dd99a2d558d2eb58da832a8db49d3",
+    "results": [
+      {
+        "path": "/__cdn/us.version.battle.net/wow_classic_beta/cdns",
+        "status": 200,
+        "bytes": 1338,
+        "sha256": "94faf4759ef5397cdd36356bce9a9fd6a3f6e6c0d0c9a269efaaf1336361d6be"
+      },
+      {
+        "path": "/__cdn/example.com/anything",
+        "status": 400,
+        "body": "Invalid CDN host"
+      }
+    ],
+    "exit": 0
+  },
+  "keyCatalog": {
+    "source": "C:\\Users\\Ryan\\Documents\\GitHub\\Mappster\\ThirdParty\\CascLib\\CascLib\\KeyService.cs",
+    "sha256": "0fe6b64bf83f854708b10d88ad21575c74b1927dafe587ad9dd58726ab882603",
+    "entries": 1015,
+    "note": "Existing public key catalog from owner-provided CASCLib/Mappster checkout; no key discovery or unknown-key recovery."
+  },
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "bc855ab6fc04dda5bdb66c81f7ef1553f2f8f8ebbb2c1a40a8ee78769395a950"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "64d69fd26494b295953c4ff169481f571d943d74c24b31a131e84eb601c1dd7d"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\root.ts",
+      "sha256": "e81ca7fd78462a52b680686ceae8cd46415d833396234622e114790bbd97e49c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\storage.ts",
+      "sha256": "d2d1bb87b683ad3c8c649c266eba870404a17ff7a47efbdc062c223c9b6426bf"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\blte.ts",
+      "sha256": "f5505bccf49be5d4b391f72dca53ef790913f69e38533b55c096bd8397876cc1"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\salsa20.ts",
+      "sha256": "3980cf6acd05ff56e155ed4f3a5d9a70ab237afc846e11664ace7ee906282d1b"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\cdn.ts",
+      "sha256": "e4b9709232e7cc7d6f36e46aa83ee68b7889736802818300d392c389e01c5248"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\md5.ts",
+      "sha256": "237cb4be63fc661e52f32a97be7be077d0d14342c3690c1b4e5ba9dbe3f6eeb6"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\tact-keys.json",
+      "sha256": "9416b073b072862e3ac534d439238cab8b94460e9d4b7170cc7d3ada11610cfa"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\portable\\cdn.h",
+      "sha256": "454c2d6759d1fdee5e52109fcdcbc2fea780f08f85bab313cf1e80553a628755"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\cdnFiles.ts",
+      "sha256": "7a8a3e63ead89b0b0d33983e12f6facaa8c7e1b786a4577935215e967dcdfe21"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tests\\fixtures\\casclib-salsa20.json",
+      "sha256": "0cbeabf85083771895bc6d15af164e9327265331c8ccbecc57b483b2f5e7c64d"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "ca344b3bf8af6d5213a7adf49769cb54d37ae671d960fe45516fb6edb14d7b71"
+    }
+  ]
+}

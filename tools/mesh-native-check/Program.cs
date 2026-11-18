@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using MapExtract;
 using System.Numerics;
 
@@ -7,7 +7,7 @@ public static class NativeCheck
     public static void Main(string[] args)
     {
         if(args.Length==6&&args[0]=="source-export"){
-            var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits))typeof(MeshEngine).GetMethod("PrepareRaw",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
+            var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits,bool WholeModel))typeof(MeshEngine).GetMethod("PrepareRaw",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
             float x=float.Parse(args[2]),y=float.Parse(args[3]),radius=float.Parse(args[4]);
             var caps=WmoCapPatches.Detect(prepared.Soup,new NavBake.Settings(),localObstaclesOnly:true);
             var faces=new List<object>();
@@ -20,14 +20,14 @@ public static class NativeCheck
             Console.WriteLine($"Exported {faces.Count} source faces to {args[5]}");return;
         }
         if(args.Length==6&&args[0]=="source-point"){
-            var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits))typeof(MeshEngine).GetMethod("PrepareRaw",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
+            var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits,bool WholeModel))typeof(MeshEngine).GetMethod("PrepareRaw",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
             float x=float.Parse(args[2]),y=float.Parse(args[3]),z=float.Parse(args[4]),raster=float.Parse(args[5]);
             var settings=new NavBake.Settings();var caps=WmoCapPatches.Detect(prepared.Soup,settings,localObstaclesOnly:true);
             var source=new SourceSurfaceFit(prepared.Soup,settings,null,caps);var body=new SourceBodyClearance(prepared.Soup,settings,caps);
-            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{x,y,z,raster,sourceHeight=source.Height(new(x,y,z+settings.CellHeight)),wallFooting=source.IsWallFooting(x,y,raster),bodyHit=body.Hits(x,y,z),rejectedHit=body.HitsRejected(x,y,z)},new System.Text.Json.JsonSerializerOptions{NumberHandling=System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals}));return;
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new{x,y,z,raster,sourceHeight=source.Height(new(x,y,z+settings.CellHeight)),wallFooting=source.IsWallFooting(x,y,raster,body),bodyHit=body.Hits(x,y,z),rejectedHit=body.HitsRejected(x,y,z),coveredRejectedHit=body.HitsRejected(x,y,z,source)},new System.Text.Json.JsonSerializerOptions{NumberHandling=System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals}));return;
         }
         if(args.Length==4&&args[0]=="audit-capture"){
-            var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits))typeof(MeshEngine).GetMethod("PrepareRaw",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
+            var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits,bool WholeModel))typeof(MeshEngine).GetMethod("PrepareRaw",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
             var settings=new NavBake.Settings();var caps=WmoCapPatches.Detect(prepared.Soup,settings,localObstaclesOnly:true);
             using var stream=File.OpenRead(args[2]);stream.Position=20;
             var data=new DotRecast.Detour.Io.DtMeshDataReader().Read(new BinaryReader(stream),6);
@@ -41,6 +41,7 @@ public static class NativeCheck
         if(args.Length==6&&args[0]=="surface-seams"){SurfaceCheck.Seams(args[1],args.Skip(2).Select(v=>float.Parse(v,System.Globalization.CultureInfo.InvariantCulture)).ToArray());return;}
         if(args.Length==2&&args[0]=="surface-seams"){SurfaceCheck.Seams(args[1]);return;}
         if(args.Length==8&&args[0]=="walk-route"){SurfaceCheck.WalkRoute(args);return;}
+        if(args.Length==1&&args[0]=="add-mesh"){AuditChecks.AddedMeshRules();return;}
         if(args.Length==1&&args[0]=="mesh-quality"){MeshQualityChecks.Run();return;}
         if(args.Length==1&&args[0]=="collision-detail"){AuditChecks.CollisionDetail();return;}
         if(args.Length==3&&args[0] is "local-source" or "raw-source")Directory.CreateDirectory(args[2]);
@@ -88,6 +89,7 @@ public static class NativeCheck
             return;
         }
         if(args.Length==3&&args[0]=="components"){SurfaceCheck.Components(args[1],args[2]);return;}
+        if(args.Length==1&&args[0]=="shared-edge-capacity"){AuditChecks.SharedEdgeCapacity();return;}
         if(args.Length==1&&args[0]=="wmo-collision"){AuditChecks.WmoCollisionFlags();return;}
         if(args.Length==1&&args[0]=="audit-guards"){AuditChecks.Run();return;}
         if(args.Length==2&&args[0]=="authoring"){AuditChecks.Authoring(args[1]);return;}

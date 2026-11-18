@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-29",
+  "scope": "CASC alternate encoding resolution and complete transport inventory; live Forever count not yet verified",
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0,
+      "logSha256": "341f570e946222fab2f7a1a1f0c5f0ad3c2f3d92a4df9a8f0a84110ae51af27b"
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "logSha256": "3984ebef110a613f77e131036c2bfca89ac5e825e6dcb388f1f5cd346bd33d92"
+    },
+    {
+      "command": "Python zipfile archive integrity and current-app verification",
+      "exit": 0
+    }
+  ],
+  "tool": {
+    "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+    "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+  },
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "0b5d25bb82356d9352f70ba69929deda13113980df8d855d926e64ebce9066e9"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+      "sha256": "184cb080f45187fd1d5823eee601532ac2f5911ed86a46a2157b65e034b8ff79"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "87999b323b4286b08b12d1515f5344018a512ad0c22f988a1205c36c886b6dcf"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\casc\\storage.ts",
+      "sha256": "40c55bb869eac8edcbcba38c586eddffeedb1b673589f5ec03a7650e1e02c21c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\transport-catalog.ts",
+      "sha256": "bc7f2e316711b2aa525814487d140eef871c688eeee85af38ab43b127f343978"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\worker\\protocol.ts",
+      "sha256": "5a9eea52bf655c07b019ace48f87e55a0287997b1065f569a554e38add104659"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\worker\\storage.worker.ts",
+      "sha256": "4dbd69576e940f4f895f22f9e26ba0dff39d6a1bf5afb0324a863f1a4f81888c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\viewer.ts",
+      "sha256": "c967af2795c6fae47dd2b1a9931ab3585312ab5854e0e966c0ad0de4c2c54c13"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\menu.ts",
+      "sha256": "908e6b23bd6e36a00525b3c97a410e76865b6da8100e7c3363ce3865a3cdd4a6"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tests\\storage-resolution.test.ts",
+      "sha256": "1116b09b3493592bda350f8b6f96301b58b2b8fa66cf569f331a628c4cdfd53c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tests\\mesh-wmo-source.test.ts",
+      "sha256": "7e7ecd43414b94c6eb31fc488b7b1df5a69f6c67882bf713428a5659748b41d8"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "9e165d9cc4d50f32f001681a38a0053f19d656732c4ed03d583f655c6825116e"
+    }
+  ]
+}

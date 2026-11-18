@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-29",
+  "scope": "Transport catalog and persistent world layout; bake engine unchanged",
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0,
+      "logSha256": "5b82e4f4a0a1da364abd1c30156baf1dee161673f452dcfb543d62738ccd01c3"
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "logSha256": "a7ea2075f1ef2406951fd798d27102615332b2dfd61b21cbe7fa4d80fdaa2eea"
+    },
+    {
+      "command": "Python zipfile archive integrity and current-app verification",
+      "exit": 0
+    }
+  ],
+  "tool": {
+    "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+    "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+  },
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "0b5d25bb82356d9352f70ba69929deda13113980df8d855d926e64ebce9066e9"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+      "sha256": "184cb080f45187fd1d5823eee601532ac2f5911ed86a46a2157b65e034b8ff79"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "66963c5198f175fa943dd44af2e7fe18e70af984a2df6c61ebd22d501c37e4d9"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\transport-catalog.ts",
+      "sha256": "85a7deabce5ab791fb042f134543e13257ed5080fbb7c800b0c3db7b196d4f8c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\viewer.ts",
+      "sha256": "c8691d9320256f538132371ea198b5db39c38182d896f92c6f38ac01b8d52371"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\menu.ts",
+      "sha256": "877001a78bc9eb777e54d8bde4144e40803db54ee46821588d7ad006c36a9081"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tests\\mesh-wmo-source.test.ts",
+      "sha256": "d233364f782bac80005d074340897170bc3a30c0a21e544d721c1e5d818cf4b8"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tests\\mesh-wmo-transport.test.ts",
+      "sha256": "58f50849e4e8a8f7546daecbe7027c9f9a6b1e22dbccf9c57913acd174719ad1"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "c10336a56bb7d345108f5c4c72063559826369bb3b796459cf7cbb51bfaa9010"
+    }
+  ],
+  "rootCause": "Copied catalog included WMO group LOD 1497960; a missing MOHD was treated as fatal for the whole catalog. Layout was also activated only by a mesh-menu click.",
+  "behavior": "Valid root models are placed automatically during world startup; navigation button does not load or toggle them. Models stream nearby like other world objects and stay above the sea for inspection; exported coordinates are unchanged."
+}

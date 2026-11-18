@@ -3,12 +3,25 @@ import { CascStorage, StorageChangedError } from '../casc/storage';
 import { describeError, MapExplorer } from '../explorer/maps';
 import { setPageUrl } from '../explorer/spawns';
 import { WorldLoader } from '../explorer/world';
+import { selectTransportLibrary } from '../mesh/transport-library';
+import { transportCatalog } from '../mesh/transport-catalog';
 import { MeshSource } from '../mesh/source';
 import type { AsyncStorageApi, Request, Response, SourceInit } from './protocol';
 
 let source: FileSource | null = null;
 let explorer: MapExplorer | null = null;
 let world: WorldLoader | null = null;
+let transportLibrary:Promise<{explorer:MapExplorer;world:WorldLoader;reason:string;error?:string;candidates:{product:string;mapped:number}[]}>|null=null;
+function requireTransportLibrary(){
+    return transportLibrary??= (async()=>{
+        const primary=requireExplorer(),selectedSource=source;
+        if(!selectedSource)throw Error('No folder selected');
+        const library=await selectTransportLibrary(primary.storage,()=>CascStorage.listProducts(selectedSource),p=>CascStorage.open(selectedSource,p));
+        library.storage.onChanged(()=>send({id:-1,changed:true}));
+        const maps=library.storage===primary.storage?primary:new MapExplorer(library.storage);
+        return {explorer:maps,world:new WorldLoader(maps),reason:library.reason,error:library.error,candidates:library.candidates};
+    })();
+}
 
 function requireExplorer(): MapExplorer {
 	if (!explorer) throw new Error('Storage is not open');
@@ -25,6 +38,14 @@ function send(message: Response, transfer: Transferable[] = []): void {
 }
 
 const api: AsyncStorageApi = {
+	async meshTransportModels() {
+        const library=await requireTransportLibrary(),catalog=await transportCatalog(library.explorer.storage);
+        return {...catalog,worldBuild:requireExplorer().storage.stats,librarySelection:{reason:library.reason,error:library.error,candidates:library.candidates}};
+    },
+    async loadTransportModels(models){return (await requireTransportLibrary()).world.loadModels(models);},
+    async loadTransportTextures(fdids,compressed){return (await requireTransportLibrary()).world.loadTextures(fdids,compressed);},
+    async transportTextureOpacity(fdids){return (await requireTransportLibrary()).world.textureOpacity(fdids);},
+	async meshTransport(fdid) { return new MeshSource((await requireTransportLibrary()).explorer).transport(fdid); },
 	async meshTiles(mapId) { return new MeshSource(requireExplorer()).tiles(mapId); },
 	async meshSource(tile, preview) { return new MeshSource(requireExplorer()).extract(tile, preview); },
 	async setPageUrl(url) {
@@ -34,6 +55,7 @@ const api: AsyncStorageApi = {
 		source = init.kind === 'http' ? new HttpSource(init.base) : new FileListSource(init.files);
 		explorer = null;
 		world = null;
+        transportLibrary=null;
 		return CascStorage.listProducts(source);
 	},
 	async open(product) {
@@ -41,6 +63,7 @@ const api: AsyncStorageApi = {
 		const storage = await CascStorage.open(source, product, (progress) => send({ id: -1, progress }));
 		storage.onChanged(() => send({ id: -1, changed: true }));
 		explorer = new MapExplorer(storage);
+        transportLibrary=null;
 		world = null;
 		return storage.stats;
 	},

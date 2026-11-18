@@ -1,13 +1,16 @@
 import { expect, test } from 'bun:test';
-import { saveTileExport, tileExportCurrent } from '../src/mesh/export';
-import { tileMetadata } from '../src/mesh/project';
+import { saveTileExport, saveTransportExport, savedMetadataFile, tileExportCurrent } from '../src/mesh/export';
+import { sameMeshEngineSource, ENGINE_SOURCE, tileMetadata } from '../src/mesh/project';
 import type { MeshBake, MeshInput } from '../src/mesh/types';
 
 const tile = { mapId: 0, wdt: 1, x: 32, y: 32 }, build = { product: 'test', version: '1', buildName: 'build-one' };
 const input: MeshInput = { tile, sourceBuild: build, positions: new Float32Array(), indices: new Uint32Array(), classes: new Uint8Array(), origin: [0,0,0], liquidLayers: 0 };
-function directory() {
+interface TestDirectory { handle: FileSystemDirectoryHandle; files: Map<string,Uint8Array>; children: Map<string,TestDirectory>; failOn(name:string):void }
+function directory(): TestDirectory {
 	const files = new Map<string, Uint8Array>(); let fail = '';
+	const children = new Map<string, TestDirectory>();
 	const handle = {
+		async getDirectoryHandle(name: string) { let child=children.get(name);if(!child){child=directory();children.set(name,child);}return child.handle; },
 		async removeEntry(name: string) { if (!files.delete(name)) throw new DOMException('Missing', 'NotFoundError'); },
 		async getFileHandle(name: string, options?: { create?: boolean }) {
 			if (!files.has(name) && !options?.create) throw new DOMException('Missing', 'NotFoundError');
@@ -21,7 +24,7 @@ function directory() {
 			};
 		},
 	} as unknown as FileSystemDirectoryHandle;
-	return { handle, files, failOn(name: string) { fail = name; } };
+	return { handle, files, children, failOn(name: string) { fail = name; } };
 }
 const baked = { files: { '0000.mmap': new Uint8Array(40), '0000_32_32.mmtile': new Uint8Array(64) } } as unknown as MeshBake;
 
@@ -61,4 +64,67 @@ test('edit fingerprints invalidate affected completion markers and deleted links
 	expect(d.files.has('0000_32_32.links.json')).toBe(false);
 	expect(await tileExportCurrent(d.handle,tile,'test',build,'edited')).toBe(true);
 	expect(await tileExportCurrent(d.handle,tile,'test',build,'changed')).toBe(false);
+});
+
+
+test('global WMO completion includes all output tiles and replacement removes only its obsolete owned files',async()=>{
+    const d=directory(),tile={mapId:33,wdt:1,x:32,y:32,kind:'global-wmo' as const};
+    const inputGlobal={...input,tile};
+    const first={files:{'0033.mmap':new Uint8Array(40),'0033_35_37.mmtile':new Uint8Array(64),'0033_35_38.mmtile':new Uint8Array(64)}} as unknown as MeshBake;
+    await saveTileExport(d.handle,tile,first,tileMetadata(inputGlobal,'test'));
+    expect(await tileExportCurrent(d.handle,tile,'test',build)).toBe(true);
+    d.files.set('0000_35_38.mmtile',new Uint8Array(64));
+    const second={files:{'0033.mmap':new Uint8Array(40),'0033_35_37.mmtile':new Uint8Array(80)}} as unknown as MeshBake;
+    await saveTileExport(d.handle,tile,second,tileMetadata(inputGlobal,'test'));
+    expect(d.files.has('0033_35_38.mmtile')).toBe(false);
+    expect(d.files.has('0000_35_38.mmtile')).toBe(true);
+    expect(await tileExportCurrent(d.handle,tile,'test',build)).toBe(true);
+});
+test('transport exports preserve the six-digit FDID and invalidate completion on failure',async()=>{
+    const d=directory(),model=116306;
+    const deck={files:{'116306.mmap':new Uint8Array(40),'116306_32_32.mmtile':new Uint8Array(64)}} as unknown as MeshBake;
+    await saveTransportExport(d.handle,model,deck,tileMetadata(input,'test'));
+    const child=d.children.get('transports')!;
+    const meta=JSON.parse(new TextDecoder().decode(child.files.get('116306.transport.json')));
+    expect(meta.modelFileID).toBe(model);expect(meta.coordinateSystem).toBe('mappster-modf-180-local');expect(meta.displayPlacementExported).toBe(false);
+    child.failOn('116306_32_32.mmtile');
+    await expect(saveTransportExport(d.handle,model,deck,tileMetadata(input,'test'))).rejects.toThrow('Disk full');
+    expect(child.files.has('116306.transport.json')).toBe(false);
+    expect(d.files.size).toBe(0);
+});
+test('transport export rejects files carrying a world-map identity',async()=>{
+    const d=directory();
+    await expect(saveTransportExport(d.handle,116306,baked,tileMetadata(input,'test'))).rejects.toThrow('Incomplete transport');
+});
+
+test('instance diagnostics resolve the complete-job marker for an emitted tile away from its placeholder',async()=>{
+    const d=directory(),t={mapId:33,wdt:1,x:32,y:32,kind:'global-wmo' as const};
+    const result={files:{'0033.mmap':new Uint8Array(40),'0033_35_37.mmtile':new Uint8Array(64)}}as unknown as MeshBake;
+    await saveTileExport(d.handle,t,result,tileMetadata({...input,tile:t},'test'));
+    const f=await savedMetadataFile(d.handle,{mapId:33,x:37,y:35});
+    expect(JSON.parse(await f.text()).tile.kind).toBe('global-wmo');
+    await expect(savedMetadataFile(d.handle,{mapId:33,x:37,y:36})).rejects.toThrow('No completed instance');
+});
+
+
+test('native runner execution-only upgrade reuses completed tiles but geometry changes do not',async()=>{
+ const d=directory(),meta=tileMetadata(input,'test');
+ const old=JSON.parse(meta.engineSource);old.adapters['../engine-native/Runner.cs']='previous-runner-hash';
+ meta.engineSource=JSON.stringify(old);
+ const bake={files:{'0000.mmap':new Uint8Array(40),'0000_32_32.mmtile':new Uint8Array(64)}} as unknown as MeshBake;
+ await saveTileExport(d.handle,tile,bake,meta);
+ expect(sameMeshEngineSource(meta.engineSource,ENGINE_SOURCE)).toBe(true);
+ expect(await tileExportCurrent(d.handle,tile,'test',build)).toBe(true);
+ old.core['Nav/NavBake.cs']='different-geometry';meta.engineSource=JSON.stringify(old);
+ await saveTileExport(d.handle,tile,bake,meta);
+ expect(await tileExportCurrent(d.handle,tile,'test',build)).toBe(false);
+ expect(sameMeshEngineSource('malformed',ENGINE_SOURCE)).toBe(false);
+});
+
+
+test('byte-limit failure-only repair preserves resume identity for successful old tiles',()=>{
+ const old=JSON.parse(ENGINE_SOURCE);old.core['Nav/SourceDetailEdges.cs']="6b3de32292cdf054845c80b17a65f9b54f267824140f150b2b60b092445b6a17";
+ expect(sameMeshEngineSource(JSON.stringify(old),ENGINE_SOURCE)).toBe(true);
+ old.core['Nav/SourceDetailEdges.cs']='unrecognized-revision';
+ expect(sameMeshEngineSource(JSON.stringify(old),ENGINE_SOURCE)).toBe(false);
 });

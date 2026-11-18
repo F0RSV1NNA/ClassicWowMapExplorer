@@ -679,8 +679,9 @@ export class ObjectManager {
 	paintSurfaces(bounds:THREE.Box3,visit:(a:THREE.Vector3,b:THREE.Vector3,c:THREE.Vector3)=>void):void {
 		const inverse=new THREE.Matrix4(),local=new THREE.Box3(),worldBounds=new THREE.Box3();
 		for(const entry of this.models.values()){
-			// Paint floor/building surfaces, not decorative collision props such as fences.
-			if(entry.kind!=='wmo')continue;
+			// Include prop collision: picking and the decal must agree on the selected surface.
+			// Models without collision remain excluded unless they are physical WMO geometry.
+			if(entry.kind!=='wmo'&&!entry.collider)continue;
 			const geometry=entry.collider?.geometry??entry.geometry;
 			if(!geometry?.boundsTree)continue;
 			const matrices:THREE.Matrix4[]=[];
@@ -1019,7 +1020,7 @@ export class ObjectManager {
 	 * TerrainType it's made of (0 unknown): floors under the walking character, walls behind its camera.
 	 * Solid doodads (trees, rocks) count too, unless doodads is false.
 	 */
-	castBuildings(from: THREE.Vector3, direction: THREE.Vector3, far: number, doodads = true): { distance: number; normal: THREE.Vector3; ground: number } | null {
+	castBuildings(from: THREE.Vector3, direction: THREE.Vector3, far: number, doodads = true, physicalOnly = false): { distance: number; normal: THREE.Vector3; ground: number } | null {
 		this.sweepRay.set(from, direction);
 		this.sweepRay.far = far;
 		this.sweepRay.firstHitOnly = true;
@@ -1044,6 +1045,7 @@ export class ObjectManager {
 				}
 				continue;
 			}
+			if (physicalOnly && entry.kind !== 'wmo') continue;
 			if (!entry.mesh?.visible || !entry.geometry?.boundsTree) continue;
 			const hit = this.sweepRay.intersectObject(entry.mesh, false)[0];
 			if (!hit?.face || (best && hit.distance >= best.distance)) continue;

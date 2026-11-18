@@ -1,0 +1,114 @@
+{
+  "scope": "Captured Goldshire tile 0/31/49; exterior points require goldshire-touchups.json",
+  "points": [
+    {
+      "name": "inn-lower-transition",
+      "x": -9477.13,
+      "y": 21.891,
+      "floor": 56.759,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "inn-buried-tread",
+      "x": -9477.199,
+      "y": 21.733332,
+      "floor": 56.849,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "inn-upper-stairs",
+      "x": -9478,
+      "y": 17,
+      "floor": 59.62,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "porch-platform",
+      "x": -9324.809,
+      "y": 281.734,
+      "floor": 69.916,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "porch-first-step",
+      "x": -9332,
+      "y": 277.5,
+      "floor": 69.156,
+      "maxClearance": 0.5
+    },
+    {
+      "name": "porch-upper-step",
+      "x": -9330,
+      "y": 279,
+      "floor": 69.934,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "porch-doorway",
+      "x": -9319,
+      "y": 284.5,
+      "floor": 70.538,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "porch-interior",
+      "x": -9316,
+      "y": 287,
+      "floor": 70.539,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "rocks-approach",
+      "x": -9260.169,
+      "y": 347.012,
+      "floor": 75.765,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "rocks-stair-approach",
+      "x": -9261.6,
+      "y": 348.8,
+      "floor": 76.195,
+      "maxClearance": 0.5
+    },
+    {
+      "name": "rocks-doorway",
+      "x": -9263,
+      "y": 350,
+      "floor": 76.693,
+      "maxClearance": 0.4
+    },
+    {
+      "name": "rocks-interior",
+      "x": -9264,
+      "y": 352,
+      "floor": 76.693,
+      "maxClearance": 0.4
+    }
+  ],
+  "negativePoints": [
+    {
+      "name": "physical-wall-beside-rocks-doorway",
+      "x": -9263.5,
+      "y": 349,
+      "heightBand": [
+        76.4,
+        77.3
+      ]
+    }
+  ],
+  "flatControl": {
+    "bounds": [
+      -9488,
+      22,
+      -9483,
+      27
+    ],
+    "heightBand": [
+      55,
+      59
+    ],
+    "spacing": 0.25,
+    "tolerance": 0.0001
+  }
+}

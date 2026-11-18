@@ -1,3 +1,4 @@
+import { transportLayout, transportPreviewPoint, type TransportCatalog, type TransportModel, type TransportSlot } from '../mesh/transport-catalog';
 import { floorPaintFaces } from '../mesh/paint-surface';
 import { paintMaterial } from '../mesh/paint-material';
 import { MeshBVH } from 'three-mesh-bvh';
@@ -419,7 +420,7 @@ export class Viewer {
             return true;
         };
         const surface=this.meshEditPickMode==='surface';
-        const object=surface?this.raycaster.intersectObject(this.objects.group,true).find(visible):this.objects.castBuildings(this.raycaster.ray.origin,this.raycaster.ray.direction,600,false);
+        const object=this.objects.castBuildings(this.raycaster.ray.origin,this.raycaster.ray.direction,600,surface,true);
         const terrain=this.raycaster.intersectObject(this.terrain.group,true).find(hit=>visible(hit)&&(surface||!!(hit.object as THREE.Mesh).geometry?.getAttribute('skirt')));
         if(!surface&&object&&object.distance<(terrain?.distance??Infinity)&&'normal' in object&&object.normal&&Math.abs(object.normal.y)<.5)return null;
         const distance=Math.min(object?.distance??Infinity,terrain?.distance??Infinity);
@@ -433,7 +434,7 @@ export class Viewer {
             this.meshEditCursor=new THREE.LineLoop(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(vertices,3)),new THREE.LineBasicMaterial({color,depthTest:false}));
             this.meshEditCursor.renderOrder=20;this.scene.add(this.meshEditCursor);
         }
-        const placement=point?this.continents.find(c=>c.mapId===point.mapId):null;
+        const placement=point?(this.continents.find(c=>c.mapId===point.mapId)??this.loadedInstances.get(point.mapId)):null;
         this.meshEditCursor.visible=!!placement&&!!point;
         if(placement&&point){
             const vertices:number[]=[],down=new THREE.Vector3(0,-1,0),reach=.4;
@@ -441,7 +442,7 @@ export class Viewer {
                 const angle=i/16*Math.PI*2;
                 const v=new THREE.Vector3(...meshWorldPoint(point.x+Math.cos(angle)*radius,point.y+Math.sin(angle)*radius,point.z,placement.offsetX,placement.offsetY));
                 const terrain=this.terrain.heightAt(v.x,v.z),origin=new THREE.Vector3(v.x,point.z+reach,v.z);
-                const hit=this.objects.castBuildings(origin,down,reach*2,false);
+                const hit=this.objects.castBuildings(origin,down,reach*2,true,true);
                 const candidates=[terrain,hit?origin.y-hit.distance:NaN].filter(h=>Number.isFinite(h)&&Math.abs(h-point.z)<=reach);
                 v.y=(candidates.sort((a,b)=>Math.abs(a-point.z)-Math.abs(b-point.z))[0]??point.z)+.05;
                 vertices.push(v.x,v.y,v.z);
@@ -454,7 +455,7 @@ export class Viewer {
     showMeshConnectionCursor(point:MeshPoint|null,endpoint:'A'|'B'):void {
         this.showMeshBrush(null,1,0);
         if(!this.meshLinkCursor){this.meshLinkCursor=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),new THREE.MeshBasicMaterial({color:0x38bdf8,depthTest:false}));this.meshLinkCursor.renderOrder=22;this.scene.add(this.meshLinkCursor);}
-        const placement=point?this.continents.find(c=>c.mapId===point.mapId):null;
+        const placement=point?(this.continents.find(c=>c.mapId===point.mapId)??this.loadedInstances.get(point.mapId)):null;
         this.meshLinkCursor.visible=!!point&&!!placement;
         if(point&&placement)this.meshLinkCursor.position.set(...meshWorldPoint(point.x,point.y,point.z,placement.offsetX,placement.offsetY));
         (this.meshLinkCursor.material as THREE.MeshBasicMaterial).color.setHex(endpoint==='A'?0x38bdf8:0xffa52f);
@@ -462,7 +463,7 @@ export class Viewer {
     showMeshEdits(mapId:number,strokes:readonly Stroke[],links:readonly Link[],pending?:MeshPoint|null,selectedId?:number|null): void {
         for(const child of [...this.meshEditMarks.children]){if(child.userData.paintBatch)continue;this.meshEditMarks.remove(child);const line=child as THREE.Line;if(!(child as THREE.Sprite).isSprite)line.geometry.dispose();const material=line.material as THREE.Material&{map?:THREE.Texture};material.map?.dispose();material.dispose();}
         if(!this.meshEditMarks.parent)this.scene.add(this.meshEditMarks);
-        const placement=this.continents.find(c=>c.mapId===mapId);if(!placement)return;
+        const placement=this.continents.find(c=>c.mapId===mapId)??this.loadedInstances.get(mapId);if(!placement)return;
         const world=(x:number,y:number,z:number)=>new THREE.Vector3(...meshWorldPoint(x,y,z,placement.offsetX,placement.offsetY));
         const line=(points:THREE.Vector3[],color:number)=>{const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:true,opacity:.85,depthTest:false}));l.renderOrder=19;this.meshEditMarks.add(l);};
         // Copy source collision faces, then clip coverage per fragment. Stair treads
@@ -493,7 +494,7 @@ export class Viewer {
                     if(bounds.intersectsTriangle(new THREE.Triangle(a,b,c)))visit(a,b,c);return false;
                 }});
             });
-                    const values=floorPaintFaces(faces,center,stroke.Radius,stroke.HeightBand),color=new THREE.Color([0xe9b949,0x49c994,0xef633b,0xf2338c,0x55bbee][stroke.Kind]);
+                    const values=floorPaintFaces(faces,center,stroke.Radius,stroke.HeightBand),color=new THREE.Color([0xe9b949,0x49c994,0xef633b,0xf2338c,0x55bbee,0x5de0cc][stroke.Kind]);
                     data={positions:values,colors:[],brushes:[],bands:[]};
                     for(let i=0;i<values.length;i+=3){data.colors.push(color.r,color.g,color.b);data.brushes.push(center.x,center.z,stroke.Radius);data.bands.push(center.y,stroke.HeightBand);}
                     if(values.length)this.meshPaintCache.set(cacheKey,data);
@@ -524,6 +525,62 @@ export class Viewer {
         }
         if(pending)marker(world(pending.x,pending.y,pending.z),'A',true);
 
+    }
+    private transportGallery: TransportSlot[] = [];
+    private transportObjects!:ObjectManager;
+    private galleryDrawn = new Set<number>();
+    private galleryLabels = new Map<number, THREE.Sprite>();
+    private transportInventory:TransportCatalog|null=null;
+    bakeTransportInventory():TransportCatalog|null{return this.transportInventory;}
+    bakeTransportModels(): TransportModel[] { return this.transportGallery.map(slot=>slot.model); }
+    private setTransportGallery(models: TransportModel[]): void {
+        for (const id of this.galleryDrawn) this.transportObjects.removeLoose(`bake-transport:${id}`);
+        for (const label of this.galleryLabels.values()) { this.scene.remove(label);label.material.map?.dispose();label.material.dispose(); }
+        this.galleryDrawn.clear();this.galleryLabels.clear();
+        const bounds=this.continents.filter(c=>c.mapId===0||c.mapId===1).map(c=>this.terrain.landBounds(c)).filter(b=>!b.isEmpty()).sort((a,b)=>a.min.x-b.min.x);
+        let x=0,z=0,width=2400;
+        if(bounds.length>=2){
+            x=(bounds[0].max.x+bounds[1].min.x)/2;
+            z=(bounds[0].getCenter(new THREE.Vector2()).y+bounds[1].getCenter(new THREE.Vector2()).y)/2;
+            width=Math.max(600,bounds[1].min.x-bounds[0].max.x-200);
+        }else if(bounds.length){const c=bounds[0].getCenter(new THREE.Vector2());x=bounds[0].max.x+1400;z=c.y;}
+        this.transportGallery=transportLayout(models,x,z,width);
+        for(const slot of this.transportGallery){
+            const m=slot.model;
+            this.mapLabels?.add(m.name.split('/').pop()!.replace(/\.wmo$/i,''),'Transport',
+                new THREE.Vector3(slot.x+(m.min[1]+m.max[1])/2,slot.y+m.max[2]+40,slot.z+(m.min[0]+m.max[0])/2),
+                Math.max(m.max[0]-m.min[0],m.max[1]-m.min[1])/2);
+        }
+        this.updateTransportGallery();
+    }
+    goToBakeTransport(model: number): void {
+        const slot=this.transportGallery.find(s=>s.model.fdid===model);if(!slot)throw Error('Transport is not staged.');
+        const m=slot.model;
+        this.controls.endRide(false);
+        this.controls.set(new THREE.Vector3(slot.x+(m.min[1]+m.max[1])/2,slot.y+m.max[2]+30,slot.z+m.max[0]+65),0,-.5);
+        this.updateTransportGallery();
+    }
+    transportUnderCamera(): number | null {
+        const p=this.camera.position;
+        const slot=this.transportGallery.find(s=>p.x>=s.x+s.model.min[1]-5&&p.x<=s.x+s.model.max[1]+5&&p.z>=s.z+s.model.min[0]-5&&p.z<=s.z+s.model.max[0]+5);
+        return slot?.model.fdid ?? null;
+    }
+    private updateTransportGallery(): void {
+        for(const slot of this.transportGallery){
+            const m=slot.model,id=m.fdid;
+            const near=Math.hypot(this.camera.position.x-slot.x-(m.min[1]+m.max[1])/2,this.camera.position.z-slot.z-(m.min[0]+m.max[0])/2)<3000+Math.max(m.max[0]-m.min[0],m.max[1]-m.min[1])/2;
+            if(near&&!this.galleryDrawn.has(id)){
+                const basis=new THREE.Matrix4().makeBasis(new THREE.Vector3(0,0,1),new THREE.Vector3(1,0,0),new THREE.Vector3(0,1,0));
+                this.transportObjects.placeLoose(`bake-transport:${id}`,'wmo',id,new THREE.Matrix4().makeTranslation(slot.x,slot.y,slot.z).multiply(basis));
+                this.galleryDrawn.add(id);
+                const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=96;
+                const ctx=canvas.getContext('2d')!;ctx.fillStyle='#10202a';ctx.fillRect(0,0,1024,96);ctx.fillStyle='white';ctx.font='24px sans-serif';ctx.fillText(`${id}: ${m.name.split('/').pop()}`,12,56,1000);
+                const label=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(canvas),depthTest:false}));
+                label.position.set(slot.x+(m.min[1]+m.max[1])/2,slot.y+m.max[2]+12,slot.z+(m.min[0]+m.max[0])/2);label.scale.set(100,9.375,1);this.scene.add(label);this.galleryLabels.set(id,label);
+            }else if(!near&&this.galleryDrawn.delete(id)){
+                this.transportObjects.removeLoose(`bake-transport:${id}`);const label=this.galleryLabels.get(id);if(label){this.scene.remove(label);label.material.map?.dispose();label.material.dispose();this.galleryLabels.delete(id);}
+            }
+        }
     }
     private meshPreview: THREE.Mesh | null = null;
     private meshPreviewRequest = 0;
@@ -567,7 +624,8 @@ export class Viewer {
     }
     async showMeshPreview(data: MeshGeometry, wireframe: boolean, tileKey?: string): Promise<void> {
         const request = tileKey ? this.meshPreviewRequest : ++this.meshPreviewRequest;
-        const placement = await this.placementFor(data.mapId);
+        const slot = data.transportModel ? this.transportGallery.find(s=>s.model.fdid===data.transportModel) : undefined;
+        const placement = slot ? {offsetX:0,offsetY:0} : await this.placementFor(data.mapId);
         if (request !== this.meshPreviewRequest) return;
         if (!placement) throw new Error('This mesh map is not available in the open Explorer product.');
         if (data.positions.length !== data.triangles * 9 || data.classes.length !== data.triangles)
@@ -582,7 +640,7 @@ export class Viewer {
             const color = new THREE.Color(data.unreachable?.[i] ? 0xf2338c : palette[data.classes[i]] ?? 0xe4d4ec);
             for (let k = 0; k < 3; k++) {
                 const v = i * 9 + k * 3;
-                const p = meshWorldPoint(data.positions[v], data.positions[v + 1], data.positions[v + 2], placement.offsetX, placement.offsetY);
+                const p = slot ? transportPreviewPoint(slot,data.positions[v],data.positions[v+1],data.positions[v+2]) : meshWorldPoint(data.positions[v], data.positions[v + 1], data.positions[v + 2], placement.offsetX, placement.offsetY);
                 if (!p.every(Number.isFinite)) throw new Error('Non-finite mesh preview coordinate.');
                 positions.set(p, v); colors.set([Math.round(color.r * 255), Math.round(color.g * 255), Math.round(color.b * 255)], v);
             }
@@ -1294,12 +1352,23 @@ export class Viewer {
 			await this.uploads.upload(object);
 		};
 		this.objects = new ObjectManager(this.storage, this.usesCompressedTextures, anisotropy, prepare);
+        const libraryApi={...this.storage,
+            loadModels:(models:Parameters<AsyncStorageApi['loadModels']>[0])=>this.storage.loadTransportModels(models),
+            loadTextures:(ids:number[],compressed:boolean)=>this.storage.loadTransportTextures(ids,compressed),
+            textureOpacity:(ids:number[])=>this.storage.transportTextureOpacity(ids),
+        } as AsyncStorageApi;
+        this.transportObjects=new ObjectManager(libraryApi,this.usesCompressedTextures,anisotropy,prepare);
+        this.scene.add(this.transportObjects.group);
 		// Buildings (and the caves and mines built as buildings) are solid, and so are trees, rocks and logs.
 		this.controls.collide = (from, move) => {
 			// Most of the time there's no building anywhere near; skip the ray casts then.
-			if (!this.objects.nearBuilding(from, move.length() + CAMERA_RADIUS)) return move;
-			const allowed = this.objects.sweep(from, move, CAMERA_RADIUS);
-			return allowed.add(this.objects.pushOut(from.clone().add(allowed), CAMERA_RADIUS));
+            let allowed=move;
+            for(const objects of [this.objects,this.transportObjects]){
+                if(!objects.nearBuilding(from,allowed.length()+CAMERA_RADIUS))continue;
+                allowed=objects.sweep(from,allowed,CAMERA_RADIUS);
+                allowed.add(objects.pushOut(from.clone().add(allowed),CAMERA_RADIUS));
+            }
+            return allowed;
 		};
 		this.terrain = new TerrainManager(this.storage, this.usesCompressedTextures, anisotropy, this.objects, prepare);
 		this.terrain.preloadTexture = (texture) => this.uploads.texture(texture);
@@ -1321,6 +1390,9 @@ export class Viewer {
 		loaded.forEach(({ tiles }, i) => this.terrain.addContinent(this.continents[i], tiles));
 		onStatus('Placing dungeons and other maps');
 		await this.placeMaps();
+        onStatus('Placing transport models between continents');
+        try { this.transportInventory=await this.storage.meshTransportModels();this.setTransportGallery(this.transportInventory.models);perf.log('load','Transport inventory: '+JSON.stringify(this.transportInventory)); }
+        catch(e) { console.warn('Transport layout unavailable:',e); }
 		this.terrain.buildSeaMask();
 		this.addOcean();
 		this.loadRegions();
@@ -2143,9 +2215,11 @@ export class Viewer {
 			if (this.terrain.nearShown) this.showFirstView();
 		}
 		// Before the objects, so the transports' new places are drawn this frame.
+		this.updateTransportGallery();
 		this.transports?.update(Date.now(), pos);
 		this.objects.extraEmitters = this.character?.emitterSources() ?? [];
 		perf.time('objects.update', () => this.objects.update(now, pos));
+        this.transportObjects.update(now,pos);
 		perf.time('uploads', () => this.uploads.drain());
 		this.clutter.update(now, pos, this.terrain.surfaceAt(pos.x, pos.z));
 		// Under water the surface is seen from below, where its depth isn't used.

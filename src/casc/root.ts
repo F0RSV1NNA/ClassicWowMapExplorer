@@ -1,10 +1,14 @@
-import { Reader } from './reader';
+import { toHex, Reader } from './reader';
 
 const MFST_MAGIC = 0x4d465354; // 'TSFM' on disk
 const LOCALE_ENUS = 0x2;
-const CONTENT_LOW_VIOLENCE = 0x80;
+const CONTENT_ALTERNATE = 0x80;
 const CONTENT_NO_NAME_HASH = 0x10000000;
 const RECORD_BITS = 2 ** 24;
+
+interface RootBlock { count:number; idStart:number; ckeyStart:number; contentFlags:number; localeFlags:number }
+export interface RootRecordEvidence { contentKey:string; contentFlags:string; localeFlags:string; selectedLocale:boolean }
+export interface RootEvidence { version:number; declaredRecords:number; parsedRecords:number; blocks:number; bytes:number; files:Record<number,RootRecordEvidence[]> }
 
 /** Maps file data IDs (and hashed paths, where present) to content keys. */
 export class RootTable {
@@ -14,10 +18,14 @@ export class RootTable {
 		private readonly fdids: Uint32Array,
 		/** Offset of each file's content key in data. */
 		private readonly ckeyOffsets: Uint32Array,
+        private readonly alternate: Uint8Array,
 		private readonly nameHi: Uint32Array,
 		private readonly nameLo: Uint32Array,
 		readonly fileCount: number,
 		readonly namedCount: number,
+        private readonly blocks:RootBlock[],
+        private readonly version:number,
+        private readonly declaredRecords:number,
 	) {}
 
 	static parse(data: Uint8Array): RootTable {
@@ -37,12 +45,15 @@ export class RootTable {
 			headerSize = 12;
 			version = 0;
 		}
-		r.seek(headerSize);
+		if (version !== 0 && version !== 1 && version !== 2) throw new Error(`Unsupported root version ${version}`);
+        r.seek(headerSize);
 		const allowUnnamed = totalCount !== namedCount;
 
-		const recFdid: number[] = [];
+		const blocks:RootBlock[]=[];
+        const recFdid: number[] = [];
 		const recCkey: number[] = [];
 		const recHashOff: number[] = [];
+        const recAlternate:number[]=[];
 		while (r.remaining > 0) {
 			const count = r.u32();
 			let contentFlags: number;
@@ -66,11 +77,14 @@ export class RootTable {
 			const hashStart = r.pos;
 			if (hasNames) r.skip(count * 8);
 
-			if (!(localeFlags & LOCALE_ENUS) || contentFlags & CONTENT_LOW_VIOLENCE) continue;
+			if(r.pos>data.length)throw new Error(`Truncated root block at ${idStart}`);
+            blocks.push({count,idStart,ckeyStart,contentFlags,localeFlags});
+            if (!(localeFlags & LOCALE_ENUS)) continue;
 			let fdid = -1;
 			for (let i = 0; i < count; i++) {
 				fdid += r.view.getInt32(idStart + i * 4, true) + 1;
 				recFdid.push(fdid);
+                recAlternate.push(contentFlags & CONTENT_ALTERNATE ? 1 : 0);
 				recCkey.push(ckeyStart + i * 16);
 				recHashOff.push(hasNames ? hashStart + i * 8 : -1);
 			}
@@ -87,6 +101,7 @@ export class RootTable {
 		// picks whichever one is actually installed.
 		const fdids = new Uint32Array(n);
 		const ckeyOffsets = new Uint32Array(n);
+        const alternate=new Uint8Array(n);
 		const nameHi = new Uint32Array(n);
 		const nameLo = new Uint32Array(n);
 		let unique = 0;
@@ -96,6 +111,7 @@ export class RootTable {
 			const isNew = j === 0 || fdids[j - 1] !== recFdid[i];
 			fdids[j] = recFdid[i];
 			ckeyOffsets[j] = recCkey[i];
+            alternate[j]=recAlternate[i];
 			const h = recHashOff[i];
 			if (h >= 0) {
 				nameLo[j] = r.view.getUint32(h, true);
@@ -106,8 +122,30 @@ export class RootTable {
 				if (h >= 0) named++;
 			}
 		}
-		return new RootTable(data, fdids, ckeyOffsets, nameHi, nameLo, unique, named);
+		return new RootTable(data, fdids, ckeyOffsets, alternate, nameHi, nameLo, unique, named, blocks, version, totalCount);
 	}
+    /** Inspect the unfiltered manifest, including records excluded by locale selection.
+     * One pass for the whole requested set; never downloads or substitutes another build. */
+    inspectFiles(ids:readonly number[]):RootEvidence {
+        const wanted=new Set(ids),files:Record<number,RootRecordEvidence[]>={};
+        for(const id of ids)files[id]=[];
+        const view=new DataView(this.data.buffer,this.data.byteOffset,this.data.byteLength);
+        let parsedRecords=0;
+        for(const block of this.blocks){
+            parsedRecords+=block.count;
+            let id=-1;
+            for(let i=0;i<block.count;i++){
+                id+=view.getInt32(block.idStart+i*4,true)+1;
+                if(wanted.has(id))files[id].push({
+                    contentKey:toHex(this.data.subarray(block.ckeyStart+i*16,block.ckeyStart+(i+1)*16)),
+                    contentFlags:`0x${(block.contentFlags>>>0).toString(16)}`,
+                    localeFlags:`0x${(block.localeFlags>>>0).toString(16)}`,
+                    selectedLocale:!!(block.localeFlags&LOCALE_ENUS),
+                });
+            }
+        }
+        return {version:this.version,declaredRecords:this.declaredRecords,parsedRecords,blocks:this.blocks.length,bytes:this.data.length,files};
+    }
 	private indexOf(fdid: number): number {
 		let lo = 0;
 		let hi = this.fdids.length - 1;
@@ -126,11 +164,13 @@ export class RootTable {
 		let i = this.indexOf(fdid);
 		if (i < 0) return [];
 		while (i > 0 && this.fdids[i - 1] === fdid) i--;
-		const keys: Uint8Array[] = [];
-		for (; i < this.fdids.length && this.fdids[i] === fdid; i++) {
-			keys.push(this.data.subarray(this.ckeyOffsets[i], this.ckeyOffsets[i] + 16));
-		}
-		return keys;
+        const keys:Uint8Array[]=[],alternates:Uint8Array[]=[];
+        for(;i<this.fdids.length&&this.fdids[i]===fdid;i++){
+            const key=this.data.subarray(this.ckeyOffsets[i],this.ckeyOffsets[i]+16);
+            (this.alternate[i]?alternates:keys).push(key);
+        }
+        // CASCLib prefers ordinary records when present, but retains alternate-only files.
+        return keys.length?keys:alternates;
 	}
 
 	/** Linear scan over name hashes; fine for occasional lookups. */

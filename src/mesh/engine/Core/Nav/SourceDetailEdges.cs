@@ -5,7 +5,7 @@ internal sealed partial class SourceSurfaceFit
 {
     // Linked coarse polygons must share the SAME piecewise-linear detail edge.
     // Welding coincident vertices alone leaves cracks at unmatched breakpoints.
-    int SynchronizeDetailEdges(DtMeshData data)
+    int SynchronizeDetailEdges(DtMeshData data,bool reduced=false)
     {
         int count=data.detailMeshes.Length,changed=0;
         var vertices=new List<Vector3>[count];var triangles=new List<DetailFace>[count];
@@ -61,7 +61,7 @@ internal sealed partial class SourceSurfaceFit
         }
         if(changed==0)return 0;
         for(int p=0;p<count;p++){
-            var verts=vertices[p];var output=new List<DetailFace>();var local=new Dictionary<Vector3,int>();
+            var verts=vertices[p];int originalCount=verts.Count;var output=new List<DetailFace>();var local=new Dictionary<Vector3,int>();
             int Id(Vector3 point){if(local.TryGetValue(point,out int id))return id;id=verts.Count;verts.Add(point);local[point]=id;return id;}
             foreach(var tri in triangles[p]){
                 int[] ids=[tri.A,tri.B,tri.C];var boundary=new List<(int Id,int Flag)>();bool split=false;
@@ -75,7 +75,31 @@ internal sealed partial class SourceSurfaceFit
                 int center=verts.Count;verts.Add((verts[tri.A]+verts[tri.B]+verts[tri.C])/3);
                 for(int e=0;e<boundary.Count;e++)output.Add(new(boundary[e].Id,boundary[(e+1)%boundary.Count].Id,center,boundary[e].Flag));
             }
-            if(verts.Count>255||output.Count>255)throw new InvalidDataException("Shared-edge detail exceeds Detour's byte-index limit");
+            if(verts.Count>255||output.Count>255){
+                // This reducer retains every boundary sample and only removes
+                // provably planar interior detail. Normally it runs after fitting.
+                if(!reduced){PlanarDetailReducer.Reduce(data);return changed+SynchronizeDetailEdges(data,true);}
+                verts=verts.Take(originalCount).ToList();output=new();local=new();
+                for(int i=0;i<verts.Count;i++)local.TryAdd(verts[i],i);
+                foreach(var tri in triangles[p]){
+                    int[] ids=[tri.A,tri.B,tri.C];var boundary=new List<(int Id,int Flag)>();
+                    for(int e=0;e<3;e++){
+                        int flag=(tri.Flags>>(2*e))&3;boundary.Add((ids[e],flag));
+                        var a=verts[ids[e]];var b=verts[ids[(e+1)%3]];
+                        foreach(var point in additions[p].Distinct().Where(q=>On(q,a,b,out double t)&&t>.00001&&t<.99999).OrderBy(q=>Parameter(q,a,b)))
+                            boundary.Add((Id(point),flag));
+                    }
+                    if(boundary.Count==3)output.Add(tri);else output.AddRange(TriangulateDetailBoundary(verts,boundary));
+                }
+                // Keep coarse IDs fixed. Drop only samples not referenced by any face.
+                var used=output.SelectMany(t=>new[]{t.A,t.B,t.C}).Where(i=>i>=data.polys[p].vertCount).Distinct().Order().ToArray();
+                var remap=new Dictionary<int,int>();var compact=verts.Take(data.polys[p].vertCount).ToList();
+                foreach(int id in used){remap[id]=compact.Count;compact.Add(verts[id]);}
+                int Map(int id)=>id<data.polys[p].vertCount?id:remap[id];
+                output=output.Select(t=>new DetailFace(Map(t.A),Map(t.B),Map(t.C),t.Flags)).ToList();
+                vertices[p]=verts=compact;
+                if(verts.Count>255||output.Count>255)throw new InvalidDataException($"Shared-edge detail exceeds Detour's byte-index limit after compact repair: polygon {p}, vertices {verts.Count}, triangles {output.Count}");
+            }
             triangles[p]=output;
         }
         var dv=new List<float>();var dt=new List<int>();
@@ -89,4 +113,28 @@ internal sealed partial class SourceSurfaceFit
         data.detailVerts=dv.ToArray();data.detailTris=dt.ToArray();data.header.detailVertCount=dv.Count/3;data.header.detailTriCount=dt.Count/4;
         return changed;
     }
+    // Ear clipping keeps all collinear boundary samples, original winding and
+    // boundary-edge flags; no extra center samples or triangle fan are needed.
+    static List<DetailFace> TriangulateDetailBoundary(List<Vector3> vertices,List<(int Id,int Flag)> boundary)
+    {
+        var ring=boundary.ToList();var result=new List<DetailFace>();
+        double Cross(int a,int b,int c){var x=vertices[a];var y=vertices[b];var z=vertices[c];return((double)y.X-x.X)*(z.Y-x.Y)-((double)y.Y-x.Y)*(z.X-x.X);}
+        double area=0;for(int i=1;i+1<ring.Count;i++)area+=Cross(ring[0].Id,ring[i].Id,ring[i+1].Id);
+        double sign=Math.Sign(area);if(sign==0)throw new InvalidDataException("Degenerate shared-edge detail boundary");
+        while(ring.Count>3){
+            bool clipped=false;
+            for(int i=0;i<ring.Count;i++){
+                int prev=(i+ring.Count-1)%ring.Count,next=(i+1)%ring.Count;
+                var a=ring[prev];var b=ring[i];var c=ring[next];
+                if(Cross(a.Id,b.Id,c.Id)*sign<=1e-14)continue;
+                if(ring.Any(q=>q.Id!=a.Id&&q.Id!=b.Id&&q.Id!=c.Id&&Cross(a.Id,b.Id,q.Id)*sign>=-1e-14&&Cross(b.Id,c.Id,q.Id)*sign>=-1e-14&&Cross(c.Id,a.Id,q.Id)*sign>=-1e-14))continue;
+                result.Add(new(a.Id,b.Id,c.Id,a.Flag|(b.Flag<<2)));
+                ring[prev]=(a.Id,0);ring.RemoveAt(i);clipped=true;break;
+            }
+            if(!clipped)throw new InvalidDataException("Could not triangulate shared-edge detail boundary without losing samples");
+        }
+        result.Add(new(ring[0].Id,ring[1].Id,ring[2].Id,ring[0].Flag|(ring[1].Flag<<2)|(ring[2].Flag<<4)));
+        return result;
+    }
+
 }

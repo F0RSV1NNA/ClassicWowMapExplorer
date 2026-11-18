@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using DotRecast.Detour;
 using DotRecast.Recast;
 
@@ -23,10 +23,12 @@ internal sealed partial class SourceSurfaceFit
     readonly List<int> parents = new();
     readonly record struct BlockedPatch(float MinX,float MinY,float MaxX,float MaxY);
     readonly Dictionary<Face,List<BlockedPatch>> blockedCaps = new();
+    readonly AddedMesh? added;
     readonly float clearance, drop, rise, bodyHeight,edgeReach,footingReach,agentRadius;
 
-    public SourceSurfaceFit(Extractor.Soup soup, NavBake.Settings settings, NavBake.Clip? clip,IReadOnlySet<int>? sourceCaps=null)
+    public SourceSurfaceFit(Extractor.Soup soup, NavBake.Settings settings, NavBake.Clip? clip,IReadOnlySet<int>? sourceCaps=null,AddedMesh? added=null)
     {
+        this.added=added;
         clearance = settings.CellHeight;
         edgeReach=MathF.Min(settings.AgentRadius,settings.CellSize*(settings.EdgeMaxError+MathF.Sqrt(.5f)));
         drop = settings.AgentMaxClimb + 2 * settings.CellHeight;
@@ -85,7 +87,7 @@ internal sealed partial class SourceSurfaceFit
     // Classify the exposed strip locally, using the actual wall and an uncovered
     // lower floor on the SAME side of that wall. Terrain beneath a room is never
     // evidence: it has no standing headroom. Do not widen voxel erosion globally.
-    internal bool IsWallFooting(float x,float y,float rasterHeight)
+    internal bool IsWallFooting(float x,float y,float rasterHeight,SourceBodyClearance? body=null)
     {
         if(!footingWalls.TryGetValue((Bin(x),Bin(y)),out var walls)||
            !bins.TryGetValue((Bin(x),Bin(y)),out var supports))return false;
@@ -162,13 +164,28 @@ internal sealed partial class SourceSurfaceFit
                 // Terrain exposed through a nearby gap in the WMO footprint
                 // does not make a fully supported indoor floor a wall footing.
                 // A lower WMO floor remains separate stair/trim evidence.
-                if(f.Kind==Extractor.Soup.KindTerrain&&BroadFlatFloor(x,y,floor,8))return false;
+                if(f.Kind==Extractor.Soup.KindTerrain&&(BroadFlatFloor(x,y,floor,8)||NearbyStandingFloor(x,y,floor,body)))return false;
                 // A small transition onto a broad, flat exposed floor is a
                 // walkable threshold. A nearby stair tread or narrow shelf is
                 // not: it cannot support this footprint at one floor height.
-                if(delta<=clearance*2.01f&&BroadFlatFloor(point.X,point.Y,h))return false;
+                if(delta<=clearance*2.01f&&(BroadFlatFloor(point.X,point.Y,h)||(supports.Any(q=>q.Kind==Extractor.Soup.KindTerrain&&floor-HeightAt(q,x,y)>clearance&&floor-HeightAt(q,x,y)<=clearance*2.01f)&&NearbyStandingFloor(x,y,floor,body))))return false;
                 return true;
             }
+        }
+        return false;
+    }
+
+    bool NearbyStandingFloor(float x,float y,float floor,SourceBodyClearance? body)
+    {
+        if(body==null)return false;
+        // A broad doorstep still has edge cells without a complete standing
+        // disk at their centers. Keep a clear, same-height approach to a disk
+        // within one body radius; a wall or a narrow lip cannot supply it.
+        for(int d=0;d<8;d++){
+            float angle=d*MathF.PI/4,dx=MathF.Cos(angle)*agentRadius,dy=MathF.Sin(angle)*agentRadius;
+            float px=x+dx,py=y+dy;
+            if(!BroadFlatFloor(px,py,floor,8)||body.Hits(px,py,floor)||body.Hits(x+dx*.5f,y+dy*.5f,floor))continue;
+            if(HasWmoSupport(x+dx*.5f,y+dy*.5f,floor,.03f))return true;
         }
         return false;
     }
@@ -198,6 +215,13 @@ internal sealed partial class SourceSurfaceFit
         float height=field.bmin.Y+span.smax*field.ch;
         BlockFloor(x,y,height,field.cs,field.ch);
     }
+    internal bool CoversRejected(float x,float y,float height)
+    {
+        if(!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
+        return faces.Any(f=>f.Walkable&&f.Kind==Extractor.Soup.KindWmo&&!Blocked(f,x,y)&&
+            HeightAt(f,x,y)>height+.02f&&HeightAt(f,x,y)<=height+clearance*2.01f);
+    }
+
     internal bool HasWmoSupport(float x,float y,float height,float tolerance)
     {
         if(!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
@@ -228,6 +252,40 @@ internal sealed partial class SourceSurfaceFit
             }
         }
         return false;
+    }
+
+    internal bool HasDirectWmoRamp(float x,float y,float floor,float tolerance=.01f)
+    {
+        if(!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
+        return faces.Any(f=>f.Walkable&&f.Kind==Extractor.Soup.KindWmo&&!Blocked(f,x,y)&&HeightAt(f,x,y)>=floor-.01f&&HeightAt(f,x,y)-floor<=tolerance&&
+            Vector3.Normalize(Vector3.Cross(f.B-f.A,f.C-f.A)).Z<.98f&&MathF.Max(f.A.Z,MathF.Max(f.B.Z,f.C.Z))-MathF.Min(f.A.Z,MathF.Min(f.B.Z,f.C.Z))>.05f);
+    }
+
+    internal bool HasWmoStepTransition(float x,float y,float rasterHeight,float tolerance=.01f)
+    {
+        if(!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
+        float selected=Sample(new(x,y,rasterHeight)).Height-clearance;
+        if(!float.IsFinite(selected))return false;
+        bool ramp=false,flat=false;
+        foreach(var f in faces){
+            if(f.Kind!=Extractor.Soup.KindWmo)continue;
+            float h=HeightAt(f,x,y);if(!float.IsFinite(h))continue;
+            var n=Vector3.Normalize(Vector3.Cross(f.B-f.A,f.C-f.A));
+            if(f.Walkable&&!Blocked(f,x,y)&&n.Z<.98f&&h>=selected-.01f&&h-selected<=tolerance&&MathF.Max(f.A.Z,MathF.Max(f.B.Z,f.C.Z))-MathF.Min(f.A.Z,MathF.Min(f.B.Z,f.C.Z))<=clearance*2.01f)ramp=true;
+            if(n.Z>=.995f&&selected-h>.005f&&selected-h<=clearance*2.01f)flat=true;
+        }
+        return ramp&&flat;
+    }
+
+    internal bool HasLowTerrainThreshold(float x,float y,float rasterHeight,SourceBodyClearance? body)
+    {
+        if(body==null||!bins.TryGetValue((Bin(x),Bin(y)),out var faces))return false;
+        float floor=Sample(new(x,y,rasterHeight)).Height-clearance;
+        if(!float.IsFinite(floor)||body.Hits(x,y,floor))return false;
+        if(!faces.Any(f=>f.Walkable&&f.Kind==Extractor.Soup.KindWmo&&MathF.Abs(HeightAt(f,x,y)-floor)<.01f&&
+            Vector3.Normalize(Vector3.Cross(f.B-f.A,f.C-f.A)).Z>=.98f))return false;
+        return faces.Any(f=>f.Kind==Extractor.Soup.KindTerrain&&floor-HeightAt(f,x,y)>clearance&&floor-HeightAt(f,x,y)<=clearance*2.01f)&&
+            (BroadFlatFloor(x,y,floor,8)||NearbyStandingFloor(x,y,floor,body));
     }
 
     internal bool HasShallowWmoSupport(float x,float y,float height,float tolerance)
@@ -290,6 +348,7 @@ internal sealed partial class SourceSurfaceFit
 
     (float Height,int Layer) Sample(Vector3 point)
     {
+        if(added!=null&&added.TryFloor(point.X,point.Y,point.Z,out float forced))return (forced+clearance,-2);
         if(cache.TryGetValue(point,out var saved))return saved;
         float best=float.NaN, gap=float.MaxValue;int layer=int.MinValue;
         var hits=new List<(float Height,int Layer,bool Walkable)>();

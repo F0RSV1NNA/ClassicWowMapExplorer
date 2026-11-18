@@ -37,3 +37,14 @@ test('resume selects only same-build memory/process failures for native-first re
 	expect([...priorMemoryFailures(previous, build)]).toEqual(['0:31:31', '0:30:48']);
 	expect(priorMemoryFailures(previous, { ...build, version: '2' }).size).toBe(0);
 });
+
+
+test('eight bake lanes are available on a 16-thread / 32 GiB machine',async()=>{
+ expect(defaultBakeConcurrency(16,32)).toBe(8);
+ expect(defaultBakeConcurrency(16,8)).toBe(2);
+ let active=0,peak=0;
+ await parallelTiles(Array.from({length:16},(_,i)=>i),8,new AbortController().signal,async()=>{
+  peak=Math.max(peak,++active);await Bun.sleep(3);active--;
+ });
+ expect(peak).toBe(8);
+});

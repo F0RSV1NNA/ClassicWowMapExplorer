@@ -1,3 +1,4 @@
+import {requestNativeBake} from './native-request';
 import { encodeBakeInput, decodeBakeOutput } from './engine-api';
 import type { MeshInput } from './types';
 
@@ -9,23 +10,21 @@ let lastStage = 'Loading mesh engine';
 	lastStage = `${stage}; managed heap ${managedMB.toFixed(0)} MB`;
 	postMessage({ progress: lastStage });
 };
-self.addEventListener('message', async (event: MessageEvent<{ input: MeshInput; runtimeUrl: string; lowMemory?: boolean; inspect?: {x:number;y:number} }>) => {
-	try {
-		let encoded: Uint8Array | undefined;
-		if (event.data.lowMemory) {
+self.addEventListener('message', async (event: MessageEvent<{ input: MeshInput; runtimeUrl: string; lowMemory?: boolean; preferNative?:boolean; inspect?: {x:number;y:number} }>) => {
+	let encoded: Uint8Array | undefined;
+    try {
+		if (!event.data.inspect && event.data.preferNative) {
 			let native = false;
 			try {
 				const capability = await fetch(new URL('/__mesh-native', event.data.runtimeUrl), { cache: 'no-store' });
 				if (capability.ok) { const info = await capability.json(); native = info.available === true && info.version === 1; }
 			} catch { /* Browser-only hosting retains the low-memory WASM path. */ }
 			if (native) {
-				lastStage = 'Explorer native x64 recovery (outside the WASM address-space limit)';
+				lastStage = event.data.lowMemory ? 'Explorer native x64 low-memory recovery' : 'Explorer native x64 bake';
 				postMessage({ progress: lastStage }); encoded = encodeBakeInput(event.data.input);
-				const response = await fetch(new URL('/__mesh-bake', event.data.runtimeUrl), {
-					method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Explorer-Mesh': '1' }, body: new Uint8Array(encoded),
-				});
-				if (!response.ok) throw Error(await response.text());
-				const result = decodeBakeOutput(new Uint8Array(await response.arrayBuffer()), event.data.input);
+                const reply=await requestNativeBake(new URL('/__mesh-bake',event.data.runtimeUrl),encoded,!!event.data.lowMemory,text=>postMessage({progress:text}));
+                const result=decodeBakeOutput(reply.bytes,event.data.input);
+                result.nativeRequestStats={transportRetries:reply.transportRetries,queueWaits:reply.queueWaits};
 				result.executionBackend = 'native-x64';
 				postMessage({ result }, { transfer: Object.values(result.files).map(f => f.buffer) }); return;
 			}
@@ -43,5 +42,5 @@ self.addEventListener('message', async (event: MessageEvent<{ input: MeshInput; 
 		const result = decodeBakeOutput(bytes, event.data.input);
 		const transfer = Object.values(result.files).map((f) => f.buffer);
 		postMessage({ result }, { transfer });
-	} catch (e) { postMessage({ error: `${(e as Error).message}; last stage: ${lastStage}` }); }
+	} catch (e) { postMessage({ error: `${(e as Error).message}; last stage: ${lastStage}`,failedSource:encoded },{transfer:encoded?[encoded.buffer]:[]}); }
 });

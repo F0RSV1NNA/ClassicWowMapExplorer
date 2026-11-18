@@ -20,6 +20,11 @@ export type SourceInit =
 /** Methods the storage worker exposes; every call is async across the worker boundary. */
 export interface StorageApi {
 	meshTiles(mapId: number): MeshTile[];
+	meshTransport(fdid: number): MeshInput;
+    loadTransportModels(models:{fdid:number;kind:ObjectKind;variant?:string}[]):(ModelData|null)[];
+    loadTransportTextures(fdids:number[],compressed:boolean):LoadedTexture[];
+    transportTextureOpacity(fdids:number[]):number[];
+	meshTransportModels(): import('../mesh/transport-catalog').TransportCatalog;
 	meshSource(tile: MeshTile, preview?: boolean): MeshInput;
 	/** Where the page is served from, for files beside it (the worker's own URL is under assets/). */
 	setPageUrl(url: string): void;

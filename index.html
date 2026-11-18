@@ -255,8 +255,19 @@
 				<button id="mesh-collision">Inspect source tile collision</button>
 				<button id="mesh-bake-area">Bake tile under camera</button>
 				<label><input id="mesh-resume-export" type="checkbox">Continue open export (skip completed tiles)</label>
-				<button id="mesh-bake-map">Bake current terrain map to folder</button>
-				<button id="mesh-bake-world">Bake all terrain maps to folder</button>
+				<button id="mesh-bake-map">Bake current map to folder</button>
+				<button id="mesh-bake-world">Bake all maps to folder</button>
+                <details><summary>Transport collection</summary>
+                    <button id="mesh-transports-show">Go to transport collection</button>
+                    <div id="mesh-transports-inventory" class="muted small"></div>
+                    <button id="mesh-transports-inventory-save">Save transport inventory report</button>
+                    <label>Transport<select id="mesh-transports-model" disabled></select></label>
+                    <button id="mesh-transports-go" disabled>Go to selected transport</button>
+                    <button id="mesh-transports-bake" disabled>Bake selected transport to folder</button>
+                    <button id="mesh-transports-here" disabled>Bake transport under camera to folder</button>
+                    <button id="mesh-transports-all" disabled>Bake all listed transports to folder</button>
+                    <div class="muted small">Transport models are always placed between the continents. Exports go into transports/ in model-local coordinates; display placement is never baked.</div>
+                </details>
 				<button id="mesh-cancel" disabled>Cancel bake</button>
 				<button id="mesh-navmesh" disabled>Show last baked tile</button>
 				<button id="mesh-liquid" disabled>Show liquid surfaces</button>
@@ -299,7 +310,8 @@
 				<label>Saved mesh radius<select id="mesh-preview-radius"><option value="0">Current tile</option><option value="1" selected>Current tile and neighbours</option></select></label>
 				<label>Keep separate areas with at least this many polygons<input id="mesh-min-component" type="number" min="0" max="2147483647" step="1" value="1000"></label>
 				<div class="muted small">Default 1000 preserves substantial separate places. Zero keeps only the largest component.</div>
-				<label>Parallel tile bakes <select id="mesh-bake-workers"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+				<label>Bake engine <select id="mesh-bake-backend"><option value="native">Native x64 (preferred)</option><option value="wasm">Browser / WASM</option></select></label>
+                <label>Parallel tile bakes <select id="mesh-bake-workers"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="8">8</option></select></label>
 				<div class="muted small">Dense tiles can grow beyond 2 GB per worker. Up to four bake lanes; start with two. Identical mesh detail. Applies to the next map/world job.</div>
 				<label><input id="mesh-auto-analyze" type="checkbox" checked>Analyse reachability after map bakes and tile updates</label>
 				<label><input id="mesh-rebake-neighbours" type="checkbox" checked>Rebake neighbouring border tiles when updating a tile</label>

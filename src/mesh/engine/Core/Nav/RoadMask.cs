@@ -35,6 +35,8 @@ public sealed class RoadMask
     readonly Dictionary<(int, int), List<int>> _near = [];
 
     public int Tiles => _tiles.Count;
+    internal IEnumerable<MapEdits.Stroke> AddedMeshStrokes => _strokes.Where(s=>s.Effective==MapEdits.StrokeKind.AddMesh);
+    internal bool HasAddedMesh => _strokes.Any(s=>s.Effective==MapEdits.StrokeKind.AddMesh);
 
     RoadMask(List<MapEdits.Stroke> strokes)
     {

@@ -8,6 +8,8 @@ export interface ProductInfo {
 	active: boolean;
 	buildKey: string;
 	cdnKey: string;
+    cdnPath?:string;
+    cdnHosts?:string[];
 }
 
 /** Parses the pipe-separated .build.info table in the install root. */
@@ -25,6 +27,8 @@ export async function readBuildInfo(source: FileSource): Promise<ProductInfo[]> 
 			active: col(row, 'Active') === '1',
 			buildKey: col(row, 'Build Key'),
 			cdnKey: col(row, 'CDN Key'),
+            cdnPath: col(row,'CDN Path'),
+            cdnHosts: col(row,'CDN Hosts').split(' ').filter(Boolean),
 		};
 	});
 }

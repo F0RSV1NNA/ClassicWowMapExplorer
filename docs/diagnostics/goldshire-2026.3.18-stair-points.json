@@ -1,0 +1,283 @@
+{
+  "scope": "Goldshire stair width and tread coverage, pipeline 2026.3.18",
+  "points": [
+    {
+      "name": "inside--9478-21.4",
+      "x": -9478,
+      "y": 21.4,
+      "floor": 57.089,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9478-21.65",
+      "x": -9478,
+      "y": 21.65,
+      "floor": 56.953,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9477.6-21.4",
+      "x": -9477.6,
+      "y": 21.4,
+      "floor": 57.059000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9477.6-21.65",
+      "x": -9477.6,
+      "y": 21.65,
+      "floor": 56.916000000000004,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9477.2-21.4",
+      "x": -9477.2,
+      "y": 21.4,
+      "floor": 57.029,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9477.2-21.65",
+      "x": -9477.2,
+      "y": 21.65,
+      "floor": 56.886,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9476.8-21.4",
+      "x": -9476.8,
+      "y": 21.4,
+      "floor": 56.998000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9476.8-21.65",
+      "x": -9476.8,
+      "y": 21.65,
+      "floor": 56.856,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9476.4-21.4",
+      "x": -9476.4,
+      "y": 21.4,
+      "floor": 56.968,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9476.4-21.65",
+      "x": -9476.4,
+      "y": 21.65,
+      "floor": 56.826,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9476-21.4",
+      "x": -9476,
+      "y": 21.4,
+      "floor": 56.953,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9476-21.65",
+      "x": -9476,
+      "y": 21.65,
+      "floor": 56.81,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9475.6-21.4",
+      "x": -9475.6,
+      "y": 21.4,
+      "floor": 56.908,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inside--9475.6-21.65",
+      "x": -9475.6,
+      "y": 21.65,
+      "floor": 56.797000000000004,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9460.5-44.9",
+      "x": -9460.5,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9460.5-45.1",
+      "x": -9460.5,
+      "y": 45.1,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9460-44.9",
+      "x": -9460,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9460-45.1",
+      "x": -9460,
+      "y": 45.1,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9459.5-44.9",
+      "x": -9459.5,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9459.5-45.1",
+      "x": -9459.5,
+      "y": 45.1,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9459-44.9",
+      "x": -9459,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9459-45.1",
+      "x": -9459,
+      "y": 45.1,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9458.5-44.9",
+      "x": -9458.5,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9458-44.9",
+      "x": -9458,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "outside--9457.8-44.9",
+      "x": -9457.8,
+      "y": 44.9,
+      "floor": 56.940000000000005,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "rocks--9262-348.2",
+      "x": -9262,
+      "y": 348.2,
+      "floor": 76.18499999999999,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "rocks--9261.6-348.2",
+      "x": -9261.6,
+      "y": 348.2,
+      "floor": 76.18499999999999,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "rocks--9261.2-348.2",
+      "x": -9261.2,
+      "y": 348.2,
+      "floor": 76.18499999999999,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "rocks--9262.8-350",
+      "x": -9262.8,
+      "y": 350,
+      "floor": 76.68299999999999,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "rocks--9262.5-349.5",
+      "x": -9262.5,
+      "y": 349.5,
+      "floor": 76.68299999999999,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "rocks--9262.2-349.2",
+      "x": -9262.2,
+      "y": 349.2,
+      "floor": 76.678,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "reported-inn-interior-transition",
+      "x": -9475.523,
+      "y": 21.386,
+      "floor": 56.91,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "reported-inn-exterior-threshold",
+      "x": -9458.669,
+      "y": 45.051,
+      "floor": 56.94,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "reported-rocks-tread",
+      "x": -9261.393,
+      "y": 348.448,
+      "floor": 76.185,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inn-square-hole-center",
+      "x": -9476.933,
+      "y": 21.466665,
+      "floor": 56.953,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inn-square-hole-interior",
+      "x": -9476.851,
+      "y": 21.45,
+      "floor": 56.973,
+      "maxClearance": 0.56
+    },
+    {
+      "name": "inn-lower-transition-edge",
+      "x": -9475.801,
+      "y": 21.900002,
+      "floor": 56.701,
+      "maxClearance": 0.56
+    }
+  ],
+  "negativePoints": [],
+  "flatControl": {
+    "bounds": [
+      -9488,
+      22,
+      -9483,
+      27
+    ],
+    "heightBand": [
+      55,
+      59
+    ],
+    "spacing": 0.25,
+    "tolerance": 0.0001
+  },
+  "notes": [
+    "Exterior width samples stop inside the open tread edge by the configured body radius; no collision exists at the omitted corner samples.",
+    "This fixture checks actual tread area as well as traversability; the earlier route-only checks did not catch these defects."
+  ]
+}

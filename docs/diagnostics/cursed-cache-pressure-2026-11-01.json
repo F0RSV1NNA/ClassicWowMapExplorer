@@ -1,0 +1,39 @@
+{
+  "scope": "Host-only NavArenaHeap/NavTileCache reproduction on real completed tile payloads; enforces declared world staging limit. No Detour/query allocations, so available heap is optimistic. Exit zero means the suspected failure was reproduced, not that the dataset passed acceptance.",
+  "compilerSha256": "798a6eb495b30cf771dc759b5508d269ecb0dddac739719e8b30fe0ac0744b69",
+  "executableSha256": "33bbed11833af46409de4a655a51fc4fa99c5c536690966d7a943829d5fff6ef",
+  "buildExit": 0,
+  "probeExit": 0,
+  "result": {
+    "attempts": 229,
+    "loads": 126,
+    "failures": 103,
+    "oversize": 1,
+    "evictions": 27,
+    "firstHeapFailureResident": 99,
+    "residentTiles": 99,
+    "residentBytes": 249503876,
+    "heapBytes": 251658240,
+    "slots": 100
+  },
+  "sourceHashes": {
+    "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\cursed-size-audit\\cache_probe.cpp": "37df50beb1272ae8bbf9f559c45ee3814ba74f83f1501089f2c90fcf4cba3e6f",
+    "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\include\\navigator\\nav_arena.h": "acf2d9385abe1fc2d2af2435ecb89d39c5e3f09577b622333fbb5b8ed2a784b4",
+    "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\src\\navigator\\nav_alloc.cpp": "7d0b272bfa5050620f3fd04816215b2bee7d34c164028dea21e863d1a4e763ab",
+    "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\src\\navigator\\nav_tile_cache.cpp": "575bd8ec5123f54cf34414446aba458f8c0e08f4d076ab6d25417fd8b97f736a"
+  },
+  "initialAttempt": {
+    "evidence": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\cursed-size-audit\\initial-probe-result.json",
+    "exit": 1,
+    "reason": "Initial assertion also required zero evictions for the entire run; later smaller tiles fill the cache and subsequently trigger slot eviction. Corrected assertion checks eviction count at the first heap-pressure refusal."
+  },
+  "pressureDetail": [
+    "free_slot_heap_refusals=94 first_refusal_evictions=6"
+  ],
+  "assertion": "At least one allocation refusal after a successful file read while a free cache slot already existed. Zero means reproduction passed, not dataset acceptance.",
+  "secondAttempt": {
+    "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\cursed-size-audit\\second-probe-result.json",
+    "exit": 1,
+    "reason": "First heap refusal followed a single slot eviction; later refusals occur with free slots. Replaced the overly narrow assertion with the actual pressure failure condition."
+  }
+}

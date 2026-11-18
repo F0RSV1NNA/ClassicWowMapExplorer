@@ -1,3 +1,4 @@
+import { transportInventorySummary } from './transport-catalog';
 import { strToU8, zipSync } from 'fflate';
 import type { AsyncStorageApi } from '../worker/protocol';
 import type { Viewer } from '../viewer/viewer';
@@ -5,10 +6,10 @@ import { TILE_SIZE } from '../formats/adt';
 import { runBake } from './client';
 import { defaultBakeConcurrency, parallelTiles, serialLane, priorMemoryFailures } from './batch';
 import { previewGeometry } from './geometry';
-import { tileMetadata } from './project';
+import { sameMeshEngineSource, tileMetadata } from './project';
 import type { MeshBake, MeshInput, MeshTile } from './types';
 import { runReachability } from './reachability-client';
-import { saveTileExport, tileExportCurrent, writeExport } from './export';
+import { saveTileExport, saveTransportExport, savedMetadataFile, tileExportCurrent, writeExport } from './export';
 import { meshPositionDetails } from './position';
 import { encodeBakeInput } from './engine-api';
 import { setUpAuthoring } from './editor';
@@ -50,7 +51,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		const key = `${folderRevision}:${details?.metadata}`;
 		if (editorDirectory && details?.metadata && key !== qualityKey) {
 			qualityKey = key;
-			void editorDirectory.getFileHandle(details.metadata).then(h => h.getFile()).then(f => f.text()).then(JSON.parse).then(metadata => {
+			void savedMetadataFile(editorDirectory,{mapId:point!.mapId,x:details.col,y:details.row}).then(f => f.text()).then(JSON.parse).then(metadata => {
 				if (key !== qualityKey) return;
 				const quality = metadata.quality;
 				el('mesh-tile-quality').textContent = quality?.swimBuildFellBack > 0
@@ -68,7 +69,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 			if (editorDirectory && details.metadata) {
 				text += `\nExport: ${editorDirectory.name}`;
 				try {
-					const file = await (await editorDirectory.getFileHandle(details.metadata)).getFile();
+					const file = await savedMetadataFile(editorDirectory,{mapId:point.mapId,x:details.col,y:details.row});
 					const metadata = JSON.parse(await file.text());
 					const keys = ['CellSize', 'CellHeight', 'AgentHeight', 'AgentRadius', 'AgentMaxClimb', 'AgentMaxSlope', 'DetailSampleDist', 'DetailSampleMaxError', 'BuriedMargin', 'BlockDoodads', 'IndoorStepCut'];
 					text += '\nSaved tile diagnostics:\n' + JSON.stringify({ saved: new Date(file.lastModified).toISOString(), sourceBuild: metadata.sourceBuild, executionBackend: metadata.executionBackend, settings: Object.fromEntries(keys.filter(k => k in (metadata.settings ?? {})).map(k => [k, metadata.settings[k]])), quality: metadata.quality }, null, 2);
@@ -92,7 +93,8 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 	for (const id of ['mesh-copy-position', 'mesh-copy-here']) el(id).addEventListener('click', () => void copyPosition(false));
 	el('mesh-copy-report').addEventListener('click', () => void copyPosition(true));
 	const render = () => {
-		for (const id of ['mesh-collision', 'mesh-bake-area', 'mesh-bake-map', 'mesh-bake-world']) el<HTMLButtonElement>(id).disabled = !!controller;
+		for (const id of ['mesh-transports-show', 'mesh-collision', 'mesh-bake-area', 'mesh-bake-map', 'mesh-bake-world']) el<HTMLButtonElement>(id).disabled = !!controller;
+		for(const id of ['mesh-transports-go','mesh-transports-bake','mesh-transports-here','mesh-transports-all']) el<HTMLButtonElement>(id).disabled=!!controller||!el<HTMLSelectElement>('mesh-transports-model').options.length;
 		el<HTMLButtonElement>('mesh-cancel').disabled = !controller;
 		el<HTMLButtonElement>('mesh-navmesh').disabled = !!controller || !last;
 		el<HTMLButtonElement>('mesh-export').disabled = !!controller || !last;
@@ -101,8 +103,8 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		for (const id of ['mesh-editor-analyze', 'mesh-editor-show', 'mesh-editor-show-all', 'mesh-editor-rebake']) el<HTMLButtonElement>(id).disabled = !!controller || !editorDirectory || !editorMap.value;
 		el<HTMLButtonElement>('mesh-editor-capture').disabled = !!controller;
 		el<HTMLInputElement>('mesh-resume-export').disabled = !!controller || !editorDirectory;
-		el('mesh-bake-map').textContent = el<HTMLInputElement>('mesh-resume-export').checked ? 'Continue current map in open export' : 'Bake current terrain map to folder';
-		el('mesh-bake-world').textContent = el<HTMLInputElement>('mesh-resume-export').checked ? 'Continue all terrain maps in open export' : 'Bake all terrain maps to folder';
+		el('mesh-bake-map').textContent = el<HTMLInputElement>('mesh-resume-export').checked ? 'Continue current map in open export' : 'Bake current map to folder';
+		el('mesh-bake-world').textContent = el<HTMLInputElement>('mesh-resume-export').checked ? 'Continue all terrain maps in open export' : 'Bake all maps to folder';
 		el<HTMLButtonElement>('mesh-editor-cancel').disabled = !controller;
 		el('mesh-editor-progress').hidden = !controller;
 		editorMap.disabled = !!controller || !editorDirectory;
@@ -117,18 +119,25 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 	const minComponent = el<HTMLInputElement>('mesh-min-component');
 	const autoAnalyze = el<HTMLInputElement>('mesh-auto-analyze');
 	const bakeWorkers = el<HTMLSelectElement>('mesh-bake-workers');
+    const bakeBackend=el<HTMLSelectElement>('mesh-bake-backend');
+    let savedNativeOptions=false;
 	bakeWorkers.value = String(defaultBakeConcurrency(navigator.hardwareConcurrency, (navigator as Navigator & { deviceMemory?: number }).deviceMemory));
 	const allowPartial = el<HTMLInputElement>('mesh-allow-partial');
+    void fetch('/__mesh-native',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(info=>{
+        if(info?.available&&!savedNativeOptions)bakeWorkers.value=String(defaultBakeConcurrency(navigator.hardwareConcurrency,info.memoryBytes/1024**3));
+    }).catch(()=>{});
 	const rebakeNeighbours = el<HTMLInputElement>('mesh-rebake-neighbours');
 	const followCamera = el<HTMLInputElement>('mesh-follow-camera');
 	const previewRadius = el<HTMLSelectElement>('mesh-preview-radius');
 	try {
 		const saved = JSON.parse(localStorage.getItem('mesh-options') ?? '{}');
-		if ([1, 2, 3, 4, 6, 8].includes(saved.workers)) bakeWorkers.value = String(Math.min(4, saved.workers));
+        savedNativeOptions=saved.version>=3;
+        if(saved.backend==='wasm')bakeBackend.value='wasm';
+		if ([1, 2, 3, 4, 6, 8].includes(saved.workers)) bakeWorkers.value = String(saved.workers);
 		if (['wireframe', 'solid'].includes(saved.view)) el<HTMLSelectElement>('mesh-view').value = saved.view;
 		if (['all', 'hide', 'only'].includes(saved.reachability)) reachabilityView.value = saved.reachability;
 		if (Number.isSafeInteger(saved.minComponent) && saved.minComponent >= 0 && saved.minComponent <= 2147483647) minComponent.value = String(saved.minComponent);
-		autoAnalyze.checked = saved.version === 2 ? saved.autoAnalyze !== false : true;
+		autoAnalyze.checked = saved.version >= 2 ? saved.autoAnalyze !== false : true;
 		rebakeNeighbours.checked = saved.neighbours !== false; allowPartial.checked = saved.allowPartial === true;
 		followCamera.checked = saved.follow !== false;
 		if (saved.radius === '0' || saved.radius === '1') previewRadius.value = saved.radius;
@@ -137,9 +146,9 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		viewer.setMeshPreviewWireframe(wireframe());
 		viewer.setMeshReachabilityView(reachabilityView.value as 'all' | 'hide' | 'only');
 		if (!followCamera.checked) { followController?.abort(); followController = null; followKey = ''; }
-		try { localStorage.setItem('mesh-options', JSON.stringify({ version: 2, workers: Number(bakeWorkers.value), view: el<HTMLSelectElement>('mesh-view').value, reachability: reachabilityView.value, minComponent: Number(minComponent.value), autoAnalyze: autoAnalyze.checked, neighbours: rebakeNeighbours.checked, follow: followCamera.checked, radius: previewRadius.value, allowPartial: allowPartial.checked })); } catch { /* Optional persistence. */ }
+		try { localStorage.setItem('mesh-options', JSON.stringify({ version: 3, backend:bakeBackend.value, workers: Number(bakeWorkers.value), view: el<HTMLSelectElement>('mesh-view').value, reachability: reachabilityView.value, minComponent: Number(minComponent.value), autoAnalyze: autoAnalyze.checked, neighbours: rebakeNeighbours.checked, follow: followCamera.checked, radius: previewRadius.value, allowPartial: allowPartial.checked })); } catch { /* Optional persistence. */ }
 	};
-	for (const id of ['mesh-bake-workers', 'mesh-view', 'mesh-reachability-view', 'mesh-min-component', 'mesh-auto-analyze', 'mesh-rebake-neighbours', 'mesh-follow-camera', 'mesh-preview-radius', 'mesh-allow-partial']) el(id).addEventListener('change', applyOptions);
+	for (const id of ['mesh-bake-workers', 'mesh-bake-backend', 'mesh-view', 'mesh-reachability-view', 'mesh-min-component', 'mesh-auto-analyze', 'mesh-rebake-neighbours', 'mesh-follow-camera', 'mesh-preview-radius', 'mesh-allow-partial']) el(id).addEventListener('change', applyOptions);
 	el('mesh-resume-export').addEventListener('change', render);
 	applyOptions();
 	const action = async (fn: (signal: AbortSignal) => Promise<void>) => {
@@ -158,7 +167,16 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		}
 		finally { baking = false; controller = null; render(); }
 	};
-	const tileName = (t: MeshTile) => `${String(t.mapId).padStart(4, '0')}_${String(t.y).padStart(2, '0')}_${String(t.x).padStart(2, '0')}.mmtile`;
+	const expectedNames = async (directory: FileSystemDirectoryHandle, inventory: MeshTile[]): Promise<string[]> => {
+        if (inventory[0]?.kind !== 'global-wmo') return inventory.map(tileName);
+        const t=inventory[0];
+        const meta=JSON.parse(await (await (await directory.getFileHandle(`${t.mapId}-${t.x}-${t.y}.json`)).getFile()).text());
+        if(meta.product!==product || (buildInfo && JSON.stringify(meta.sourceBuild)!==JSON.stringify(buildInfo)) || !sameMeshEngineSource(meta.engineSource,tileMetadata({tile:t,origin:[0,0,0],positions:new Float32Array(),indices:new Uint32Array(),classes:new Uint8Array(),liquidLayers:0},product).engineSource) || meta.tile?.kind!=='global-wmo') throw Error('Bake the complete instance map before reachability analysis.');
+        const names=Object.keys(meta.files ?? {}).filter(f=>f.endsWith('.mmtile'));
+        if(!names.length)throw Error('Instance bake has no completed mesh tiles.');
+        return names;
+    };
+    const tileName = (t: MeshTile) => `${String(t.mapId).padStart(4, '0')}_${String(t.y).padStart(2, '0')}_${String(t.x).padStart(2, '0')}.mmtile`;
 	const openEditorDirectory = async (directory: FileSystemDirectoryHandle, selectedMap?: number) => {
 		const ids: number[] = [];
 		for await (const [name, handle] of directory.entries()) if (handle.kind === 'file' && /^\d+\.mmap$/.test(name)) ids.push(Number(name.split('.')[0]));
@@ -188,7 +206,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		if (!minComponent.value.trim() || !Number.isSafeInteger(threshold) || threshold < 0 || threshold > 2147483647) throw new Error('The separate-area threshold must be a whole number from 0 to 2147483647.');
 		let expectedTiles = expected ?? [];
 		if (analyze && !expected) {
-			try { expectedTiles = (await storage.meshTiles(mapId)).map(tileName); }
+			try { expectedTiles = await expectedNames(directory,await storage.meshTiles(mapId)); }
 			catch { if (!allowPartial.checked) throw new Error('Cannot verify this map inventory. Enable partial-set analysis to analyse only the supplied export.'); }
 		}
 		signal.throwIfAborted();
@@ -240,7 +258,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		const p = viewer.meshPosition();
 		if (!p) throw new Error('Move over a map first.');
 		const x = Math.floor(32 - p.y / TILE_SIZE), y = Math.floor(32 - p.x / TILE_SIZE);
-		const tile = (await storage.meshTiles(p.mapId)).find((t) => t.x === x && t.y === y);
+		const tile = (await storage.meshTiles(p.mapId)).find((t) => t.kind === 'global-wmo' || (t.x === x && t.y === y));
 		if (!tile) throw new Error(`No source terrain tile at ${x}_${y} in native map ${p.mapId}.`);
 		return tile;
 	};
@@ -256,6 +274,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 	const recoverOneAtATime = serialLane();
 	authoring=setUpAuthoring(viewer,storage,product,{busy:()=>!!controller,directory:()=>editorDirectory,changed:()=>{last=null;}});
 	const bake = async (tile: MeshTile, signal: AbortSignal, lowMemory = false) => {
+        lowMemory ||= tile.kind === 'global-wmo';
 		await authoring!.flush();
 		let sourceMs = 0;
 		const input = await prepare(async () => { signal.throwIfAborted(); const start = performance.now(); const result = await source(tile, signal); sourceMs = performance.now() - start; return result; });
@@ -265,7 +284,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		const bakeStart = performance.now();
 		const execute = () => {
 			signal.throwIfAborted();
-			return runBake(input, signal, (stage) => { status.textContent = `Map ${tile.mapId}, tile ${tile.x}_${tile.y}: ${stage}…`; }, lowMemory);
+			return runBake(input, signal, (stage) => { status.textContent = `Map ${tile.mapId}, tile ${tile.x}_${tile.y}: ${stage}…`; }, lowMemory,bakeBackend.value!=='wasm');
 		};
 		const result = await (lowMemory ? recoverOneAtATime(execute) : execute());
 		signal.throwIfAborted();
@@ -273,6 +292,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		metadata.pipeline = result.quality.pipeline;
 		metadata.settings = result.settings ?? null;
 		metadata.executionBackend = result.executionBackend ?? 'wasm';
+        metadata.nativeRequestStats=result.nativeRequestStats;
 		metadata.files = Object.fromEntries(Object.entries(result.files).map(([name, bytes]) => [name, bytes.length]));
 		const baked = { bake: result, metadata, timing: { sourceMs, bakeMs: performance.now() - bakeStart } };
 		metadata.performance = baked.timing;
@@ -291,7 +311,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		await authoring!.saveTo(editorDirectory);
 		for(const tile of update){signal.throwIfAborted();tileProgress(done,update.length,`Updating ${tile.x}_${tile.y}`);const result=await bake(tile,signal,true);await saveTileExport(editorDirectory,tile,result.bake,result.metadata);wholeMapVisible=true;await viewer.showMeshPreview(result.bake.geometry,wireframe(),tileName(tile));done++;}
 		folderRevision++;followKey='';
-		if(autoAnalyze.checked)await inspectExport(editorDirectory,mapId,true,signal,inventory.map(tileName));
+		if(autoAnalyze.checked)await inspectExport(editorDirectory,mapId,true,signal,await expectedNames(editorDirectory,inventory));
 		tileProgress(done,update.length,'Edited tiles updated');editorStatus.textContent=`${done} edited/dependent tiles rebaked.${autoAnalyze.checked?' Reachability recomputed.':' Run reachability analysis to update automatic flags.'}`;
 	}));
 	el('mesh-editor-rebake').addEventListener('click', () => void action(async signal => {
@@ -314,7 +334,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		}
 		if (autoAnalyze.checked) {
 			discovering('Recomputing reachability against the assembled map…');
-			await inspectExport(editorDirectory, tile.mapId, true, signal, inventory.map(tileName));
+			await inspectExport(editorDirectory, tile.mapId, true, signal, await expectedNames(editorDirectory,inventory));
 			tileProgress(done, update.length, 'Updated and map reachability recomputed');
 		} else {
 			await showSavedMap(editorDirectory, tile.mapId, signal);
@@ -360,6 +380,49 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 		const q = result.bake.quality;
 		el('mesh-output').textContent = `${q.polygons.toLocaleString()} polygons; ${q.indoorCells} indoor cells; ${q.railingCells} railing cells removed; ${q.swimPolygons} swim polygons; ${q.hazardPolygons} under hazards; ${q.detailSpikes} spikes fixed; ${q.detailClamped} heights clamped. ${q.fallbacks.join('; ')}`;
 	}));
+
+    const transportSelect=el<HTMLSelectElement>('mesh-transports-model');
+    const transportModels=viewer.bakeTransportModels(),inventory=viewer.bakeTransportInventory();
+    el('mesh-transports-inventory').textContent=inventory?transportInventorySummary(inventory):'Transport inventory unavailable.';
+    el('mesh-transports-inventory-save').addEventListener('click',()=>{
+        if(!inventory)return;
+        const url=URL.createObjectURL(new Blob([JSON.stringify(inventory,null,2)],{type:'application/json'}));
+        const a=document.createElement('a');a.href=url;a.download='transport-inventory.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+    transportSelect.replaceChildren(...transportModels.map(m=>{const o=document.createElement('option');o.value=String(m.fdid);o.textContent=`${m.fdid}: ${m.name}`;return o;}));
+    transportSelect.disabled=!transportModels.length;
+    const initial=transportModels.find(m=>m.fdid===116306)??transportModels[0];
+    if(initial)transportSelect.value=String(initial.fdid);
+    el('mesh-transports-show').addEventListener('click',()=>{
+        if(!initial){status.textContent='No transport root models are available in this product.';return;}
+        viewer.goToBakeTransport(Number(transportSelect.value));
+    });
+    el('mesh-transports-go').addEventListener('click',()=>viewer.goToBakeTransport(Number(transportSelect.value)));
+    for(const mode of ['bake','here','all'] as const)el(`mesh-transports-${mode}`).addEventListener('click',()=>{
+        if(controller)return;
+        const ids=mode==='all'?Array.from(transportSelect.options,o=>Number(o.value)):[mode==='here'?viewer.transportUnderCamera():Number(transportSelect.value)];
+        if(ids.some(id=>!id)){status.textContent='Move over a staged transport or use Bake selected transport.';return;}
+        if(!('showDirectoryPicker'in window)){status.textContent='Transport export requires Chromium writable-folder access.';return;}
+        const folder=(window as unknown as {showDirectoryPicker(options:object):Promise<FileSystemDirectoryHandle>}).showDirectoryPicker({id:'mesh-output',mode:'readwrite'});
+        void action(async signal=>{
+            const directory=await folder;let done=0;const failures:string[]=[];
+            followCamera.checked=false;applyOptions();
+            for(const id of ids as number[]){
+                signal.throwIfAborted();tileProgress(done,ids.length,`Transport ${id}`);
+                try{
+                    const input=await storage.meshTransport(id);signal.throwIfAborted();
+                    const result=await runBake(input,signal,text=>{status.textContent=`Transport ${id}: ${text}`;},true);
+                    signal.throwIfAborted();const metadata=tileMetadata(input,product);
+                    metadata.pipeline=result.quality.pipeline;metadata.quality=result.quality;metadata.settings=result.settings;metadata.executionBackend=result.executionBackend??'wasm';
+                    await saveTransportExport(directory,id,result,metadata);
+                    last={bake:result,metadata};await viewer.showMeshPreview(result.geometry,wireframe());
+                }catch(e){signal.throwIfAborted();if(ids.length===1)throw e;failures.push(`${id}: ${(e as Error).message}`);}
+                done++;tileProgress(done,ids.length,'Transport processed');
+            }
+            await writeExport(await directory.getDirectoryHandle('transports',{create:true}),'transport-job.json',JSON.stringify({product,worldBuild:buildInfo,sourceBuild:viewer.bakeTransportInventory()?.sourceBuild,librarySelection:viewer.bakeTransportInventory()?.librarySelection,models:ids,completed:done-failures.length,failures},null,2));
+            status.textContent=`${done-failures.length} transport meshes saved in ${directory.name}/transports/. ${failures.length?`${failures.length} failed; see transport-job.json.`:'Model-local export complete.'}`;
+        });
+    });
 	el('mesh-cancel').addEventListener('click', () => {
 		controller?.abort();
 		status.textContent = 'Cancelling. An in-progress storage read must finish; the bake worker stops immediately.';
@@ -397,7 +460,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 			signal.throwIfAborted();
 			if (!p) throw new Error('Move over a map first.');
 			const dir = resume ? root : await root.getDirectoryHandle(`ExplorerMesh-${Date.now()}`, { create: true });
-			const concurrency = Math.min(4, Number(bakeWorkers.value));
+			const concurrency = Math.max(1,Math.min(8, Number(bakeWorkers.value)));
 			let knownHeavy = new Set<string>();
 			if (resume) {
 				try { knownHeavy = priorMemoryFailures(JSON.parse(await (await (await dir.getFileHandle('job.json')).getFile()).text()), buildInfo); }
@@ -405,7 +468,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 			}
 			wholeMapVisible = true; if (!resume) viewer.clearMeshPreview();
 			const started = performance.now(), persist = serialLane();
-			const report = { concurrency, elapsedMs: 0, sourceMs: 0, bakeMs: 0, exportMs: 0, format: 'map-explorer-mappster', product, sourceBuild: buildInfo, state: 'running', completed: 0, written: 0, reused: 0, attempted: 0, total: 0, failedTiles: 0, reachability: [] as { mapId: number; state: string; partial?: boolean }[], memoryRetries: [] as { tile: MeshTile; originalError: string; recovered: boolean }[], failures: [] as string[] };
+			const report = { concurrency, preferredBackend:bakeBackend.value, elapsedMs: 0, sourceMs: 0, bakeMs: 0, exportMs: 0, format: 'map-explorer-mappster', product, sourceBuild: buildInfo, state: 'running', completed: 0, written: 0, reused: 0, attempted: 0, total: 0, failedTiles: 0, reachability: [] as { mapId: number; state: string; partial?: boolean }[], memoryRetries: [] as { tile: MeshTile; originalError: string; recovered: boolean }[], failures: [] as string[] };
 			const write = (name: string, data: Uint8Array | string) => writeExport(dir, name, data);
 			await authoring!.flush();await authoring!.saveTo(dir);
 			const showBatchProgress = (detail: string) => {
@@ -448,7 +511,15 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 							if (!recovering && !nativeFirst && /OutOfMemory|exit\(1\)/i.test(message)) retry.push({ tile, error: message });
 							report.attempted++; report.failedTiles++;
 							showBatchProgress(`${report.completed} ready, ${report.failedTiles} failed`);
-							await persist(() => write('job.json', JSON.stringify(report, null, 2))); return;
+							await persist(async()=>{
+                                const captured=(e as Error&{bakeInput?:Uint8Array}).bakeInput;
+                                if(captured){
+                                    const prefix=`failed-${tile.mapId}-${tile.x}-${tile.y}`;
+                                    await write(prefix+'.input',captured);
+                                    await write(prefix+'.json',JSON.stringify({tile,product,sourceBuild:buildInfo,error:message},null,2));
+                                }
+                                await write('job.json',JSON.stringify(report,null,2));
+                            }); return;
 						}
 						// Never race shared mmap, completion markers or job.json writes.
 						await persist(async () => {
@@ -482,7 +553,7 @@ export function setUpMesh(viewer: Viewer, storage: AsyncStorageApi, product: str
 					if (autoAnalyze.checked) {
 						try {
 							discovering('Analysing available tiles for map ' + map.id + (report.failedTiles !== failuresBeforeMap ? ' (PARTIAL: failed tiles missing)' : ''));
-							const result = await inspectExport(dir, map.id, true, signal, map.tiles.map(tileName), true);
+							const result = await inspectExport(dir, map.id, true, signal, await expectedNames(dir,map.tiles), true);
 							report.reachability.push({ mapId: map.id, state: 'complete', partial: result.partial });
 						} catch (e) { signal.throwIfAborted(); report.reachability.push({ mapId: map.id, state: 'failed' }); report.failures.push('Map ' + map.id + ' reachability: ' + (e as Error).message); }
 					} else report.reachability.push({ mapId: map.id, state: 'disabled' });

@@ -1,0 +1,108 @@
+{
+  "scope": "Released wowf discovery and installed transport-library source selection; live rendered count not yet verified",
+  "testsPassed": 134,
+  "checks": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "test"
+      ],
+      "exit": 0,
+      "logSha256": "54730d42ac671e554a1fcb9548b4cbee07ca4d074804d55fdd778c6f7000a207"
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "logSha256": "62d98b7e4ba7d32441c35b0567750809e7ee21b8ab3417ebfb98233dee3c9035"
+    },
+    {
+      "command": "Package integrity and current app verification",
+      "exit": 0
+    }
+  ],
+  "nativeProxy": {
+    "executableSha256": "bc855ab6fc04dda5bdb66c81f7ef1553f2f8f8ebbb2c1a40a8ee78769395a950",
+    "results": [
+      {
+        "path": "/__cdn/us.version.battle.net/wowf/versions",
+        "status": 200,
+        "bytes": 752,
+        "sha256": "48f6f14813cf502f8bb121e66d3f04bfd22ab5e5b80ee11c112937f8b5c90261"
+      },
+      {
+        "path": "/__cdn/example.com/anything",
+        "status": 400,
+        "body": "Invalid CDN host"
+      }
+    ],
+    "exit": 0
+  },
+  "tools": [
+    {
+      "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+      "sha256": "4b8c3912806b3c1591ba3cb403bff77ad309c3fe5756f87c20b7a6f8f0174262"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "bc855ab6fc04dda5bdb66c81f7ef1553f2f8f8ebbb2c1a40a8ee78769395a950"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "daa84c14373d7796547ddf3c94fe9c9bf75c9c1ebc234b4c5fef81023155ebc2"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\transport-library.ts",
+      "sha256": "37d2235ce7e5f9d11659e57e3b5d03899f75160ee4c99268a89f99a2f8c7447a"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\worker\\storage.worker.ts",
+      "sha256": "cbc1c7f15efb5f8a61badc276eca2295ca3a175992b9f128a3d5be08cbe77af4"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\worker\\protocol.ts",
+      "sha256": "9da41c2b0bd0595bf3b36a317e5b2f70271cbd16bc0a1e42c7829316f09b7fe8"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\viewer.ts",
+      "sha256": "c839366183ad6e11c0ce141e92d0c3d686d0974fff54af6bddeaa3a1c4235593"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\session.ts",
+      "sha256": "1aa8f2753924b8d50643f450c12a03f5384f57755e35cd8dbf8591fe1c1feb06"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\main.ts",
+      "sha256": "e0ddbc159bf4becbcae7aca412197675f8de392e7be976bc5574b36399a474d1"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\transport-catalog.ts",
+      "sha256": "0d358fd193d47bb149ace9680a038cc0580e15f4b0b67d6f8a630631d7e8360e"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\menu.ts",
+      "sha256": "279e4a8b9fe9d6a07d1e8a17bb59c1b5981d4bfc62cab4ed0197a432ebb11fd4"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tests\\transport-library.test.ts",
+      "sha256": "d7147e3a29f5bed10291858ba9cf369c2fcf2950c38f6871cd4351cf07f09fd7"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\docs\\diagnostics\\forever-product-2026-10-29.json",
+      "sha256": "974ea7abe05a7d2f51dd2e513b67a02e944c9a289f86679f756797d05696830c"
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "92a630b617ef698b33127b9d47d592eed83eb894f729854ab7076205a18774bc"
+    }
+  ]
+}

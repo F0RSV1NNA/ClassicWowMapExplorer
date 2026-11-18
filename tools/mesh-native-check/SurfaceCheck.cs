@@ -84,7 +84,11 @@ static class SurfaceCheck
         var b=query.FindNearestPoly(end,extent,filter,out long last,out var to,out _);
         if(a.Failed()||b.Failed()||first==0||last==0)throw new Exception("Route endpoint missing from query tree");
         long[] path=new long[8192];var status=query.FindPath(first,last,from,to,filter,path,out int count,path.Length);
-        if(status.Failed()||count==0||path[count-1]!=last)throw new Exception($"Incomplete Abbey route: {status}, polygons={count}");
+        if(status.Failed()||count==0||path[count-1]!=last){
+            var closest=from;if(count>0)query.ClosestPointOnPoly(path[count-1],to,out closest,out _);
+            Console.WriteLine(JsonSerializer.Serialize(new{status="partial",polygons=count,start=new[]{from.Z,from.X,from.Y},end=new[]{to.Z,to.X,to.Y},reached=new[]{closest.Z,closest.X,closest.Y}}));
+            throw new Exception($"Incomplete route: {status}, polygons={count}");
+        }
         Console.WriteLine(JsonSerializer.Serialize(new {status="complete",polygons=count,start=new[]{from.Z,from.X,from.Y},end=new[]{to.Z,to.X,to.Y}}));
     }
     public static void Components(string file,string output)
@@ -117,7 +121,7 @@ static class SurfaceCheck
 
     public static void Refit(string input,string archive,string output)
     {
-        var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits))typeof(MeshEngine).GetMethod("PrepareRaw",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(input),true,false])!;
+        var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits,bool WholeModel))typeof(MeshEngine).GetMethod("PrepareRaw",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(input),true,false])!;
         using var zip=System.IO.Compression.ZipFile.OpenRead(archive);
         var tile=zip.Entries.Single(e=>e.Name.EndsWith(".mmtile"));
         using var bytes=new MemoryStream();using(var stream=tile.Open())stream.CopyTo(bytes);bytes.Position=20;
@@ -144,7 +148,7 @@ static class SurfaceCheck
         float x=float.Parse(args[3],System.Globalization.CultureInfo.InvariantCulture), y=float.Parse(args[4],System.Globalization.CultureInfo.InvariantCulture), z=float.Parse(args[5],System.Globalization.CultureInfo.InvariantCulture);
         float radius=args.Length>7?float.Parse(args[7],System.Globalization.CultureInfo.InvariantCulture):35;
         bool Near(Tri t) => MathF.Min(t.A.X,MathF.Min(t.B.X,t.C.X))<=x+radius && MathF.Max(t.A.X,MathF.Max(t.B.X,t.C.X))>=x-radius && MathF.Min(t.A.Y,MathF.Min(t.B.Y,t.C.Y))<=y+radius && MathF.Max(t.A.Y,MathF.Max(t.B.Y,t.C.Y))>=y-radius;
-        var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits))typeof(MeshEngine).GetMethod("PrepareRaw",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
+        var prepared=((Extractor.Soup Soup,RoadMask Roads,int Map,int X,int Y,MapEdits.Map Edits,bool WholeModel))typeof(MeshEngine).GetMethod("PrepareRaw",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,[File.ReadAllBytes(args[1]),true,false])!;
         var source=new List<Tri>();
         for(int i=0;i<prepared.Soup.Indices.Count;i+=3) {
             var t=new Tri(prepared.Soup.Verts[prepared.Soup.Indices[i]],prepared.Soup.Verts[prepared.Soup.Indices[i+1]],prepared.Soup.Verts[prepared.Soup.Indices[i+2]],prepared.Soup.TriKind[i/3]);

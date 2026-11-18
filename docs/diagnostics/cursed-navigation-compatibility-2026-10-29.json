@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-29",
+  "scope": "Offline public navigator only; no resident or driver inspection/build",
+  "consumerTests": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\build\\bin\\tests\\Release\\nav_mesh_streaming_tests.exe",
+        "--dataset",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\northshire-native"
+      ],
+      "executableSha256": "715cd7a9aa622caa440b22ee57b9422d04752980f77fb68f7a1a41316aa6cf66",
+      "exit": 1,
+      "stdout": "  naming: row/col are zero-padded to 2 digits\n  loaded 1 tile(s); mesh holds 1; \n  snapped (-8533, 0) -> (-8582.7, -45.6, 129.0)\n  goal probe (-8522.7, 14.4, 129.0) -> snapped (-8563.7, -7.7, 164.2)\n  find_path(snapped goal) -> ok, 3 points, 3 polygons, start_proj 0.00, goal_proj 0.00\n  path: 3 points over 3 polygons, reached=no\n  clearance: 0.00 yd, normal (-nan(ind), -nan(ind), -nan(ind)), |n|=-nan(ind)\nFAIL: the normal is a unit vector\n  after moves: mesh holds 1 tiles, heap 9280256 bytes (was 9280256), evictions 0, peak 9280256\nFAILED: 1 check(s)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\build\\bin\\tests\\Release\\nav_mesh_streaming_tests.exe",
+        "--dataset",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\goldshire-native"
+      ],
+      "executableSha256": "715cd7a9aa622caa440b22ee57b9422d04752980f77fb68f7a1a41316aa6cf66",
+      "exit": 1,
+      "stdout": "  naming: row/col are zero-padded to 2 digits\n  loaded 1 tile(s); mesh holds 1; \n  snapped (-9067, 533) -> (-9082.4, 525.9, 62.2)\n  goal probe (-9022.4, 585.9, 62.2) -> snapped (-9066.7, 533.3, 69.4)\n  find_path(snapped goal) -> ok, 1 points, 1 polygons, start_proj 0.00, goal_proj 0.00\nFAIL: the path has at least two points\n  path: 1 points over 1 polygons, reached=no\n  clearance: 0.00 yd, normal (-nan(ind), -nan(ind), -nan(ind)), |n|=-nan(ind)\nFAIL: the normal is a unit vector\n  after moves: mesh holds 1 tiles, heap 10165456 bytes (was 10165456), evictions 0, peak 10165456\nFAILED: 2 check(s)\n",
+      "stderr": ""
+    }
+  ],
+  "focusedTests": [
+    {
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\build\\bin\\tests\\Release\\nav_road_tests.exe"
+      ],
+      "executableSha256": "418929b3dba9d8fc51d7cfb6127bc00588337067b59a7bc9b0e9d9827c0461ff",
+      "exit": 0,
+      "stdout": "wall search cost: edge 58.00 -> 222.47, internal portals 58.00 -> 58.00\nroads: ordinary 30 preferred 31 center moves 29\nroad middle error sum 38.000 -> 0.000, samples 19\nroad flare peak center error 0.000 yd\nwide road peak center error 0.000 yd\nwavy road width 14.0: midpoint RMS 0.1888 -> band 0.0952 yd\nwavy road width 3.0: midpoint RMS 0.1888 -> band 0.1888 yd\njunction blocked 0: center distance 1.699 yd, targets 7\n  landmark 49.85 49.97; surface/angle/leg rejections 0/0/0\njunction blocked 1: center distance 11.449 yd, targets 0\n  landmark 0.00 0.00; surface/angle/leg rejections 0/0/0\nPASS: semantic road lanes, junction crossings, liquid and per-route exclusions\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\build\\obj\\cmake\\Release\\nav_liquid_tests.exe"
+      ],
+      "executableSha256": "aff536ec098664e892cf26de036cb3f86f222698227adfbc0f432f82b2ff19dd",
+      "exit": 0,
+      "stdout": "PASS: liquid sparse format, stored cell size, boundaries and corrupt data; 0 actual tiles\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\build\\obj\\cmake\\Release\\nav_liquid_tests.exe",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\northshire-native"
+      ],
+      "executableSha256": "aff536ec098664e892cf26de036cb3f86f222698227adfbc0f432f82b2ff19dd",
+      "exit": 0,
+      "stdout": "PASS: liquid sparse format, stored cell size, boundaries and corrupt data; 1 actual tiles\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\Cursed\\Code\\build\\obj\\cmake\\Release\\nav_liquid_tests.exe",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\goldshire-native"
+      ],
+      "executableSha256": "aff536ec098664e892cf26de036cb3f86f222698227adfbc0f432f82b2ff19dd",
+      "exit": 0,
+      "stdout": "PASS: liquid sparse format, stored cell size, boundaries and corrupt data; 1 actual tiles\n",
+      "stderr": ""
+    }
+  ],
+  "datasets": [
+    {
+      "name": "northshire",
+      "files": [
+        {
+          "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\northshire-native\\0000.mmap",
+          "sha256": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "bytes": 40
+        },
+        {
+          "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\northshire-native\\0000_48_32.mliq",
+          "sha256": "c9251df53c3c13f7b4bd945c9e9fb26a7a9c7ce15fc6d060c268be0cd0882ac9",
+          "bytes": 143744
+        },
+        {
+          "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\northshire-native\\0000_48_32.mmtile",
+          "sha256": "eb908a1d1a9b96b654b29a64eed46f022bb9b89fe24f9965428fcb4997edb799",
+          "bytes": 6079208
+        }
+      ]
+    },
+    {
+      "name": "goldshire",
+      "files": [
+        {
+          "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\goldshire-native\\0000.mmap",
+          "sha256": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+          "bytes": 40
+        },
+        {
+          "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\goldshire-native\\0000_49_31.mliq",
+          "sha256": "d10c6192b1c01e492f58c202791bcb5baa2a35f0c749f247ad5c78caed67d760",
+          "bytes": 123904
+        },
+        {
+          "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\oct29-stairs\\goldshire-native\\0000_49_31.mmtile",
+          "sha256": "ddb26c4e9732a52defb6b71e2126cb9e082ce3ea6d6e516efc07fa0d9dfdb5e8",
+          "bytes": 6964420
+        }
+      ]
+    }
+  ]
+}

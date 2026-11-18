@@ -8,10 +8,10 @@ import { writeExport } from './export';
 
 export function setUpAuthoring(viewer:Viewer,storage:AsyncStorageApi,product:string,options:{busy:()=>boolean;directory:()=>FileSystemDirectoryHandle|null;changed:()=>void}) {
 	const root=document.getElementById('mesh-authoring')!;
-	root.innerHTML=`<div class="mesh-paint-toolbar"><button id="mesh-edit-undo" title="Ctrl+Z">Undo</button><button id="mesh-edit-redo" title="Ctrl+Shift+Z">Redo</button><button id="mesh-edit-save" class="mesh-primary">Save Edits</button></div><div class="mesh-tool-grid"><button data-paint-tool="off">Camera</button><button data-paint-tool="0" title="Mark this area as road">Road</button><button data-paint-tool="1" title="Clear road preference">Remove road</button><button data-paint-tool="3" title="Keep mesh visible but prevent walking here">Block</button><button data-paint-tool="2" title="Remove mesh in this area">Cut</button><button data-paint-tool="4" title="Restore automatic classification">Restore</button></div><label style="display:none">Cursor tool<select id="mesh-tool"><option value="off">Off — navigate camera</option><option value="0">Paint road</option><option value="1">Remove road</option><option value="3">Mark non-navigable</option><option value="2">Cut mesh</option><option value="4">Restore automatic surface</option><option value="link">Create connection (A then B)</option><option value="inspect">Inspect road textures</option></select></label>
+	root.innerHTML=`<div class="mesh-paint-toolbar"><button id="mesh-edit-undo" title="Ctrl+Z">Undo</button><button id="mesh-edit-redo" title="Ctrl+Shift+Z">Redo</button><button id="mesh-edit-save" class="mesh-primary">Save Edits</button></div><div class="mesh-tool-grid"><button data-paint-tool="off">Camera</button><button data-paint-tool="0" title="Mark this area as road">Road</button><button data-paint-tool="1" title="Clear road preference">Remove road</button><button data-paint-tool="3" title="Keep mesh visible but prevent walking here">Block</button><button data-paint-tool="2" title="Remove mesh in this area">Cut</button><button data-paint-tool="5" title="Add walkable mesh on the painted collision surface, overriding automatic obstacle cuts">Add mesh</button><button data-paint-tool="4" title="Restore automatic classification">Restore</button></div><label style="display:none">Cursor tool<select id="mesh-tool"><option value="off">Off — navigate camera</option><option value="0">Paint road</option><option value="1">Remove road</option><option value="3">Mark non-navigable</option><option value="2">Cut mesh</option><option value="5">Add walkable mesh</option><option value="4">Restore automatic surface</option><option value="link">Create connection (A then B)</option><option value="inspect">Inspect road textures</option></select></label>
 	<p class="muted small">Drag to paint. Undo removes the last stroke. Escape returns to the camera.</p><label>Brush radius (yards)<input id="mesh-brush-radius" type="number" min="0.25" max="100" step="0.25" value="3"></label>
 	<details><summary>Brush options</summary><label>Vertical reach ± yards<input id="mesh-brush-band" type="number" min="0.1" max="10" step="0.1" value="0.75"></label>
-	<div class="muted small">Left-drag paints the selected surface. Escape disables the tool. Restore removes earlier paint/cuts at that spot on rebake. The vertical reach protects other floors.</div>
+	<div class="muted small">Left-drag paints the selected surface. Escape disables the tool. Restore removes earlier paint/cuts at that spot on rebake. The vertical reach protects other floors. Add mesh overrides automatic prop/trim cuts on painted floor collision. Save Edits, then Apply edits / Rebake.</div>
 	<label><input id="mesh-edit-marks" type="checkbox" checked> Show painted areas</label></details>
 	
 	<button id="mesh-edit-rebake" class="mesh-primary">Apply edits / Rebake changed tiles</button><div id="mesh-edit-status" class="muted small" role="status" style="white-space:pre-line"></div>
@@ -59,7 +59,7 @@ export function setUpAuthoring(viewer:Viewer,storage:AsyncStorageApi,product:str
 	function inspect(point:MeshPoint){
 		inspectionController?.abort();const controller=inspectionController=new AbortController();notice='Reading terrain texture layers…';refresh();
 		void (async()=>{
-			const at=meshPositionDetails(point),tile=(await storage.meshTiles(point.mapId)).find(t=>t.x===at.col&&t.y===at.row);
+			const at=meshPositionDetails(point),tile=(await storage.meshTiles(point.mapId)).find(t=>t.kind==='global-wmo'||(t.x===at.col&&t.y===at.row));
 			if(!tile)throw Error('No terrain tile at this point.');
 			const input=await storage.meshSource(tile);controller.signal.throwIfAborted();input.edits=editsForTile(history.project,tile);
 			inspection=await runRoadInspection(input,point.x,point.y,controller.signal);
@@ -92,10 +92,10 @@ export function setUpAuthoring(viewer:Viewer,storage:AsyncStorageApi,product:str
                 pending=null;tool.value='off';history.commit(next);changed('Connection created. Edit its label below, then Save changes.');loadConnection();return;
             }
             const radius=number('mesh-brush-radius',.25,100),band=number('mesh-brush-band',.1,10);
-            viewer.showMeshBrush(point,radius,tool.value==='2'?0xef633b:tool.value==='3'?0xf2338c:0xe9b949);
+            viewer.showMeshBrush(point,radius,tool.value==='2'?0xef633b:tool.value==='3'?0xf2338c:tool.value==='5'?0x5de0cc:0xe9b949);
             if(!point)return;
             if(phase==='down'&&tool.value==='inspect'){inspect(point);return;}
-			if(!['0','1','2','3','4'].includes(tool.value))return;
+			if(!['0','1','2','3','4','5'].includes(tool.value))return;
 			if(phase==='down'){finish();drawing=structuredClone(history.project);lastDab=null;}
 			if(!drawing)return;
 			if(lastDab&&lastDab.mapId!==point.mapId){finish();return;}
@@ -111,7 +111,7 @@ export function setUpAuthoring(viewer:Viewer,storage:AsyncStorageApi,product:str
 		const busy=options.busy()||!!inspectionController,id=currentMap(),signature=`${id}:${map().Roads.length}:${map().OffMesh.length}`;
 		if(busy&&!lastBusy){finish();viewer.setMeshEditing(null);}
 		lastBusy=busy;
-		viewer.setMeshEditing(!busy&&tool.value!=='off'?pointer:null,tool.value==='link'?'surface':'ground');
+		viewer.setMeshEditing(!busy&&tool.value!=='off'?pointer:null,'surface');
 		for(const node of root.querySelectorAll<HTMLInputElement|HTMLButtonElement|HTMLSelectElement>('input,button,select'))node.disabled=busy;
 		el<HTMLButtonElement>('mesh-edit-undo').disabled=busy||!history.canUndo;el<HTMLButtonElement>('mesh-edit-redo').disabled=busy||!history.canRedo;
         if(force||signature!==mapKey){

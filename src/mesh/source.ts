@@ -22,12 +22,16 @@ export class MeshSource {
 	async tiles(mapId: number): Promise<MeshTile[]> {
 		const wdt = await this.wdtId(mapId);
 		const map = await this.maps.wdt(wdt);
-		if (map.globalWmo) throw new Error('WMO-only map baking is not implemented yet.');
+		if (map.globalWmo) return [{ mapId, wdt, x: 32, y: 32, kind: 'global-wmo' }];
 		return map.tiles.flatMap((t) => t ? [{ mapId, wdt, x: t.x, y: t.y }] : []);
 	}
-	async extract(tile: MeshTile, preview = false): Promise<MeshInput> {
-		if (tile.wdt !== await this.wdtId(tile.mapId)) throw new Error('Mesh tile belongs to a different native map.');
-		const wdt = await this.maps.wdt(tile.wdt);
+	async transport(fdid: number): Promise<MeshInput> {
+		if (!Number.isSafeInteger(fdid) || fdid <= 0 || fdid > 2147483647) throw Error('Invalid transport model file ID.');
+		return this.extract({ mapId: fdid, wdt: 0, x: 32, y: 32 }, false, fdid);
+	}
+	async extract(tile: MeshTile, preview = false, transport?: number): Promise<MeshInput> {
+		if (!transport && tile.wdt !== await this.wdtId(tile.mapId)) throw new Error('Mesh tile belongs to a different native map.');
+		const wdt = transport ? { tiles: [], globalWmo: { fdid: transport, position: [0, 0, 0] as [number,number,number], rotation: [0, 0, 0] as [number,number,number], min: [0,0,0] as [number,number,number], max: [0,0,0] as [number,number,number], scale: 1, doodadSet: 0, nameSet: 0 } } : await this.maps.wdt(tile.wdt);
 		const centre = 32 * TILE_SIZE;
 		const origin: [number, number, number] = [centre - tile.x * TILE_SIZE, 0, centre - tile.y * TILE_SIZE];
 		const positions: number[] = [], indices: number[] = [], classes: number[] = [];
@@ -62,7 +66,7 @@ export class MeshSource {
 				if (ids.some((i) => i * 3 + 2 >= converted.length)) throw new Error('Collision index outside vertex array');
 				// Keep all triangles intersecting the padded source tile, including those whose vertices lie outside it.
 				const xs = ids.map((i) => converted[i * 3]), zs = ids.map((i) => converted[i * 3 + 2]);
-				if (Math.max(...xs) < -TILE_SIZE - padding || Math.min(...xs) > padding || Math.max(...zs) < -TILE_SIZE - padding || Math.min(...zs) > padding) continue;
+				if (!wdt.globalWmo && (Math.max(...xs) < -TILE_SIZE - padding || Math.min(...xs) > padding || Math.max(...zs) < -TILE_SIZE - padding || Math.min(...zs) > padding)) continue;
 				for (const i of ids) {
 					let mapped = remap.get(i);
 					if (mapped === undefined) {
@@ -120,7 +124,7 @@ export class MeshSource {
 				}
 			} catch (e) { throw new Error(`Collision ${p.kind} ${p.fdid}, placement ${p.uid}: ${(e as Error).message}`); }
 		};
-		if (!wdt.tiles[tile.y * 64 + tile.x]) throw new Error('Requested source tile does not exist');
+		if (!wdt.globalWmo && !wdt.tiles[tile.y * 64 + tile.x]) throw new Error('Requested source tile does not exist');
 		for (let y = Math.max(0, tile.y - 1); y <= Math.min(63, tile.y + 1); y++) {
 			for (let x = Math.max(0, tile.x - 1); x <= Math.min(63, tile.x + 1); x++) {
 				const source = wdt.tiles[y * 64 + x];
@@ -160,7 +164,7 @@ export class MeshSource {
 		}) : [];
 		return { tile, positions: new Float32Array(positions), indices: new Uint32Array(indices), classes: new Uint8Array(classes), origin, liquidLayers,
 			sourceBuild: { product: this.maps.storage.stats.product, version: this.maps.storage.stats.version, buildName: this.maps.storage.stats.buildName },
-			raw: { files: Array.from(files, ([id, bytes]) => ({ id, bytes: bytes.slice() })), tiles: rawTiles, liquidBanks },
+			raw: { wmo: wdt.globalWmo ? { fdid: wdt.globalWmo.fdid, position: wdt.globalWmo.position, rotation: wdt.globalWmo.rotation, scale: wdt.globalWmo.scale, doodadSet: wdt.globalWmo.doodadSet, transport: !!transport } : undefined, files: Array.from(files, ([id, bytes]) => ({ id, bytes: bytes.slice() })), tiles: rawTiles, liquidBanks },
 			liquids: { positions: new Float32Array(liquidPositions), indices: new Uint32Array(liquidIndices), kinds: new Uint8Array(liquidKinds) } };
 	}
 }

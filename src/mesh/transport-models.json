@@ -1,0 +1,574 @@
+[
+  {
+    "fdid": 116298,
+    "name": "blackcitadel/blackcitadel.wmo"
+  },
+  {
+    "fdid": 116300,
+    "name": "crashed_zeppelin/crashedtransport_horde_zeppelin.wmo"
+  },
+  {
+    "fdid": 116302,
+    "name": "crashed_zeppelin/crashedzeppelinpiece_01.wmo"
+  },
+  {
+    "fdid": 116304,
+    "name": "crashed_zeppelin/crashedzeppelinpiece_02.wmo"
+  },
+  {
+    "fdid": 116306,
+    "name": "icebreaker/transport_icebreaker_ship.wmo"
+  },
+  {
+    "fdid": 116308,
+    "name": "icebreaker/transport_icebreaker_ship_stationary.wmo"
+  },
+  {
+    "fdid": 116310,
+    "name": "passengership/transportship_a.wmo"
+  },
+  {
+    "fdid": 116315,
+    "name": "transport_horde_zeppelin/transport_horde_zeppelin.wmo"
+  },
+  {
+    "fdid": 116317,
+    "name": "transport_ship/transportship.wmo"
+  },
+  {
+    "fdid": 116322,
+    "name": "transport_ship_ne/transportship_ne.wmo"
+  },
+  {
+    "fdid": 116324,
+    "name": "transport_ship_ne/transportship_ne_stationary.wmo"
+  },
+  {
+    "fdid": 116326,
+    "name": "transport_ship_pirate/transport_pirate_ship.wmo"
+  },
+  {
+    "fdid": 116334,
+    "name": "transport_ship_ud/transport_ship_ud.wmo"
+  },
+  {
+    "fdid": 116342,
+    "name": "transport_zeppelin/transport_zeppelin.wmo"
+  },
+  {
+    "fdid": 116344,
+    "name": "tuskarrboat/transport_tuskarr_ship.wmo"
+  },
+  {
+    "fdid": 116348,
+    "name": "vrykulboats/transport_vrykul_large.wmo"
+  },
+  {
+    "fdid": 116350,
+    "name": "vrykulboats/transport_vrykul_medium.wmo"
+  },
+  {
+    "fdid": 116352,
+    "name": "vrykulboats/vrykul_gondola.wmo"
+  },
+  {
+    "fdid": 116354,
+    "name": "wmo_elevators/ancdrae_elevatorpiece_transport.wmo"
+  },
+  {
+    "fdid": 116356,
+    "name": "wmo_elevators/gundrak_trapdoor01_transport.wmo"
+  },
+  {
+    "fdid": 248325,
+    "name": "wmo_elevators/ul_ulduar_trapdoor_01_transport.wmo"
+  },
+  {
+    "fdid": 248327,
+    "name": "wmo_elevators/ul_ulduar_trapdoor_02_transport.wmo"
+  },
+  {
+    "fdid": 249064,
+    "name": "icebreaker/icebreaker_ship_transport.wmo"
+  },
+  {
+    "fdid": 249066,
+    "name": "undead/ship_ud_transport.wmo"
+  },
+  {
+    "fdid": 249074,
+    "name": "wmo_elevators/azjol_platform_top_01_transport.wmo"
+  },
+  {
+    "fdid": 249076,
+    "name": "wmo_elevators/gundrak_elevator_01_transport.wmo"
+  },
+  {
+    "fdid": 249078,
+    "name": "wmo_elevators/gundrak_trapdoor_02_transport.wmo"
+  },
+  {
+    "fdid": 249080,
+    "name": "wmo_elevators/nd_icebreaker_ship_bg_transport.wmo"
+  },
+  {
+    "fdid": 249082,
+    "name": "wmo_elevators/nd_ship_ud_bg_transport.wmo"
+  },
+  {
+    "fdid": 249090,
+    "name": "wmo_elevators/nexus_raid_floating_platform_model_transport.wmo"
+  },
+  {
+    "fdid": 249092,
+    "name": "wmo_elevators/org_arena_axe_pillar_transport.wmo"
+  },
+  {
+    "fdid": 249094,
+    "name": "wmo_elevators/org_arena_elevator_transport.wmo"
+  },
+  {
+    "fdid": 249096,
+    "name": "wmo_elevators/org_arena_ivory_pillar_transport.wmo"
+  },
+  {
+    "fdid": 249098,
+    "name": "wmo_elevators/org_arena_lightning_pillar_transport.wmo"
+  },
+  {
+    "fdid": 249100,
+    "name": "wmo_elevators/org_arena_pillar.wmo"
+  },
+  {
+    "fdid": 249102,
+    "name": "wmo_elevators/org_arena_pillar_transport.wmo"
+  },
+  {
+    "fdid": 249104,
+    "name": "wmo_elevators/org_arena_yellow_elevator_transport.wmo"
+  },
+  {
+    "fdid": 250245,
+    "name": "wmo_elevators/orc_fortress_elevator01_transport.wmo"
+  },
+  {
+    "fdid": 252255,
+    "name": "wmo_elevators/ulduarraid_gnomewing_transport_wmo.wmo"
+  },
+  {
+    "fdid": 306650,
+    "name": "transport_ship_ne/transportship_ne_sunk.wmo"
+  },
+  {
+    "fdid": 306669,
+    "name": "transport_ship_ne/transportship_ne_masta.wmo"
+  },
+  {
+    "fdid": 306671,
+    "name": "transport_ship_ne/transportship_ne_mastb.wmo"
+  },
+  {
+    "fdid": 307964,
+    "name": "wmo_elevators/ic_arthas_iceshard01_transport.wmo"
+  },
+  {
+    "fdid": 307966,
+    "name": "wmo_elevators/ic_arthas_iceshard02_transport.wmo"
+  },
+  {
+    "fdid": 307968,
+    "name": "wmo_elevators/ic_arthas_iceshard03_transport.wmo"
+  },
+  {
+    "fdid": 307970,
+    "name": "wmo_elevators/ic_arthas_iceshard04_transport.wmo"
+  },
+  {
+    "fdid": 307972,
+    "name": "wmo_elevators/ic_arthas_iceshard05_transport.wmo"
+  },
+  {
+    "fdid": 307974,
+    "name": "wmo_elevators/ic_arthas_iceshard06_transport.wmo"
+  },
+  {
+    "fdid": 307976,
+    "name": "wmo_elevators/ic_arthas_iceshard07_transport.wmo"
+  },
+  {
+    "fdid": 308261,
+    "name": "icebreaker/transport_icebreaker_ship_stationary_docks.wmo"
+  },
+  {
+    "fdid": 310043,
+    "name": "vrykulboats/transport_vrykul_largeless.wmo"
+  },
+  {
+    "fdid": 311978,
+    "name": "wmo_elevators/nd_argentcrusadecoliseum_trapdoor_01_transport.wmo"
+  },
+  {
+    "fdid": 345851,
+    "name": "wmo_elevators/icecrown_grate_01_transport.wmo"
+  },
+  {
+    "fdid": 351020,
+    "name": "transport_ship_ud/transport_ship_ud_sunkenship.wmo"
+  },
+  {
+    "fdid": 360925,
+    "name": "wmo_elevators/uldum_elevator_01_transport_wmo.wmo"
+  },
+  {
+    "fdid": 429131,
+    "name": "transport_horde_zeppelin/transport_horde_zeppelin02.wmo"
+  },
+  {
+    "fdid": 438162,
+    "name": "wmo_elevators/grimbatolraid_trapdoor_transport.wmo"
+  },
+  {
+    "fdid": 454429,
+    "name": "wmo_elevators/abyssal_jellyfish_elevator_transport.wmo"
+  },
+  {
+    "fdid": 454431,
+    "name": "wmo_elevators/blackwingv2_elevator_onyxia_transport.wmo"
+  },
+  {
+    "fdid": 457369,
+    "name": "transport_ship_pirate/transport_pirate_ship02_alliance.wmo"
+  },
+  {
+    "fdid": 457380,
+    "name": "transport_ship_pirate/transport_pirate_ship02_horde.wmo"
+  },
+  {
+    "fdid": 457479,
+    "name": "transport_ship_pirate/transport_pirate_ship02.wmo"
+  },
+  {
+    "fdid": 466412,
+    "name": "wmo_elevators/uldum_elevator_01_transport.wmo"
+  },
+  {
+    "fdid": 468566,
+    "name": "wmo_elevators/blackwingv2_elevator01.wmo"
+  },
+  {
+    "fdid": 574565,
+    "name": "transport_ship_ud/transport_ship_ud_capsized.wmo"
+  },
+  {
+    "fdid": 646060,
+    "name": "wmo_elevators/mogu_titan_platform_transport.wmo"
+  },
+  {
+    "fdid": 651563,
+    "name": "wmo_elevators/veb_greatwall_elevator_01_transport.wmo"
+  },
+  {
+    "fdid": 652526,
+    "name": "alliance_battleship/transport_alliance_battleship.wmo"
+  },
+  {
+    "fdid": 654840,
+    "name": "wmo_elevators/pa_secretsteps_transport.wmo"
+  },
+  {
+    "fdid": 774028,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken.wmo"
+  },
+  {
+    "fdid": 838544,
+    "name": "zandalari/zandalari_boat_transport.wmo"
+  },
+  {
+    "fdid": 840392,
+    "name": "wmo_elevators/saurok_trapdoor_iris_transport.wmo"
+  },
+  {
+    "fdid": 840395,
+    "name": "wmo_elevators/thunderking_beholdergrate_large_01_transport.wmo"
+  },
+  {
+    "fdid": 840398,
+    "name": "wmo_elevators/thunderking_beholdergrate_small_01_transport.wmo"
+  },
+  {
+    "fdid": 841871,
+    "name": "wmo_elevators/merrygoround_transport_transport.wmo"
+  },
+  {
+    "fdid": 875114,
+    "name": "wmo_elevators/orgrimmar_raid_elevator_transport.wmo"
+  },
+  {
+    "fdid": 937066,
+    "name": "wmo_elevators/6dr_draenei_platform_elevator_object_transport.wmo"
+  },
+  {
+    "fdid": 983585,
+    "name": "wmo_elevators/6du_bkfoundry_elevatora_transport.wmo"
+  },
+  {
+    "fdid": 983588,
+    "name": "wmo_elevators/6du_bkfoundry_elevatorb_transport.wmo"
+  },
+  {
+    "fdid": 1053718,
+    "name": "wmo_elevators/6du_highmaulraid_grate01_transport.wmo"
+  },
+  {
+    "fdid": 1053804,
+    "name": "wmo_elevators/6du_highmaulraid_arena_elevator_transport.wmo"
+  },
+  {
+    "fdid": 1240394,
+    "name": "wmo_elevators/7hm_highmountain_elevator_transport.wmo"
+  },
+  {
+    "fdid": 1326805,
+    "name": "wmo_elevators/7du_violethold_trapdoor_transport.wmo"
+  },
+  {
+    "fdid": 1326809,
+    "name": "wmo_elevators/7af_paladin_secretdoor01_transport.wmo"
+  },
+  {
+    "fdid": 1327174,
+    "name": "wmo_elevators/7du_suramarraid_trapdoor_01_transport.wmo"
+  },
+  {
+    "fdid": 1394967,
+    "name": "wmo_elevators/7wd_warden_bridge01_transport.wmo"
+  },
+  {
+    "fdid": 1394969,
+    "name": "wmo_elevators/7wd_warden_bridge02_transport.wmo"
+  },
+  {
+    "fdid": 1497960,
+    "name": "transport_zeppelin/transport_zeppelin_000_lod1.wmo"
+  },
+  {
+    "fdid": 1497961,
+    "name": "transport_zeppelin/transport_zeppelin_000_lod2.wmo"
+  },
+  {
+    "fdid": 1497962,
+    "name": "transport_zeppelin/transport_zeppelin_001_lod1.wmo"
+  },
+  {
+    "fdid": 1497963,
+    "name": "transport_zeppelin/transport_zeppelin_001_lod2.wmo"
+  },
+  {
+    "fdid": 1562991,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails.wmo"
+  },
+  {
+    "fdid": 1562993,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_000_lod1.wmo"
+  },
+  {
+    "fdid": 1562994,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_000_lod2.wmo"
+  },
+  {
+    "fdid": 1562996,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_001_lod1.wmo"
+  },
+  {
+    "fdid": 1562997,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_001_lod2.wmo"
+  },
+  {
+    "fdid": 1562999,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_002_lod1.wmo"
+  },
+  {
+    "fdid": 1563000,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_002_lod2.wmo"
+  },
+  {
+    "fdid": 1563002,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_003_lod1.wmo"
+  },
+  {
+    "fdid": 1563003,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_003_lod2.wmo"
+  },
+  {
+    "fdid": 1563005,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_004_lod1.wmo"
+  },
+  {
+    "fdid": 1563006,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_004_lod2.wmo"
+  },
+  {
+    "fdid": 1563008,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_005_lod1.wmo"
+  },
+  {
+    "fdid": 1563009,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_005_lod2.wmo"
+  },
+  {
+    "fdid": 1563011,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_006_lod1.wmo"
+  },
+  {
+    "fdid": 1563012,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_006_lod2.wmo"
+  },
+  {
+    "fdid": 1563014,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_007_lod1.wmo"
+  },
+  {
+    "fdid": 1563015,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_007_lod2.wmo"
+  },
+  {
+    "fdid": 1563017,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_008_lod1.wmo"
+  },
+  {
+    "fdid": 1563018,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_008_lod2.wmo"
+  },
+  {
+    "fdid": 1563020,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_009_lod1.wmo"
+  },
+  {
+    "fdid": 1563021,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails_009_lod2.wmo"
+  },
+  {
+    "fdid": 1596921,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02.wmo"
+  },
+  {
+    "fdid": 1596925,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_000_lod1.wmo"
+  },
+  {
+    "fdid": 1596926,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_000_lod2.wmo"
+  },
+  {
+    "fdid": 1596928,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_001_lod1.wmo"
+  },
+  {
+    "fdid": 1596929,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_001_lod2.wmo"
+  },
+  {
+    "fdid": 1596931,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_002_lod1.wmo"
+  },
+  {
+    "fdid": 1596932,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_002_lod2.wmo"
+  },
+  {
+    "fdid": 1596934,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_003_lod1.wmo"
+  },
+  {
+    "fdid": 1596935,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_003_lod2.wmo"
+  },
+  {
+    "fdid": 1596937,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_004_lod1.wmo"
+  },
+  {
+    "fdid": 1596938,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_004_lod2.wmo"
+  },
+  {
+    "fdid": 1596940,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_005_lod1.wmo"
+  },
+  {
+    "fdid": 1596941,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_005_lod2.wmo"
+  },
+  {
+    "fdid": 1596943,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_006_lod1.wmo"
+  },
+  {
+    "fdid": 1596944,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_006_lod2.wmo"
+  },
+  {
+    "fdid": 1596946,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_007_lod1.wmo"
+  },
+  {
+    "fdid": 1596947,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_007_lod2.wmo"
+  },
+  {
+    "fdid": 1596949,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_008_lod1.wmo"
+  },
+  {
+    "fdid": 1596950,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_008_lod2.wmo"
+  },
+  {
+    "fdid": 1596952,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_009_lod1.wmo"
+  },
+  {
+    "fdid": 1596953,
+    "name": "alliance_battleship/transport_alliance_battleship_sunken_nosails02_009_lod2.wmo"
+  },
+  {
+    "fdid": 1716442,
+    "name": "wmo_elevators/7lg_legion_platform03_transport.wmo"
+  },
+  {
+    "fdid": 1719050,
+    "name": "wmo_elevators/7du_argusraid_darktitanenergybridge01_transport.wmo"
+  },
+  {
+    "fdid": 1934695,
+    "name": "wmo_elevators/8du_nazmirraid_elevator01_transport.wmo"
+  },
+  {
+    "fdid": 1970438,
+    "name": "wmo_elevators/8du_nazmirraid_elevator01_transport_000_lod1.wmo"
+  },
+  {
+    "fdid": 1970439,
+    "name": "wmo_elevators/8du_nazmirraid_elevator01_transport_000_lod2.wmo"
+  },
+  {
+    "fdid": 1980731,
+    "name": "wmo_elevators/8du_nazmirraid_elevator01_transport_001_lod1.wmo"
+  },
+  {
+    "fdid": 1980732,
+    "name": "wmo_elevators/8du_nazmirraid_elevator01_transport_001_lod2.wmo"
+  },
+  {
+    "fdid": 1990618,
+    "name": "wmo_elevators/8du_nazmirraid_zultrapdoor01_transport.wmo"
+  },
+  {
+    "fdid": 2187098,
+    "name": "zeppelin/transport_zeppelin.wmo"
+  },
+  {
+    "fdid": 2438938,
+    "name": "wmo_elevators/8du_zuldazarraid_elevator01_transport.wmo"
+  }
+]

@@ -6,6 +6,47 @@ using System.Reflection;
 
 internal static class AuditChecks
 {
+    internal static void SharedEdgeCapacity()
+    {
+        var left=new DotRecast.Detour.DtPoly(0,6){vertCount=4};
+        var right=new DotRecast.Detour.DtPoly(1,6){vertCount=4};
+        int[] li=[0,1,2,3],ri=[1,4,5,2];for(int i=0;i<4;i++){left.verts[i]=li[i];right.verts[i]=ri[i];}
+        left.neis[1]=2;right.neis[3]=1;left.flags=right.flags=NavBake.FlagGround;left.SetArea(NavBake.AreaGround);right.SetArea(NavBake.AreaGround);
+        var coarse=new Vector3[]{new(0,0,0),new(1,0,0),new(1,1,0),new(0,1,0),new(2,0,0),new(2,1,0)};
+        var detail=new List<float>();var tris=new List<int>();
+        void Add(Vector3 p){detail.AddRange([p.Y,p.Z,p.X]);}
+        var boundary=new List<int>();var dense=coarse.Take(4).ToList();
+        for(int edge=0;edge<4;edge++){
+            boundary.Add(edge);for(int i=1;i<63;i++){boundary.Add(dense.Count);var v=Vector3.Lerp(coarse[edge],coarse[(edge+1)%4],i/63f);dense.Add(v);Add(v);}
+        }
+        int center=dense.Count;var apex=new Vector3(.5f,.5f,.4f);dense.Add(apex);Add(apex);
+        for(int i=0;i<boundary.Count;i++)tris.AddRange([boundary[i],boundary[(i+1)%boundary.Count],center,1]);
+        int rightBase=detail.Count/3,rightTri=tris.Count/4;
+        Add(new(1,1.5f/63,.2f));Add(new(1,.5f/63,.2f));Add(new(1.5f,.5f,.4f));
+        int[] ring=[0,1,2,3,4,5];for(int i=0;i<ring.Length;i++)tris.AddRange([ring[i],ring[(i+1)%ring.Length],6,1]);
+        var data=new DotRecast.Detour.DtMeshData{header=new(){polyCount=2,vertCount=6,detailVertCount=detail.Count/3,detailTriCount=tris.Count/4},polys=[left,right],verts=coarse.SelectMany(v=>new[]{v.Y,v.Z,v.X}).ToArray(),detailVerts=detail.ToArray(),detailTris=tris.ToArray(),detailMeshes=[new(0,0,(byte)(dense.Count-4),(byte)boundary.Count),new(rightBase,rightTri,3,6)]};
+        var fit=new SourceSurfaceFit(new Extractor.Soup(),new NavBake.Settings(),null);
+        var method=typeof(SourceSurfaceFit).GetMethod("SynchronizeDetailEdges",BindingFlags.NonPublic|BindingFlags.Instance)!;
+        method.Invoke(fit,[data,false]);
+        for(int p=0;p<2;p++){
+            var poly=data.polys[p];var dm=data.detailMeshes[p];double area=0;
+            Vector3 Read(int id){var a=id<4?data.verts:data.detailVerts;int at=(id<4?poly.verts[id]:dm.vertBase+id-4)*3;return new(a[at+2],a[at],a[at+1]);}
+            for(int t=0;t<dm.triCount;t++){
+                int at=(dm.triBase+t)*4;int ia=data.detailTris[at],ib=data.detailTris[at+1],ic=data.detailTris[at+2];
+                if(Math.Max(ia,Math.Max(ib,ic))>=4+dm.vertCount)throw new Exception("Detail index outside repaired polygon");
+                var a=Read(ia);var b=Read(ib);var c=Read(ic);area+=Math.Abs(((double)b.X-a.X)*(c.Y-a.Y)-((double)b.Y-a.Y)*(c.X-a.X))*.5;
+            }
+            if(Math.Abs(area-1)>.000001)throw new Exception("Capacity repair lost/overlapped floor coverage: "+area);
+            foreach(float y in new[]{.5f/63,1.5f/63}){
+                bool found=false;for(int i=0;i<4+dm.vertCount;i++){var v=Read(i);if(Math.Abs(v.X-1)<.000001&&Math.Abs(v.Y-y)<.000001&&Math.Abs(v.Z-.2f)<.000001)found=true;}
+                if(!found)throw new Exception("Capacity repair discarded shared boundary profile");
+            }
+            if(poly.flags!=NavBake.FlagGround||poly.GetArea()!=NavBake.AreaGround||poly.vertCount!=4)throw new Exception("Capacity repair changed navigation policy/topology");
+        }
+        if(left.neis[1]!=2||right.neis[3]!=1)throw new Exception("Capacity repair broke adjacency");
+        Console.WriteLine($"PASS: byte-limit shared-edge repair retains both unit floors, boundary heights, flags and adjacency; dense detail {data.detailMeshes[0].vertCount} vertices / {data.detailMeshes[0].triCount} triangles");
+    }
+
     internal static void Authoring(string directory)
     {
         Directory.CreateDirectory(directory);
@@ -104,6 +145,35 @@ internal static class AuditChecks
         File.WriteAllText(Path.Combine(output,"preview.json"),System.Text.Json.JsonSerializer.Serialize(new {verts=result.DebugVerts,indices=result.DebugIndices,areas=result.DebugAreas},new System.Text.Json.JsonSerializerOptions{IncludeFields=true}));
         var check=NavWriter.LoadBack(output,0);if(check.Error.Length!=0)throw new Exception(check.Error);
         Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(new {result.PolyCount,result.TileCount,result.PlanarDetailVerticesRemoved,result.RaisedWmoCapsBlocked,result.IndoorCells,result.TrimCells,result.RailingCells,result.SwimBuildFellBack,result.FailMessage,check.Error}));
+    }
+
+    internal static void AddedMeshRules()
+    {
+        var settings=new NavBake.Settings();var soup=new Extractor.Soup();
+        void Plane(float height,byte kind){int n=soup.Verts.Count;soup.Verts.AddRange([new(-4,-4,height),new(4,-4,height),new(4,4,height),new(-4,4,height)]);soup.Indices.AddRange([n,n+1,n+2,n,n+2,n+3]);soup.TriKind.AddRange([kind,kind]);}
+        Plane(0,Extractor.Soup.KindTerrain);Plane(.5f,Extractor.Soup.KindDoodad);Plane(4,Extractor.Soup.KindWmo);soup.Seal();
+        var edits=new MapEdits.Map();edits.Roads.Add(new(){X=0,Y=0,Z=.5f,Radius=2,HeightBand=.2f,Kind=MapEdits.StrokeKind.AddMesh});
+        RoadMask Mask()=>RoadMask.Build(_=>null,[],edits,new());
+        var added=new AddedMesh(soup,Mask(),settings);
+        if(!added.TryFloor(0,0,.8f,out float floor)||MathF.Abs(floor-.5f)>.001f)throw new Exception("Add mesh did not select blocked doodad collision");
+        if(added.TryFloor(3,0,.8f,out _)||added.TryFloor(0,0,4.27f,out _))throw new Exception("Add mesh escaped its footprint/storey");
+        var fit=new SourceSurfaceFit(soup,settings,null,null,added);
+        if(MathF.Abs(fit.Height(new(0,0,.8f))-(.5f+settings.CellHeight))>.001f)throw new Exception("Added floor lost source height authority");
+        if(MathF.Abs(fit.Height(new(0,0,4.27f))-(4+settings.CellHeight))>.001f)throw new Exception("Add mesh changed the upper storey");
+        var air=new MapEdits.Map();air.Roads.Add(new(){X=0,Y=0,Z=2,Radius=2,HeightBand=.1f,Kind=MapEdits.StrokeKind.AddMesh});
+        if(new AddedMesh(soup,RoadMask.Build(_=>null,[],air,new()),settings).TryFloor(0,0,2.27f,out _))throw new Exception("Add mesh invented collision in empty air");
+        foreach(var kind in new[]{MapEdits.StrokeKind.Restore,MapEdits.StrokeKind.EraseMesh,MapEdits.StrokeKind.Block}){
+            var last=new MapEdits.Stroke{X=0,Y=0,Z=.5f,Radius=1,HeightBand=.2f,Kind=kind};edits.Roads.Add(last);
+            var overridden=new AddedMesh(soup,Mask(),settings);
+            if(overridden.TryFloor(0,0,.8f,out _)||!overridden.TryFloor(1.5f,0,.8f,out _))throw new Exception("Later strokes failed to override Add mesh locally");
+            edits.Roads.Remove(last);
+        }
+        var solid=new DotRecast.Recast.RcHeightfield(1,1,new(-.1f,0,-.1f),new(.1f,6,.1f),.2f,.2f,0);
+        solid.spans[0]=new(){smin=1,smax=3,area=NavBake.AreaDoodadSolid};added.RestoreRaster(solid,10);
+        if(solid.spans[0].area!=NavBake.AreaGround)throw new Exception("Added doodad top remained blocked before compact construction");
+        solid.spans[0].area=NavBake.AreaDoodadSolid;solid.spans[0].next=new(){smin=4,smax=5,area=NavBake.AreaNull};added.RestoreRaster(solid,10);
+        if(solid.spans[0].area!=NavBake.AreaDoodadSolid)throw new Exception("Added floor ignored standing headroom");
+        Console.WriteLine("Add mesh passed: blocked source surface restored, source height retained, height band/radius enforced, no air floor, later Restore/Cut/Block win, physical headroom retained.");
     }
 
     internal static void WmoCollisionFlags()
@@ -453,9 +523,9 @@ internal static class AuditChecks
             var builder=RcCompactSpanBuilder.NewBuilder(ref regionField.spans[i]);builder.reg=i==center?2:1;regionField.spans[i]=builder.Build();
         }
         var prune=typeof(NavBake).GetMethod("DropTinyRegions",BindingFlags.NonPublic|BindingFlags.Static)!;
-        if((int)prune.Invoke(null,[regionField,6])! != 0||regionField.areas[center]==0)throw new Exception("Connected tiny floor fragment was deleted");
+        if((int)prune.Invoke(null,[regionField,6,null])! != 0||regionField.areas[center]==0)throw new Exception("Connected tiny floor fragment was deleted");
         var isolated=RcCompactSpanBuilder.NewBuilder(ref regionField.spans[center]);isolated.con=0xffffff;regionField.spans[center]=isolated.Build();
-        if((int)prune.Invoke(null,[regionField,6])! != 1)throw new Exception("Isolated tiny noise no longer removed");
+        if((int)prune.Invoke(null,[regionField,6,null])! != 1)throw new Exception("Isolated tiny noise no longer removed");
         Console.WriteLine("Surface rules passed: caps/wall trim blocked; treads, terrain and narrow corridors preserved; interior WMO collision covered without lifting ground onto unrelated trim.");
     }
     internal static void Run()

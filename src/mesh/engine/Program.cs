@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
@@ -9,7 +9,7 @@ using MapExtract;
 public partial class MeshEngine
 {
     public static void Main() { }
-    [JSExport] public static string Version() => "explorer-recast-2026.3.16";
+    [JSExport] public static string Version() => "explorer-recast-2026.3.19";
 
     [JSExport]
     public static byte[] Bake(byte[] input)
@@ -39,11 +39,11 @@ public partial class MeshEngine
         input = null!;
         // Drop source-file copies and neighbour extraction temporaries before Recast.
         GC.Collect();
-        return BakeSoup(prepared.Soup, prepared.Map, prepared.X, prepared.Y, prepared.Roads,prepared.Edits);
+        return BakeSoup(prepared.Soup, prepared.Map, prepared.X, prepared.Y, prepared.Roads,prepared.Edits, prepared.WholeModel);
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    static (Extractor.Soup Soup, RoadMask Roads, int Map, int X, int Y, MapEdits.Map Edits) PrepareRaw(byte[] input, bool lowMemory, bool texturesOnly=false)
+    static (Extractor.Soup Soup, RoadMask Roads, int Map, int X, int Y, MapEdits.Map Edits, bool WholeModel) PrepareRaw(byte[] input, bool lowMemory, bool texturesOnly=false)
     {
         using var r = new BinaryReader(new MemoryStream(input));
         if (r.ReadUInt32() != 0x32524D45) throw new InvalidDataException("Unsupported raw source input");
@@ -75,12 +75,22 @@ public partial class MeshEngine
             // cache before advancing. Geometry, order and clipping remain identical.
             if (lowMemory) GC.Collect();
         }
+        if (edits.Source is {} wmo && !texturesOnly)
+        {
+            wmo.Validate();
+            if (tiles.Count != 0) throw new InvalidDataException("WMO input cannot contain ADT tiles");
+            if (wmo.transport && map != wmo.fdid) throw new InvalidDataException("Transport identity must be its model FDID");
+            var extractor = source ?? new Extractor(new CASCLib.CASCHandler(files), id => banks.GetValueOrDefault(id, LiquidClass.Unknown));
+            soup = extractor.BuildGlobalWmo(new WmoPlacement((uint)wmo.fdid,
+                new(wmo.position[0],wmo.position[1],wmo.position[2]), new(wmo.rotation[0],wmo.rotation[1],wmo.rotation[2]),
+                Vector3.Zero,Vector3.Zero,(ushort)wmo.doodadSet,wmo.scale));
+        }
         using (var resource = typeof(MeshEngine).Assembly.GetManifestResourceStream("engine.tilesets.csv")
             ?? typeof(MeshEngine).Assembly.GetManifestResourceStream("check.tilesets.csv")
             ?? throw new InvalidDataException("Missing bundled Mappster tileset names"))
         using (var names = new StreamReader(resource)) Names.LoadTilesets(names);
         var roads = RoadMask.Build(id => files.GetValueOrDefault(id), tiles, edits.Map,edits.Global);
-        return (soup, roads, map, x, y,edits.Map);
+        return (soup, roads, map, x, y,edits.Map, edits.Source != null);
     }
 
     [JSExport]
@@ -129,13 +139,13 @@ public partial class MeshEngine
             Console.Error.WriteLine($"{text}; managed heap {GC.GetTotalMemory(false) / 1048576} MB");
     }
 
-    static byte[] BakeSoup(Extractor.Soup soup, int map, int x, int y, RoadMask? roads = null,MapEdits.Map? edits=null)
+    static byte[] BakeSoup(Extractor.Soup soup, int map, int x, int y, RoadMask? roads = null,MapEdits.Map? edits=null, bool wholeModel=false)
     {
         var settings = new NavBake.Settings();
         if(edits!=null)settings.OffMeshLinks=[.. edits.OffMesh.Select(l=>new OffMeshLinks.Link(map,l.A,l.B,l.Radius,l.Bidirectional,l.Mode,l.UserId))];
         var clip = NavBake.Clip.ForAdt(y, x); // Explorer X is WoW-Y column; Mappster X is WoW-X row.
         Stage($"Recast bake: {soup.TriCount:N0} collision triangles");
-        var result = NavBake.Bake(soup, settings, clip: clip, roads: roads);
+        var result = NavBake.Bake(soup, settings, clip: wholeModel ? null : clip, roads: roads);
         if (!result.Ok || result.FailedTiles != 0)
             throw new InvalidOperationException($"{result.Message}; {result.FailMessage}; failed tiles: {result.FailedTiles}");
 
@@ -147,12 +157,15 @@ public partial class MeshEngine
             NavWriter.WriteAll(dir, map, result);
             if(edits?.OffMesh.Count>0)
             {
-                var owned=new MapEdits.Map{OffMesh=[..edits.OffMesh.Where(l=>l.Ax>=clip.MinX&&l.Ax<clip.MaxX&&l.Ay>=clip.MinY&&l.Ay<clip.MaxY)]};
+                var owned=new MapEdits.Map{OffMesh=[..edits.OffMesh.Where(l=>wholeModel || (l.Ax>=clip.MinX&&l.Ax<clip.MaxX&&l.Ay>=clip.MinY&&l.Ay<clip.MaxY))]};
                 if(owned.OffMesh.Count>0)File.WriteAllText(Path.Combine(dir,$"{map:0000}_{y:00}_{x:00}.links.json"),JsonSerializer.Serialize(owned,EngineJson.Default.Map));
             }
             Stage("Building liquid volume");
-            var liquid = LiquidMap.Build(soup, clip);
-            if (liquid != null) LiquidMap.Write(dir, map, y, x, liquid);
+            foreach(var tile in result.Tiles)
+            {
+                var liquid = LiquidMap.Build(soup, NavBake.Clip.ForAdt(tile.Row,tile.Col));
+                if (liquid != null) LiquidMap.Write(dir, map, tile.Row, tile.Col, liquid);
+            }
             Stage("Validating native tiles");
             var check = NavWriter.LoadBack(dir, map);
             if (check.Error.Length != 0 || check.Tiles != result.Tiles.Count || check.Polys != result.PolyCount)
@@ -264,6 +277,8 @@ public partial class MeshEngine
         w.WriteNumber("solidWallCells",r.SolidWallCells);
         w.WriteNumber("raisedWmoCapsBlocked", r.RaisedWmoCapsBlocked);
         w.WriteNumber("coveredWmoSpansRestored", r.CoveredWmoSpansRestored);
+        w.WriteNumber("addedMeshCells",r.AddedMeshCells);
+
         w.WriteNumber("swimPolygons", r.SwimPolys); w.WriteNumber("submergedPolygons", r.SubmergedPolys);
         w.WriteNumber("hazardPolygons", r.UnderHazardPolys); w.WriteNumber("waterlineCuts", r.WaterlineCuts);
         w.WriteNumber("coarserContours", r.CoarserContours); w.WriteNumber("monotoneTiles", r.MonotoneTiles);
@@ -286,6 +301,24 @@ internal partial class EngineJson : JsonSerializerContext { }
 
 public sealed class BakeEdits
 {
+    public WmoBakeSource? Source { get; set; }
     public MapEdits.Map Map { get; set; }=new();
     public MapEdits.Global Global { get; set; }=new();
+}
+
+public sealed class WmoBakeSource
+{
+    public int fdid { get; set; }
+    public float[] position { get; set; } = [];
+    public float[] rotation { get; set; } = [];
+    public float scale { get; set; } = 1;
+    public int doodadSet { get; set; }
+    public bool transport { get; set; }
+    public void Validate()
+    {
+        if(fdid<=0 || position.Length!=3 || rotation.Length!=3 || position.Concat(rotation).Any(v=>!float.IsFinite(v)) || !float.IsFinite(scale) || scale<=0 || doodadSet<0 || doodadSet>65535)
+            throw new InvalidDataException("Invalid WMO source placement");
+        if(transport && (position.Any(v=>v!=0)||rotation.Any(v=>v!=0)||scale!=1))
+            throw new InvalidDataException("Transport baking requires an unplaced model");
+    }
 }

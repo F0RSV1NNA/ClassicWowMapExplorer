@@ -38,9 +38,9 @@ internal static class CoverageAudit
             int x0=(int)MathF.Ceiling(MathF.Min(f.A.X,MathF.Min(f.B.X,f.C.X))/spacing),x1=(int)MathF.Floor(MathF.Max(f.A.X,MathF.Max(f.B.X,f.C.X))/spacing);
             int y0=(int)MathF.Ceiling(MathF.Min(f.A.Y,MathF.Min(f.B.Y,f.C.Y))/spacing),y1=(int)MathF.Floor(MathF.Max(f.A.Y,MathF.Max(f.B.Y,f.C.Y))/spacing);
             for(int ix=x0;ix<=x1;ix++)for(int iy=y0;iy<=y1;iy++){
-                float x=ix*spacing,y=iy*spacing,z=Height(f,x,y);if(!float.IsFinite(z)||z<bounds[4]||z>bounds[5]||!seen.Add((ix,iy,(int)MathF.Round(z*100))))continue;
+                float x=ix*spacing,y=iy*spacing;if(x<bounds[0]||y<bounds[1]||x>bounds[2]||y>bounds[3])continue;float z=Height(f,x,y);if(!float.IsFinite(z)||z<bounds[4]||z>bounds[5]||!seen.Add((ix,iy,(int)MathF.Round(z*100))))continue;
                 float eligible=source.Height(new(x,y,z+clearance));
-                if(!float.IsFinite(eligible)||MathF.Abs(eligible-z-clearance)>.03f||body.Hits(x,y,z)||body.HitsRejected(x,y,z))continue;
+                if(!float.IsFinite(eligible)||MathF.Abs(eligible-z-clearance)>.03f||body.Hits(x,y,z)||body.HitsRejected(x,y,z,source))continue;
                 checkedSamples++;float nav=float.NaN,gap=1.8f;
                 if(bins.TryGetValue((Bin(x),Bin(y)),out var candidates))foreach(var tri in candidates){float h=Height(tri,x,y),delta=MathF.Abs(h-z-clearance);if(delta<gap){nav=h;gap=delta;}}
                 string? state=null;if(!float.IsFinite(nav)){state="missing";missing++;}else if(nav<z-.015f){state="buried";buried++;}else if(nav>z+clearance+.35f){state="raised";raised++;}

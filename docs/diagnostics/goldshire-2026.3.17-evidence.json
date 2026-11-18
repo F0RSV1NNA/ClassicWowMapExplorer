@@ -1,0 +1,1073 @@
+{
+  "date": "2026-10-29",
+  "pipeline": "explorer-recast-2026.3.17",
+  "appVersion": "0.4.0",
+  "baseCommit": "8dcb836",
+  "scope": "Captured map 0 tile 31/49 and approved map 0 tile 32/48 regression controls. No claim of global perfection.",
+  "automaticFix": "Short ramp/flat contour coverage and direct ramp support with cell-clipped rejected-tread burial proof.",
+  "manualCorrections": "Goldshire-touchups.json is required for the two exterior prop-based entrances. Inn correction needs no paint.",
+  "builds": [
+    {
+      "command": "dotnet build tools/mesh-native-check/check.csproj -c Release --nologo -v quiet -clp:ErrorsOnly",
+      "exit": 0,
+      "warnings": 16
+    },
+    {
+      "command": "bun run build",
+      "exit": 0
+    },
+    {
+      "command": "bun tools/buildNativeMeshEngine.ts",
+      "exit": 0
+    },
+    {
+      "command": "bun test",
+      "exit": 0,
+      "passed": 87,
+      "failed": 0
+    },
+    {
+      "command": "bun run typecheck",
+      "exit": 0
+    }
+  ],
+  "focusedChecks": [
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "add-mesh"
+      ],
+      "exit": 0,
+      "stdout": "Add mesh passed: blocked source surface restored, source height retained, height band/radius enforced, no air floor, later Restore/Cut/Block win, physical headroom retained.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "mesh-quality"
+      ],
+      "exit": 0,
+      "stdout": "Mesh quality checks passed: low open rim retained, tabletop/bevel rejected, planar fan reduced, boundary samples/flags and real relief retained; unequal shared stair profiles synchronized.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "surface-rules"
+      ],
+      "exit": 0,
+      "stdout": "Surface rules passed: caps/wall trim blocked; treads, terrain and narrow corridors preserved; interior WMO collision covered without lifting ground onto unrelated trim.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "surface-heights"
+      ],
+      "exit": 0,
+      "stdout": "Removed ledges excluded; live steps preserved; source fitting follows flat/ramped/stacked floors without floor switching; small-triangle coverage preserved.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "collision-detail"
+      ],
+      "exit": 0,
+      "stdout": "Continuous step envelope passed: original Recast topology and coverage retained, legal step crossed without separate tread surfaces.\nBoundary weld passed: connected copies agree, disconnected floors and curved sampling remain intact.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "audit-guards"
+      ],
+      "exit": 0,
+      "stdout": "Audit guards: complete coverage, correct boundary flags, missing/duplicate/folded rejection, independent floor limits, corrupt collision rejection, and in-memory texture snapshot passed.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "wmo-collision"
+      ],
+      "exit": 0,
+      "stdout": "WMO extraction passed: hidden collision, detail+collision override, rendered physical faces and camera-only flags; hint/detail/nonphysical faces excluded.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "dotnet",
+        "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+        "authoring",
+        ".cache\\oct29-goldshire\\authoring-test"
+      ],
+      "exit": 0,
+      "stdout": "Authoring passed: JSON roundtrip, road paint, cut/restore, persistent blocks, protected upper floor, walking/action links, metadata, loadback, both reachability paths and blended texture inspection.\n",
+      "stderr": ""
+    }
+  ],
+  "bakes": {
+    "native": [
+      {
+        "command": [
+          "release/MapExplorer/mesh-engine/Explorer.Mesh.exe",
+          ".cache\\oct29-goldshire\\touchups.input",
+          ".cache\\oct29-goldshire\\goldshire-native.zip"
+        ],
+        "exit": 0,
+        "snapshotExit": 0
+      },
+      {
+        "command": [
+          "release/MapExplorer/mesh-engine/Explorer.Mesh.exe",
+          ".cache\\oct29-goldshire\\..\\oct29-current\\313-parity.input",
+          ".cache\\oct29-goldshire\\northshire-native.zip"
+        ],
+        "exit": 0,
+        "snapshotExit": 0
+      }
+    ],
+    "wasm": [
+      {
+        "command": [
+          "node",
+          "tools/checkMeshWasm.mjs",
+          ".cache\\oct29-goldshire\\touchups.input",
+          ".cache\\oct29-goldshire\\goldshire-wasm.zip"
+        ],
+        "exit": 0,
+        "snapshotExit": 0
+      },
+      {
+        "command": [
+          "node",
+          "tools/checkMeshWasm.mjs",
+          ".cache\\oct29-goldshire\\..\\oct29-current\\313-parity.input",
+          ".cache\\oct29-goldshire\\northshire-wasm.zip"
+        ],
+        "exit": 0,
+        "snapshotExit": 0
+      }
+    ]
+  },
+  "goldshireChecks": {
+    "native": [
+      {
+        "command": [
+          "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+          "tools/checkMeshRegression.py",
+          "--baseline",
+          ".cache\\oct29-goldshire\\baseline",
+          "--candidate",
+          ".cache\\oct29-goldshire\\goldshire-native",
+          "--fixture",
+          "docs/diagnostics/goldshire-2026.3.17-regression-points.json",
+          "--out",
+          ".cache\\oct29-goldshire\\goldshire-native-regression.json"
+        ],
+        "exit": 0,
+        "stdout": "{\"exit\": 0, \"pointsPassed\": 12, \"negativePointsPassed\": 1, \"flatSamples\": 303, \"changedFlatSamples\": 0, \"largestFlatDelta\": 0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-goldshire\\goldshire-native\\0000_49_31.mmtile",
+          "-9490",
+          "10",
+          "-9468",
+          "30"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-9490,10,-9468,30],\"checkedEdges\":166,\"gaps\":0,\"missing\":0,\"worst\":0.00017501744267889308,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-goldshire\\goldshire-native\\0000_49_31.mmtile",
+          "-9337",
+          "272",
+          "-9313",
+          "291"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-9337,272,-9313,291],\"checkedEdges\":250,\"gaps\":0,\"missing\":0,\"worst\":0.00011353633676947084,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-goldshire\\goldshire-native\\0000_49_31.mmtile",
+          "-9268",
+          "340",
+          "-9254",
+          "356"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-9268,340,-9254,356],\"checkedEdges\":82,\"gaps\":0,\"missing\":0,\"worst\":0.00022279183986029238,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-goldshire\\goldshire-native",
+          "-9477",
+          "24",
+          "56.34",
+          "-9478",
+          "17",
+          "59.62"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":7,\"start\":[-9477,24,56.60358],\"end\":[-9478,17,59.893204]}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-goldshire\\goldshire-native",
+          "-9334",
+          "276",
+          "68.48",
+          "-9316",
+          "287",
+          "70.54"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":24,\"start\":[-9334,276,68.67691],\"end\":[-9316,287,70.80561]}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-goldshire\\goldshire-native",
+          "-9260",
+          "345",
+          "75.7",
+          "-9264",
+          "352",
+          "76.693"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":9,\"start\":[-9260,345,75.96152],\"end\":[-9264,352,76.95942]}",
+        "stderr": ""
+      }
+    ],
+    "wasm": [
+      {
+        "command": [
+          "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+          "tools/checkMeshRegression.py",
+          "--baseline",
+          ".cache\\oct29-goldshire\\baseline",
+          "--candidate",
+          ".cache\\oct29-goldshire\\goldshire-wasm",
+          "--fixture",
+          "docs/diagnostics/goldshire-2026.3.17-regression-points.json",
+          "--out",
+          ".cache\\oct29-goldshire\\goldshire-wasm-regression.json"
+        ],
+        "exit": 0,
+        "stdout": "{\"exit\": 0, \"pointsPassed\": 12, \"negativePointsPassed\": 1, \"flatSamples\": 303, \"changedFlatSamples\": 0, \"largestFlatDelta\": 0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-goldshire\\goldshire-wasm\\0000_49_31.mmtile",
+          "-9490",
+          "10",
+          "-9468",
+          "30"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-9490,10,-9468,30],\"checkedEdges\":166,\"gaps\":0,\"missing\":0,\"worst\":0.00017501744267889308,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-goldshire\\goldshire-wasm\\0000_49_31.mmtile",
+          "-9337",
+          "272",
+          "-9313",
+          "291"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-9337,272,-9313,291],\"checkedEdges\":250,\"gaps\":0,\"missing\":0,\"worst\":0.00011353633676947084,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "surface-seams",
+          ".cache\\oct29-goldshire\\goldshire-wasm\\0000_49_31.mmtile",
+          "-9268",
+          "340",
+          "-9254",
+          "356"
+        ],
+        "exit": 0,
+        "stdout": "{\"bounds\":[-9268,340,-9254,356],\"checkedEdges\":82,\"gaps\":0,\"missing\":0,\"worst\":0.00022279183986029238,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-goldshire\\goldshire-wasm",
+          "-9477",
+          "24",
+          "56.34",
+          "-9478",
+          "17",
+          "59.62"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":7,\"start\":[-9477,24,56.60358],\"end\":[-9478,17,59.893204]}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-goldshire\\goldshire-wasm",
+          "-9334",
+          "276",
+          "68.48",
+          "-9316",
+          "287",
+          "70.54"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":24,\"start\":[-9334,276,68.67691],\"end\":[-9316,287,70.80561]}",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "dotnet",
+          "tools/mesh-native-check/bin/Release/net10.0/check.dll",
+          "walk-route",
+          ".cache\\oct29-goldshire\\goldshire-wasm",
+          "-9260",
+          "345",
+          "75.7",
+          "-9264",
+          "352",
+          "76.693"
+        ],
+        "exit": 0,
+        "stdout": "{\"status\":\"complete\",\"polygons\":9,\"start\":[-9260,345,75.96152],\"end\":[-9264,352,76.95942]}",
+        "stderr": ""
+      }
+    ]
+  },
+  "northshireChecks": {
+    "native": {
+      "side": "native",
+      "checkerSha256": "1f7e6b6104f8148203f8646108c9aaa77c262203f120621bc2224330730d9650",
+      "checks": [
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "snapshot-tile",
+            ".cache\\oct29-goldshire\\northshire-native\\0000_48_32.mmtile",
+            ".cache\\oct29-goldshire\\northshire-native\\surface-weld.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+            "tools/checkMeshRegression.py",
+            "--baseline",
+            ".cache/oct29-current/316-shipped-native",
+            "--candidate",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "--fixture",
+            "docs/diagnostics/abbey-cave-bridge-2026.3.16-regression-points.json",
+            "--out",
+            ".cache\\oct29-goldshire\\317-native-regression.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"exit\": 0, \"pointsPassed\": 62, \"negativePointsPassed\": 6, \"flatSamples\": 1536, \"changedFlatSamples\": 0, \"largestFlatDelta\": 0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-native\\0000_48_32.mmtile",
+            "-8940",
+            "-235",
+            "-8840",
+            "-115"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8940,-235,-8840,-115],\"checkedEdges\":3015,\"gaps\":0,\"missing\":0,\"worst\":0.006389092611485125,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-native\\0000_48_32.mmtile",
+            "-8670",
+            "-185",
+            "-8533",
+            "-110"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8670,-185,-8533,-110],\"checkedEdges\":1801,\"gaps\":0,\"missing\":0,\"worst\":0.002224029113619963,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-native\\0000_48_32.mmtile",
+            "-9005",
+            "-320",
+            "-8960",
+            "-275"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-9005,-320,-8960,-275],\"checkedEdges\":247,\"gaps\":0,\"missing\":0,\"worst\":0.004408544999108699,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8913.011",
+            "-136.033",
+            "80.7",
+            "-8898",
+            "-175",
+            "115.72"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":69,\"start\":[-8913.011,-136.033,80.87563],\"end\":[-8898,-175,115.98812]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8898",
+            "-175",
+            "115.72",
+            "-8897",
+            "-171",
+            "115.49"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8898,-175,115.98812],\"end\":[-8897,-171,115.75169]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8638",
+            "-145",
+            "86.5",
+            "-8614",
+            "-148",
+            "87"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":11,\"start\":[-8638,-145,86.58533],\"end\":[-8614,-148,87.42741]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8657",
+            "-126",
+            "90.3",
+            "-8653",
+            "-123",
+            "90"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":3,\"start\":[-8657,-126,90.801],\"end\":[-8652.969,-123.04674,89.724915]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8643",
+            "-133",
+            "86.8",
+            "-8639",
+            "-130",
+            "87.7"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":2,\"start\":[-8643,-133,87.33442],\"end\":[-8639.574,-131.14682,87.86869]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8594",
+            "-149",
+            "90.1",
+            "-8590",
+            "-144",
+            "89.5"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8592.9375,-148.88225,90.431114],\"end\":[-8590,-144,89.92828]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8589",
+            "-167",
+            "91.3",
+            "-8585",
+            "-165",
+            "90.6"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":10,\"start\":[-8589,-167,91.40134],\"end\":[-8585,-165,91.008286]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8546",
+            "-170",
+            "86",
+            "-8535",
+            "-174",
+            "86"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":7,\"start\":[-8545.377,-169.25252,86.3008],\"end\":[-8535.466,-175.20068,85.78579]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-native",
+            "-8995",
+            "-307",
+            "71.34",
+            "-8976",
+            "-289",
+            "71.32"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":15,\"start\":[-8995,-307,71.59023],\"end\":[-8976,-289,71.927315]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "mesh-quality"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Mesh quality checks passed: low open rim retained, tabletop/bevel rejected, planar fan reduced, boundary samples/flags and real relief retained; unequal shared stair profiles synchronized.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-rules"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Surface rules passed: caps/wall trim blocked; treads, terrain and narrow corridors preserved; interior WMO collision covered without lifting ground onto unrelated trim.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-heights"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Removed ledges excluded; live steps preserved; source fitting follows flat/ramped/stacked floors without floor switching; small-triangle coverage preserved.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "collision-detail"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "Continuous step envelope passed: original Recast topology and coverage retained, legal step crossed without separate tread surfaces.\nBoundary weld passed: connected copies agree, disconnected floors and curved sampling remain intact.",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-native\\0000_48_32.mmtile"
+          ],
+          "exit": 3762504530,
+          "expectedExit": 3762504530,
+          "stdout": "{\"bounds\":null,\"checkedEdges\":22672,\"gaps\":1,\"missing\":0,\"worst\":0.015881231623893655,\"verticalStepEdges\":2,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}",
+          "stderr": "gap p=15472 other=15499 point=<-8533.359, -190.10735, 84.1074> heights=84.14371475372543,84.12783352210154\nUnhandled exception. System.Exception: Navigation detail surfaces do not meet across linked polygon edges or internal tread edges\n   at SurfaceCheck.Seams(String file, Single[] bounds) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\SurfaceCheck.cs:line 74\n   at NativeCheck.Main(String[] args) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\Program.cs:line 42"
+        }
+      ],
+      "exit": 0
+    },
+    "wasm": {
+      "side": "wasm",
+      "checkerSha256": "1f7e6b6104f8148203f8646108c9aaa77c262203f120621bc2224330730d9650",
+      "checks": [
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "snapshot-tile",
+            ".cache\\oct29-goldshire\\northshire-wasm\\0000_48_32.mmtile",
+            ".cache\\oct29-goldshire\\northshire-wasm\\surface-weld.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "C:\\Users\\Ryan\\AppData\\Roaming\\Hex-Rays\\IDA Pro\\venv\\Scripts\\python.exe",
+            "tools/checkMeshRegression.py",
+            "--baseline",
+            ".cache/oct29-current/316-shipped-native",
+            "--candidate",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "--fixture",
+            "docs/diagnostics/abbey-cave-bridge-2026.3.16-regression-points.json",
+            "--out",
+            ".cache\\oct29-goldshire\\317-wasm-regression.json"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"exit\": 0, \"pointsPassed\": 62, \"negativePointsPassed\": 6, \"flatSamples\": 1536, \"changedFlatSamples\": 0, \"largestFlatDelta\": 0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-wasm\\0000_48_32.mmtile",
+            "-8940",
+            "-235",
+            "-8840",
+            "-115"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8940,-235,-8840,-115],\"checkedEdges\":3015,\"gaps\":0,\"missing\":0,\"worst\":0.006389092611485125,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0.007287971543732397}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-wasm\\0000_48_32.mmtile",
+            "-8670",
+            "-185",
+            "-8533",
+            "-110"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-8670,-185,-8533,-110],\"checkedEdges\":1800,\"gaps\":0,\"missing\":0,\"worst\":0.0022231449898271194,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "surface-seams",
+            ".cache\\oct29-goldshire\\northshire-wasm\\0000_48_32.mmtile",
+            "-9005",
+            "-320",
+            "-8960",
+            "-275"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"bounds\":[-9005,-320,-8960,-275],\"checkedEdges\":247,\"gaps\":0,\"missing\":0,\"worst\":0.004408544999108699,\"verticalStepEdges\":0,\"internalGaps\":0,\"worstInternal\":0}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8913.011",
+            "-136.033",
+            "80.7",
+            "-8898",
+            "-175",
+            "115.72"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":69,\"start\":[-8913.011,-136.033,80.87563],\"end\":[-8898,-175,115.98812]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8898",
+            "-175",
+            "115.72",
+            "-8897",
+            "-171",
+            "115.49"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8898,-175,115.98812],\"end\":[-8897,-171,115.7517]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8638",
+            "-145",
+            "86.5",
+            "-8614",
+            "-148",
+            "87"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":11,\"start\":[-8638,-145,86.58533],\"end\":[-8614,-148,87.42741]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8657",
+            "-126",
+            "90.3",
+            "-8653",
+            "-123",
+            "90"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":3,\"start\":[-8657,-126,90.801],\"end\":[-8652.969,-123.04674,89.724915]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8643",
+            "-133",
+            "86.8",
+            "-8639",
+            "-130",
+            "87.7"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":2,\"start\":[-8643,-133,87.33442],\"end\":[-8639.574,-131.14682,87.86869]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8594",
+            "-149",
+            "90.1",
+            "-8590",
+            "-144",
+            "89.5"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":4,\"start\":[-8592.9375,-148.88225,90.431114],\"end\":[-8590,-144,89.92828]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8589",
+            "-167",
+            "91.3",
+            "-8585",
+            "-165",
+            "90.6"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":10,\"start\":[-8589,-167,91.40134],\"end\":[-8585,-165,91.008286]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8546",
+            "-170",
+            "86",
+            "-8535",
+            "-174",
+            "86"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":7,\"start\":[-8545.377,-169.25252,86.3008],\"end\":[-8535.466,-175.20068,85.78579]}",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "dotnet",
+            "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+            "walk-route",
+            ".cache\\oct29-goldshire\\northshire-wasm",
+            "-8995",
+            "-307",
+            "71.34",
+            "-8976",
+            "-289",
+            "71.32"
+          ],
+          "exit": 0,
+          "expectedExit": 0,
+          "stdout": "{\"status\":\"complete\",\"polygons\":15,\"start\":[-8995,-307,71.59023],\"end\":[-8976,-289,71.927315]}",
+          "stderr": ""
+        }
+      ],
+      "exit": 0
+    }
+  },
+  "package": {
+    "exit": 0,
+    "pipeline": "explorer-recast-2026.3.17",
+    "appVersion": "0.4.0",
+    "files": {
+      "release\\MapExplorer\\MapExplorer.exe": {
+        "bytes": 123904,
+        "sha256": "0b5d25bb82356d9352f70ba69929deda13113980df8d855d926e64ebce9066e9"
+      },
+      "release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe": {
+        "bytes": 74640822,
+        "sha256": "560c114be61dd399172125e1946b366d301853dc87d9d7149e8ee192635709b8"
+      },
+      "release\\MapExplorer-portable.zip": {
+        "bytes": 213475597,
+        "sha256": "0778490c01c2aa445667c86ba16844884485ff1bfef342db2a7e1dc55867171c"
+      },
+      "release\\MapExplorer\\Goldshire-touchups.json": {
+        "bytes": 14018,
+        "sha256": "1d0542fc0ab9fef2816686c5eb0e3fdf458ca7b89bb5b5dd395b6b7b41a71c8e"
+      },
+      "tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll": {
+        "bytes": 1006592,
+        "sha256": "1f7e6b6104f8148203f8646108c9aaa77c262203f120621bc2224330730d9650"
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\WoW-Archives\\diagnostics\\0-31-49.input",
+      "bytes": 88464155,
+      "sha256": "9fc333afdf6c6737441db75ace64486eaaa7176ed3d84be954a25bfb18982e3e"
+    },
+    {
+      "path": ".cache\\oct29-goldshire\\touchups.input",
+      "bytes": 88471271,
+      "sha256": "cc7a202641c5d488648dad24106d7df4f925a1b36f6ea9411463bf186d2cae31"
+    },
+    {
+      "path": ".cache\\oct29-current\\313-parity.input",
+      "bytes": 90745914,
+      "sha256": "4d5160a38300283f711bb04cbf22b2827bd77285331e2185eac1286edf8bd186"
+    },
+    {
+      "path": "docs\\diagnostics\\goldshire-touchups.json",
+      "bytes": 14018,
+      "sha256": "1d0542fc0ab9fef2816686c5eb0e3fdf458ca7b89bb5b5dd395b6b7b41a71c8e"
+    },
+    {
+      "path": "src\\mesh\\engine\\provenance.json",
+      "bytes": 22135,
+      "sha256": "fb484bb1375e5dd570411f095115d19a8b9e4d9b3cf6ff550c25b77d912b56a0"
+    },
+    {
+      "path": "public\\mesh-engine\\_framework\\dotnet.js",
+      "bytes": 44463,
+      "sha256": "2cebdc0a7dd50f8b8935e16630413fc397956b65e0b1c96b265cba005d7e62bd"
+    },
+    {
+      "path": "public\\mesh-engine\\_framework\\engine.sofmzr65ft.wasm",
+      "bytes": 806677,
+      "sha256": "ece7947ec7d8c8fc617a07d9d65e091b0bc7a3b6691a7cf85559ad3cc3fd3de5"
+    },
+    {
+      "path": "public\\mesh-engine\\_framework\\dotnet.native.jbhe84pj75.wasm",
+      "bytes": 10231439,
+      "sha256": "2f3714ce30a8dd0e3eebc8d933ac20b58cf816e4cf546c80014ba27ef9f06fd4"
+    },
+    {
+      "path": ".cache\\oct29-goldshire\\goldshire-native\\0000_49_31.mmtile",
+      "bytes": 6947160,
+      "sha256": "168f7cde778df2d2254e52e991f8513111f5df5ab8cbd843b0472048f84a31ee"
+    },
+    {
+      "path": ".cache\\oct29-goldshire\\northshire-native\\0000_48_32.mmtile",
+      "bytes": 6063140,
+      "sha256": "ec58955bbb019af9dbe0ad8e55491c885880cb146b79db365d7cd95f8fd6b80f"
+    },
+    {
+      "path": ".cache\\oct29-goldshire\\goldshire-wasm\\0000_49_31.mmtile",
+      "bytes": 6947144,
+      "sha256": "be421dd3a9ae070f0d87be621b423b0bf05efa508ec856da6525abfc440381a3"
+    },
+    {
+      "path": ".cache\\oct29-goldshire\\northshire-wasm\\0000_48_32.mmtile",
+      "bytes": 6062760,
+      "sha256": "2d6fb4e45977cb8ac733ef7b4d24def9ce6eb33af2c243e89108538fadb3cc21"
+    },
+    {
+      "path": "docs\\diagnostics\\goldshire-2026.3.17-inn.png",
+      "bytes": 64047,
+      "sha256": "fd328ad90debd1293c42426db023a129bd938f58915398c5c3b9b633fb1b0a17"
+    },
+    {
+      "path": "docs\\diagnostics\\goldshire-2026.3.17-door.png",
+      "bytes": 46428,
+      "sha256": "25a3edd7d4e3a74ccddd2a2077576c9afbdc6d410d9fe551de920d12fc7da4d5"
+    },
+    {
+      "path": "docs\\diagnostics\\goldshire-2026.3.17-rocks.png",
+      "bytes": 47873,
+      "sha256": "39c3ee0b29020c8e68f62a1ab771115f1771f3d056c9e0bd3e6f5fdc10c791f9"
+    }
+  ],
+  "knownFailure": {
+    "area": "Northshire full tile, outside accepted scoped regions",
+    "exit": 3762504530,
+    "gaps": 1,
+    "worstYards": 0.015881231623893655,
+    "position": [
+      -8533.359,
+      -190.10735,
+      84.1074
+    ],
+    "note": "Pre-existing; recorded as failure, not a passing full-tile seam gate."
+  },
+  "rejectedExperiments": [
+    {
+      "change": "Broader contour transition protection",
+      "reason": "Changed 28 accepted upstairs samples; replaced with short-transition-specific rule."
+    },
+    {
+      "change": "Broad exterior height-band overrides",
+      "reason": "Covered excess nearby trim; replaced with narrow platform bands and focused entrance strokes."
+    }
+  ]
+}

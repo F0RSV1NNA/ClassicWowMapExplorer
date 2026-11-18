@@ -1,0 +1,287 @@
+{
+  "pipeline": "explorer-recast-2026.3.19",
+  "scope": "Offline fixtures and existing captured collision only; live instance/ship acceptance not performed",
+  "checks": [
+    {
+      "command": "bun test",
+      "exit": 0,
+      "passed": 100
+    },
+    {
+      "command": "bun run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "bun tools/checkWmoTransport.ts",
+      "exit": 0
+    },
+    {
+      "command": "bun tools/checkMeshParity.ts",
+      "exit": 0
+    },
+    {
+      "command": "bun run portable",
+      "exit": 1,
+      "reason": "App/browser/native builds passed; packaging stopped because magick is unavailable on PATH. ZIP finalized with Python zipfile and unchanged launcher/icon."
+    },
+    {
+      "command": "Python zipfile portable packaging and archive integrity validation",
+      "exit": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+        "run",
+        "build"
+      ],
+      "exit": 0
+    },
+    {
+      "command": "bun test tests/mesh-wmo-transport.test.ts after land-gap layout adjustment",
+      "exit": 0,
+      "passed": 4
+    }
+  ],
+  "packagedRunnerChecks": [
+    {
+      "case": "transport",
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\wmo-transport\\transport.input",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\wmo-transport\\transport.packaged.zip"
+      ],
+      "executableSha256": "184cb080f45187fd1d5823eee601532ac2f5911ed86a46a2157b65e034b8ff79",
+      "exit": 0,
+      "matchesWasm": true
+    },
+    {
+      "case": "instance",
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\wmo-transport\\instance.input",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\wmo-transport\\instance.packaged.zip"
+      ],
+      "executableSha256": "184cb080f45187fd1d5823eee601532ac2f5911ed86a46a2157b65e034b8ff79",
+      "exit": 0,
+      "matchesWasm": true
+    },
+    {
+      "case": "crossing-deck",
+      "command": [
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\wmo-transport\\crossing-deck.input",
+        "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\.cache\\wmo-transport\\crossing-deck.packaged.zip"
+      ],
+      "executableSha256": "184cb080f45187fd1d5823eee601532ac2f5911ed86a46a2157b65e034b8ff79",
+      "exit": 0,
+      "matchesWasm": true
+    }
+  ],
+  "parity": [
+    {
+      "case": "transport",
+      "exit": 0,
+      "centre": [
+        -30,
+        -32.5,
+        6
+      ],
+      "hashes": {
+        "116306_32_32.mmtile": "39a580e1560469a322a03095e112473c9c77ce21ed74ce23efcd6b37f36f51da",
+        "116306.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "preview.bin": "f765ac3639718d71f69120df8accf091d369aa3d153531a0dc90fb9287f4b469",
+        "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      }
+    },
+    {
+      "case": "instance",
+      "exit": 0,
+      "centre": [
+        -2060,
+        -3065,
+        24
+      ],
+      "hashes": {
+        "0033_35_37.mmtile": "46fed88cd57fb1726a6de264de14af091932d7aecf4471889ac6e7eee8d9dfbd",
+        "0033.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "preview.bin": "82cd3419691ee2afc40c85723951391627a5bde712bcafd8aa862a9831430681",
+        "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      }
+    },
+    {
+      "case": "crossing-deck",
+      "exit": 0,
+      "centre": [
+        1,
+        1,
+        6
+      ],
+      "hashes": {
+        "116306_31_31.mmtile": "99e7bcaafa3212d4afdbb02e9efb17cc9de7549a102e6ada9433a5afcd2fa860",
+        "116306_31_32.mmtile": "89759693db05d983dbeda01c5c26c7ca9a4020bcd50e12be2548f8c74a825bd1",
+        "116306_32_31.mmtile": "9ef283c8da94e022fd8a8b3dcfa02ba10d69862166372256df4a13f87e1b4a8d",
+        "116306_32_32.mmtile": "3de5c61315eac2d2aedabc614cf900407e5c16b8409b4ba83bd38ab04b5ed8a5",
+        "116306.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "preview.bin": "33ae62c2e8c71f27bbd256f4322e4bcd28974fadb60c9a60fbc871e9dd25f9d0",
+        "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      }
+    },
+    {
+      "case": "placed-transport",
+      "expectedFailure": true,
+      "exit": 82,
+      "output": "Unhandled exception. System.IO.InvalidDataException: Transport baking requires an unplaced model\r\n   at WmoBakeSource.Validate() in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 322\r\n   at MeshEngine.PrepareRaw(Byte[] input, Boolean lowMemory, Boolean texturesOnly) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 80\r\n   at MeshEngine.BakeRawMode(Byte[] input, Boolean lowMemory) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 38\r\n   at MeshEngine.BakeRaw(Byte[] input) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 30\r\n   at NativeCheck.Main(String[] args) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\Program.cs:line 246\r\n"
+    },
+    {
+      "case": "missing-group",
+      "expectedFailure": true,
+      "exit": 82,
+      "output": "Unhandled exception. System.IO.InvalidDataException: Missing collision group 900002 for WMO 116306.\r\n   at MapExtract.Extractor.LoadWmo(UInt32 fdid) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Core\\Extractor\\Extractor.cs:line 290\r\n   at MapExtract.Extractor.AddWmo(Soup soup, WmoPlacement m, Single origin) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Core\\Extractor\\Extractor.cs:line 257\r\n   at MapExtract.Extractor.BuildGlobalWmo(WmoPlacement m) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Core\\Extractor\\Extractor.cs:line 237\r\n   at MeshEngine.PrepareRaw(Byte[] input, Boolean lowMemory, Boolean texturesOnly) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 84\r\n   at MeshEngine.BakeRawMode(Byte[] input, Boolean lowMemory) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 38\r\n   at MeshEngine.BakeRaw(Byte[] input) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs:line 30\r\n   at NativeCheck.Main(String[] args) in C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\Program.cs:line 246\r\n"
+    },
+    {
+      "case": "captured-WMO-106965",
+      "note": "Captured real WMO at zero placement under fixture map 999; not a live instance or ship acceptance test",
+      "exit": 0,
+      "hashes": {
+        "0999_31_31.mmtile": "ee2ab328b0c72c853dc5bf607723bf7a307e36dbbc1c0458de2dc8f079a216c2",
+        "0999_31_32.mmtile": "e2088cfbdfcd71262ce2ee982cf574505f7a792fe329e2c2650a894118a60f82",
+        "0999_32_31.mmtile": "b310a352881bed0fe7976d66d8c549833829e2f04b3a1ba4294bbbd6804185ff",
+        "0999_32_32.mmtile": "af80594589916c4d51ac91e3b5d196392805a153f883e34af8f402bc73f523ea",
+        "0999.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+        "preview.bin": "4c284f3e99fb1f4f0577d8b8efe1e8bbe40c4b866c5fa03cf052f2ad94839482",
+        "liquid-preview.bin": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+      },
+      "inputSha256": "49a470ab2f539e601e31eead139a47e69b1f0dfbeef7f946414b9762bd28e754"
+    }
+  ],
+  "terrainParity": {
+    "exit": 0,
+    "engine": "explorer-recast-2026.3.19",
+    "metrics": {
+      "polygons": 120,
+      "tiles": 1,
+      "regionsSplit": 119,
+      "pinholesFilled": 0,
+      "detailRetriangulated": 0,
+      "detailSpikes": 0,
+      "detailBlades": 0,
+      "detailClamped": 0,
+      "longDetailEdges": 0,
+      "regionSplitGrid": 0,
+      "regionsUnwound": 0,
+      "tinyRegionCells": 0,
+      "areaIslandCellsRestored": 0,
+      "indoorCells": 0,
+      "trimCells": 0,
+      "roadCells": 15251,
+      "railingCells": 0,
+      "asymmetricLinks": 0,
+      "doodadSpansReblocked": 0,
+      "sourceSurfaceVertices": 143,
+      "planarDetailVerticesRemoved": 0,
+      "sourceWmoCapsBlocked": 0,
+      "solidWallCells": 0,
+      "raisedWmoCapsBlocked": 0,
+      "coveredWmoSpansRestored": 0,
+      "addedMeshCells": 0,
+      "swimPolygons": 25,
+      "submergedPolygons": 30,
+      "hazardPolygons": 0,
+      "waterlineCuts": 0,
+      "coarserContours": 0,
+      "monotoneTiles": 0,
+      "splitGaveUp": 0,
+      "swimBuildFellBack": 0,
+      "fallbackWhy": "",
+      "stages": {
+        "rasterize": 30.7817,
+        "build": 1307.7438,
+        "detour": 2.329
+      }
+    },
+    "hashes": {
+      "0000_32_32.mliq": "7355b0812affdf2bd903722d50e964f4ee50eb1a666fba438892a26f37504080",
+      "0000_32_32.mmtile": "9f988ddfcb099188750a1a13c6d49f4c93f0a919f6e8f3a33ba7fe817f4e6b19",
+      "0000.mmap": "50e2fb9273741143d164663ef46649aeb02e5c5cb70a60ae0d23929392ebf303",
+      "preview.bin": "970543c14e44cdeff6a716f74012e59a12e703e328b2471df46463613aa30619",
+      "liquid-preview.bin": "d5ccc659b1d21db60e9146687009412e624db6887aec6eb2a96180eb09390756"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\MapExplorer.exe",
+      "sha256": "0b5d25bb82356d9352f70ba69929deda13113980df8d855d926e64ebce9066e9",
+      "bytes": 123904
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\mesh-engine\\Explorer.Mesh.exe",
+      "sha256": "184cb080f45187fd1d5823eee601532ac2f5911ed86a46a2157b65e034b8ff79",
+      "bytes": 74657206
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\tools\\mesh-native-check\\bin\\Release\\net10.0\\check.dll",
+      "sha256": "06378c775b0320cfb4428663f754b11ff02f77b827bcb190d02f4a524b12070c",
+      "bytes": 1021440
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\engine\\Program.cs",
+      "sha256": "d996be8de8db6e908ff95011882e97ef7be7ce8e824498fe0214229309ea1534",
+      "bytes": 19608
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\source.ts",
+      "sha256": "6bbd4365616fb1c652489d8f05cc99afc8860959a5ea19d8f8fbab1354a35e8c",
+      "bytes": 10824
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\transport-models.json",
+      "sha256": "e03c0ab635a7b9ce34bd42464076e5adad9d0eab4970f8b21d86df29e172a6c6",
+      "bytes": 15102
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer\\app\\index.html",
+      "sha256": "d750e520e3f7a7119aac3a3a16d30f92f0cfcb157dc56ea3b1188bbc001e819c",
+      "bytes": 32451
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\transport-catalog.ts",
+      "sha256": "2479a54e0c3575f44ba2cc9d16ceea1625f3e503bbbdf5a068f0eb2531856043",
+      "bytes": 2545
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\terrain.ts",
+      "sha256": "3d248f740ed1a8795627a62726623b6ddccd05d50d8cacd99f0e83639cf6e362",
+      "bytes": 33023
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\viewer\\viewer.ts",
+      "sha256": "320df27d4d80ef657e656b3a20f48e5073c772e2d71a438846c2cc3119ef01a6",
+      "bytes": 141056
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\menu.ts",
+      "sha256": "e9d2b89bd13bce467c2b66e9c08e1e9dc9edfb9a4e87ae55ef0a25c55ae264bc",
+      "bytes": 43660
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\src\\mesh\\export.ts",
+      "sha256": "ae27d2b13e2d1e9eb08b763745b59f02dc512891900feddd2223d6fb59bbf25a",
+      "bytes": 6045
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\docs\\wmo-transport-2026.3.19.md",
+      "sha256": "1838a3c17066a3b14996b407e79596264f196ef683c43c6844aad0ba90ad8f5b",
+      "bytes": 4210
+    },
+    {
+      "path": "C:\\Users\\Ryan\\AppData\\Local\\npm-cache\\_npx\\5c4f1b4a21be27f7\\node_modules\\bun\\bin\\bun.exe",
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6",
+      "bytes": 96390232
+    },
+    {
+      "path": "C:\\Users\\Ryan\\Documents\\GitHub\\ClassicWowMapExplorer\\release\\MapExplorer-portable.zip",
+      "sha256": "68d59d12715cc00cba08157860a7ddc03ccb3d2988059649f36cd00dd4df3cc3",
+      "bytes": 225132423
+    }
+  ]
+}

@@ -34,7 +34,7 @@ public static class MapEdits
         public Vector3 B => new(Bx, By, Bz);
     }
 
-    public enum StrokeKind { PaintRoad = 0, RemoveRoad = 1, EraseMesh = 2, Block = 3, Restore = 4 }
+    public enum StrokeKind { PaintRoad = 0, RemoveRoad = 1, EraseMesh = 2, Block = 3, Restore = 4, AddMesh = 5 }
 
     /// A dab of the brush. Later strokes win over earlier ones where they overlap, so a
     /// remove after a paint takes it back out.

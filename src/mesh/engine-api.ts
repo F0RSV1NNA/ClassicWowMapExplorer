@@ -4,8 +4,8 @@ import type { MeshBake, MeshInput, MeshQuality } from './types';
 /** Private in-process adapter format, versioned independently of game/runtime mesh files. */
 export function encodeBakeInput(input: MeshInput): Uint8Array {
 	const base = encodeBaseInput(input);
-	if (!input.edits) return base;
-	const json = new TextEncoder().encode(JSON.stringify(input.edits));
+	if (!input.edits && !input.raw?.wmo) return base;
+	const json = new TextEncoder().encode(JSON.stringify({ ...input.edits, Source: input.raw?.wmo }));
 	const out = new Uint8Array(base.length + 4 + json.length); out.set(base);
 	new DataView(out.buffer).setInt32(base.length, json.length, true); out.set(json, base.length + 4); return out;
 }
@@ -55,7 +55,7 @@ export function decodeBakeOutput(data: Uint8Array, input: MeshInput): MeshBake {
 			classes.push(view.getInt32(at, true)); at += 4;
 			for (let v = 0; v < 9; v++, at += 4) positions.push(view.getFloat32(at, true));
 		}
-		return { mapId: input.tile.mapId, positions, classes, triangles, source: 'navmesh' as const };
+		return { mapId: input.tile.mapId, positions, classes, triangles, source: 'navmesh' as const, transportModel: input.raw?.wmo?.transport ? input.raw.wmo.fdid : undefined };
 	};
 	const geometry = preview(files['preview.bin']);
 	const liquid = preview(files['liquid-preview.bin']);

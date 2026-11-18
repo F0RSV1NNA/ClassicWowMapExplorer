@@ -1,3 +1,4 @@
+import {CdnReader}from './cdn';
 import { decodeBlte, EncryptedError, type BlteResult } from './blte';
 import { readBuildInfo, readConfig, type ProductInfo } from './config';
 import { EncodingTable } from './encoding';
@@ -5,7 +6,7 @@ import { hashPath } from './jenkins96';
 import { LocalIndex, bucketOf } from './localIndex';
 import { fromHex, toHex } from './reader';
 import { RootTable } from './root';
-import type { FileSource, RandomAccessFile } from './source';
+import { NotFoundError, type FileSource, type RandomAccessFile } from './source';
 
 /** Size of the header in front of each file in a data.### archive. */
 const ARCHIVE_ENTRY_HEADER = 0x1e;
@@ -18,6 +19,10 @@ export interface StorageStats {
 	product: string;
 	version: string;
 	buildName: string;
+    buildKey?:string;
+    rootContentKey?:string;
+    rootSha256?:string;
+    readerVersion?:string;
 	indexEntries: number;
 	encodingPages: number;
 	rootFiles: number;
@@ -58,7 +63,8 @@ class ArchiveReader {
 	onChanged: () => void = () => {};
 
 	/** idxNames: the index files Data/data held when the index was read. */
-	constructor(private readonly source: FileSource, readonly index: LocalIndex, private readonly idxNames: string[]) {}
+	constructor(private readonly source: FileSource, readonly index: LocalIndex, private readonly idxNames: string[],private readonly cdn?:CdnReader) {}
+    get remoteAvailable(){return !!this.cdn;}
 
 	async read(ekey: Uint8Array, what: string, allowPartial = false): Promise<BlteResult> {
 		if (this.changed) throw new StorageChangedError(what);
@@ -68,7 +74,8 @@ class ArchiveReader {
 			return result;
 		} catch (e) {
 			// A file that isn't stored or is encrypted says nothing about the install changing.
-			if (e instanceof NotLocalError || e instanceof EncryptedError) throw e;
+			if((e instanceof NotLocalError||e instanceof NotFoundError)&&this.cdn)return decodeBlte(await this.cdn.read(ekey),allowPartial);
+            if (e instanceof NotLocalError || e instanceof EncryptedError) throw e;
 			// A browser refuses to read a picked file that has changed since; a folder list picked
 			// with an <input> stays as it was, so this is the only sign there. Before any read has
 			// worked, it is more likely the folder's permissions.
@@ -216,13 +223,14 @@ export class CascStorage {
 		const buildConfig = await readConfig(source, info.buildKey);
 
 		const { index, names } = await time('Reading local indexes', () => loadLocalIndex(source));
-		const archives = new ArchiveReader(source, index, names);
+		const archives = new ArchiveReader(source, index, names,new CdnReader(source,info));
 
 		const [, encodingEKey] = requireConfig(buildConfig, 'encoding');
 		const encoding = await time('Reading encoding table', async () =>
 			EncodingTable.parse((await archives.read(fromHex(encodingEKey), 'encoding table')).data));
 
 		const [rootCKey] = requireConfig(buildConfig, 'root');
+        let rootSha256='';
 		const root = await time('Reading root table', async () => {
 			const ckey = fromHex(rootCKey);
 			const ekeys = encoding.lookupAll(ckey);
@@ -230,7 +238,9 @@ export class CascStorage {
 			// Normally one key; use the first that is stored here.
 			const ekey = ekeys.find((key) => archives.index.find(key)) ?? ekeys[0];
 			try {
-				return RootTable.parse((await archives.read(ekey, 'root table')).data);
+				const bytes=(await archives.read(ekey, 'root table')).data;
+                rootSha256=toHex(new Uint8Array(await crypto.subtle.digest('SHA-256',new Uint8Array(bytes))));
+                return RootTable.parse(bytes);
 			} catch (e) {
 				if (!(e instanceof NotLocalError)) throw e;
 				const elsewhere = ekeys.map((key) => archives.index.findInAnyBucket(key)).find(Boolean);
@@ -242,6 +252,7 @@ export class CascStorage {
 
 		return new CascStorage(archives, encoding, root, {
 			product: info.product,
+            buildKey:info.buildKey,rootContentKey:rootCKey,rootSha256,readerVersion:'casc-root-evidence-2026-10-29.1',
 			version: info.version,
 			buildName: buildConfig.get('build-name')?.join(' ') ?? '',
 			indexEntries: index.entryCount,
@@ -256,6 +267,8 @@ export class CascStorage {
 	onChanged(callback: () => void): void {
 		this.archives.onChanged = callback;
 	}
+
+    inspectRoot(ids:readonly number[]) { return this.root.inspectFiles(ids); }
 
 	/** Resolves a game path like "world/maps/azeroth/azeroth.wdt" via its root name hash. */
 	lookupPath(path: string): number | null {
@@ -272,14 +285,16 @@ export class CascStorage {
 		if (ckeys.length === 0) return { status: 'unknown' };
 		let fallback: { status: FileStatus; ekey?: Uint8Array; ckey?: Uint8Array } = { status: 'no-encoding', ckey: ckeys[0] };
 		for (const ckey of ckeys) {
-			const ekey = this.encoding.lookup(ckey);
-			if (!ekey) continue;
-			if (this.archives.index.find(ekey)) return { status: 'ok', ekey, ckey };
-			fallback = { status: 'not-local', ekey, ckey };
+            const keys=this.encoding.lookupAll(ckey);
+            for(const ekey of keys){
+                if(this.archives.index.find(ekey))return {status:'ok',ekey,ckey};
+                fallback={status:'not-local',ekey,ckey};
+            }
 		}
 		return fallback;
 	}
 
+	get remoteAvailable():boolean{return this.archives.remoteAvailable??false;}
 	status(fdid: number): FileStatus {
 		return this.resolve(fdid).status;
 	}
@@ -296,7 +311,15 @@ export class CascStorage {
 		const { status, ekey, ckey } = this.resolve(fdid);
 		if (status === 'unknown') throw new Error(`File ${fdid} is not in the root table`);
 		if (!ekey) throw new Error(`File ${fdid} (${toHex(ckey!)}) is not in the encoding table`);
-		return this.archives.read(ekey, `File ${fdid}`, allowPartial);
+		const alternatives=this.root.getContentKeys(fdid).flatMap(c=>this.encoding.lookupAll(c));
+        const ordered=[ekey,...alternatives.filter(k=>this.archives.index.find(k)),...alternatives];
+        const tried=new Set<string>();let last:unknown;
+        for(const candidate of ordered){
+            const id=toHex(candidate);if(tried.has(id))continue;tried.add(id);
+            try{return await this.archives.read(candidate,`File ${fdid}`,allowPartial);}
+            catch(e){if(e instanceof StorageChangedError)throw e;last=e instanceof EncryptedError?e:(last??e);}
+        }
+        throw last;
 	}
 }
 

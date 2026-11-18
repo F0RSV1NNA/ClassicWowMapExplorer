@@ -1,5 +1,7 @@
+import keyCatalog from './tact-keys.json';
+import { salsa20 } from './salsa20';
 import { unzlibSync } from 'fflate';
-import { Reader, concatBytes, toHex } from './reader';
+import { Reader, concatBytes, fromHex, toHex } from './reader';
 
 const BLTE_MAGIC = 0x424c5445;
 
@@ -51,15 +53,20 @@ export function decodeBlte(input: Uint8Array, allowPartial = false): BlteResult 
 	let offset = headerSize === 0 ? 8 : headerSize;
 	const parts: Uint8Array[] = [];
 	const encryptedKeys: string[] = [];
-	for (const chunk of chunks) {
+	for (let index=0;index<chunks.length;index++) {
+        const chunk=chunks[index];
 		const block = input.subarray(offset, offset + chunk.compressedSize);
 		offset += chunk.compressedSize;
-		parts.push(decodeChunk(block, chunk.decompressedSize, allowPartial, encryptedKeys));
+        if(offset>input.length)throw Error('Truncated BLTE chunk');
+        const part=decodeChunk(block,chunk.decompressedSize,allowPartial,encryptedKeys,index);
+        if(chunk.decompressedSize>=0&&part.length!==chunk.decompressedSize)throw Error('BLTE decompressed size mismatch');
+        parts.push(part);
 	}
 	return { data: concatBytes(parts), encryptedKeys };
 }
 
-function decodeChunk(block: Uint8Array, decompressedSize: number, allowPartial: boolean, encryptedKeys: string[]): Uint8Array {
+function decodeChunk(block: Uint8Array, decompressedSize: number, allowPartial: boolean, encryptedKeys: string[],index=0,depth=0): Uint8Array {
+    if(depth>16||!block.length)throw Error('Invalid BLTE chunk nesting or empty block');
 	switch (block[0]) {
 		case 0x4e: // 'N' raw
 			return block.subarray(1);
@@ -71,12 +78,22 @@ function decodeChunk(block: Uint8Array, decompressedSize: number, allowPartial: 
 			const keyNameSize = block[1];
 			// Key names are stored little-endian; display them the way key lists write them.
 			const keyName = toHex(block.slice(2, 2 + keyNameSize).reverse()).toUpperCase();
-			if (!allowPartial || decompressedSize < 0) throw new EncryptedError(keyName);
-			encryptedKeys.push(keyName);
-			return new Uint8Array(decompressedSize);
+            const known=(keyCatalog as Record<string,string>)[keyName];
+            if(!known){
+                if(!allowPartial||decompressedSize<0)throw new EncryptedError(keyName);
+                encryptedKeys.push(keyName);return new Uint8Array(decompressedSize);
+            }
+            if(keyNameSize!==8||block.length<12)throw Error('Invalid BLTE encryption header');
+            const ivSize=block[10],typeAt=11+ivSize;
+            if((ivSize!==4&&ivSize!==8)||typeAt>=block.length)throw Error('Invalid BLTE encryption IV');
+            if(block[typeAt]!==0x53)throw Error('Unsupported BLTE encryption type');
+            const nonce=new Uint8Array(8);nonce.set(block.subarray(11,typeAt));
+            for(let i=0;i<4;i++)nonce[i]^=index>>>(i*8)&255;
+            const plain=salsa20(block.subarray(typeAt+1),fromHex(known),nonce);
+            return decodeChunk(plain,decompressedSize,allowPartial,encryptedKeys,index,depth+1);
 		}
 		case 0x46: // 'F' nested frame
-			return decodeBlte(block.subarray(1), allowPartial).data;
+			{const nested=decodeBlte(block.subarray(1),allowPartial);encryptedKeys.push(...nested.encryptedKeys);return nested.data;}
 		default:
 			throw new Error(`Unknown BLTE chunk mode 0x${block[0].toString(16)}`);
 	}
